@@ -1,0 +1,19 @@
+# Java / Maven
+target/
+
+# Node
+node_modules/
+dist/
+
+# Env
+.env
+*.env
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
+# macOS
+.DS_Store
