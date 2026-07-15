@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/vetspace
+    username: vetspace
+    password: vetspace
+  mail:
+    host: localhost
+    port: 1025
+
+app:
+  media:
+    endpoint: http://localhost:9000
+    bucket: vetspace
+    access-key: minioadmin
+    secret-key: minioadmin
+    public-base-url: http://localhost:9000/vetspace
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

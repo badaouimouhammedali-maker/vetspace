@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: dev-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-vetspace}
+      POSTGRES_USER: ${DB_USER:-vetspace}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-vetspace}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-vetspace} -d ${DB_NAME:-vetspace}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: dev-media
+    environment:
+      MINIO_ROOT_USER: ${MEDIA_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MEDIA_SECRET_KEY:-minioadmin}
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: vetspace-mailpit
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # web UI
+      
+volumes:
+  postgres_data:
+  minio_data:
