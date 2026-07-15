@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/vetspace
     username: vetspace
-    password: vetspace
+    password: ${DB_PASSWORD:vetspace}
   mail:
     host: localhost
     port: 1025
