@@ -52,6 +52,10 @@ public class SessionQuestion {
     @Column(name = "seconds_spent", nullable = false)
     private Integer secondsSpent;
 
+    /** Last answer/consult interaction; drives the weekly stats buckets. Null while UNANSWERED. */
+    @Column(name = "answered_at")
+    private java.time.Instant answeredAt;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

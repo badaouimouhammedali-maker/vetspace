@@ -34,4 +34,8 @@ public class Course extends BaseEntity {
 
     @Column(nullable = false)
     private boolean published;
+
+    /** Demo mode: unsubscribed students may build their single trial session only from free-preview courses. */
+    @Column(name = "free_preview", nullable = false)
+    private boolean freePreview;
 }

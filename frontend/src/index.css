@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Defaults are the brand; the user's saved theme overrides these at runtime. */
+  --color-primary: #0f766e;
+  --color-secondary: #12355b;
+  --color-tertiary: #6b7280;
+}
+
+body {
+  @apply bg-gray-50 font-sans text-gray-900 antialiased;
+}

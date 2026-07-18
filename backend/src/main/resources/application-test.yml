@@ -3,3 +3,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/vetspace
     username: vetspace
     password: ${DB_PASSWORD:vetspace}
+
+app:
+  recaptcha:
+    enabled: false

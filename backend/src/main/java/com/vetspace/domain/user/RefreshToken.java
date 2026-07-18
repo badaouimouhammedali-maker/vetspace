@@ -8,6 +8,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,6 +30,10 @@ public class RefreshToken extends BaseEntity {
 
     @Column(name = "token_hash", nullable = false, unique = true)
     private String tokenHash;
+
+    /** Shared by every token in one rotation lineage; reuse of a revoked token revokes the whole family. */
+    @Column(name = "family_id", nullable = false, columnDefinition = "uuid")
+    private UUID familyId;
 
     @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;

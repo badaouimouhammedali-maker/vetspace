@@ -8,6 +8,8 @@ spring:
     port: 1025
 
 app:
+  recaptcha:
+    enabled: false
   media:
     endpoint: http://localhost:9000
     bucket: vetspace
