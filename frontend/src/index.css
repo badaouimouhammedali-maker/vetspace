@@ -3,10 +3,11 @@
 @tailwind utilities;
 
 :root {
-  /* Defaults are the brand; the user's saved theme overrides these at runtime. */
-  --color-primary: #0f766e;
-  --color-secondary: #12355b;
-  --color-tertiary: #6b7280;
+  /* RGB channels (not hex) so Tailwind's `/opacity` modifiers work on these vars.
+     Defaults are the brand; the user's saved theme overrides them at runtime. */
+  --color-primary: 15 118 110; /* #0F766E */
+  --color-secondary: 18 53 91; /* #12355B */
+  --color-tertiary: 107 114 128; /* #6B7280 */
 }
 
 body {

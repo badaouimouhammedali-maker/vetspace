@@ -5,16 +5,18 @@ export default {
   theme: {
     extend: {
       colors: {
+        // brand.green/navy/gray are var-backed so the whole app restyles when the
+        // user changes their theme; defaults (in index.css) are the brand colors.
+        // `<alpha-value>` lets Tailwind opacity modifiers (bg-brand-green/10) work.
         brand: {
-          green: '#0F766E',
+          green: 'rgb(var(--color-primary) / <alpha-value>)',
           'green-hover': '#0B5D57',
-          navy: '#12355B',
-          gray: '#6B7280',
+          navy: 'rgb(var(--color-secondary) / <alpha-value>)',
+          gray: 'rgb(var(--color-tertiary) / <alpha-value>)',
         },
-        // Runtime-themable: users can override their three colors; defaults are the brand.
-        primary: 'var(--color-primary)',
-        secondary: 'var(--color-secondary)',
-        tertiary: 'var(--color-tertiary)',
+        primary: 'rgb(var(--color-primary) / <alpha-value>)',
+        secondary: 'rgb(var(--color-secondary) / <alpha-value>)',
+        tertiary: 'rgb(var(--color-tertiary) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],

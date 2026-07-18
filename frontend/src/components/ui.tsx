@@ -7,7 +7,7 @@ export function Donut({
   percent,
   size = 72,
   stroke = 8,
-  color = 'var(--color-primary)',
+  color = 'rgb(var(--color-primary))',
   label,
 }: {
   percent: number;

@@ -14,16 +14,9 @@ import {
   updateProfile,
   uploadPhoto,
 } from '../../lib/endpoints';
+import { DEFAULT_THEME, applyTheme as applyThemeVars } from '../../lib/theme';
 
-const DEFAULT_THEME = { primary: '#0f766e', secondary: '#12355b', tertiary: '#6b7280' };
 const STUDY_YEARS = [1, 2, 3, 4, 5, 6];
-
-function applyThemeVars(theme: { primary: string; secondary: string; tertiary: string }) {
-  const root = document.documentElement;
-  root.style.setProperty('--color-primary', theme.primary);
-  root.style.setProperty('--color-secondary', theme.secondary);
-  root.style.setProperty('--color-tertiary', theme.tertiary);
-}
 
 export function ProfilePage() {
   const { user, refreshUser } = useAuth();

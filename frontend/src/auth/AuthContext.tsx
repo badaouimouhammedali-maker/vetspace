@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { apiGet, apiPost, apiPostVoid, setAccessToken, singleFlightRefresh } from '../lib/api';
+import { applyTheme as applyThemeVars } from '../lib/theme';
 import {
   loginResponseSchema,
   meSchema,
@@ -40,10 +41,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 /** Applique le thème personnalisé de l'utilisateur aux variables CSS globales. */
 function applyTheme(user: Me | null): void {
-  const root = document.documentElement;
-  root.style.setProperty('--color-primary', user?.theme.primary ?? '#0f766e');
-  root.style.setProperty('--color-secondary', user?.theme.secondary ?? '#12355b');
-  root.style.setProperty('--color-tertiary', user?.theme.tertiary ?? '#6b7280');
+  applyThemeVars(user?.theme ?? null);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
