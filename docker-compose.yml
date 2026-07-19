@@ -35,7 +35,42 @@ services:
     ports:
       - "1025:1025"   # SMTP
       - "8025:8025"   # web UI
-      
+
+  # --- Full seeded application stack for end-to-end tests: `docker compose --profile e2e up` ---
+  backend:
+    build: ./backend
+    container_name: vetspace-e2e-backend
+    profiles: ["e2e"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev            # dev profile runs the data seeder
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-vetspace}
+      DB_USER: ${DB_USER:-vetspace}
+      DB_PASSWORD: ${DB_PASSWORD:-vetspace}
+      ADMIN_EMAIL: admin@vetspace.local
+      ADMIN_PASSWORD: e2e-admin-password
+      E2E_SEED_CODE: E2E1-2345-6789-ABCD      # deterministic code the smoke test redeems
+      RECAPTCHA_ENABLED: "false"
+      JWT_SECRET: e2e-only-secret-not-for-prod
+      CORS_ALLOWED_ORIGINS: http://localhost:8088
+      MEDIA_ENDPOINT: http://minio:9000
+      MEDIA_PUBLIC_BASE_URL: http://localhost:9000/vetspace
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    container_name: vetspace-e2e-frontend
+    profiles: ["e2e"]
+    depends_on:
+      - backend
+    ports:
+      - "8088:80"
+
 volumes:
   postgres_data:
   minio_data:

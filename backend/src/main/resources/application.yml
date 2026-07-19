@@ -75,6 +75,8 @@ app:
   seed:
     admin-email: ${ADMIN_EMAIL:}
     admin-password: ${ADMIN_PASSWORD:}
+    # Deterministic activation code seeded for automated e2e; leave empty everywhere except the e2e stack.
+    e2e-code: ${E2E_SEED_CODE:}
 
 springdoc:
   api-docs:

@@ -66,6 +66,7 @@ public class DevDataSeeder implements ApplicationRunner {
     private final HtmlSanitizer htmlSanitizer;
     private final String adminEmail;
     private final String adminPassword;
+    private final String e2eSeedCode;
 
     public DevDataSeeder(UserRepository userRepository, SchoolRepository schoolRepository,
                           ModuleRepository moduleRepository, CourseRepository courseRepository,
@@ -74,7 +75,8 @@ public class DevDataSeeder implements ApplicationRunner {
                           ActivationCodeRepository activationCodeRepository,
                           PasswordEncoder passwordEncoder, HtmlSanitizer htmlSanitizer,
                           @Value("${app.seed.admin-email:}") String adminEmail,
-                          @Value("${app.seed.admin-password:}") String adminPassword) {
+                          @Value("${app.seed.admin-password:}") String adminPassword,
+                          @Value("${app.seed.e2e-code:}") String e2eSeedCode) {
         this.userRepository = userRepository;
         this.schoolRepository = schoolRepository;
         this.moduleRepository = moduleRepository;
@@ -88,6 +90,7 @@ public class DevDataSeeder implements ApplicationRunner {
         this.htmlSanitizer = htmlSanitizer;
         this.adminEmail = adminEmail;
         this.adminPassword = adminPassword;
+        this.e2eSeedCode = e2eSeedCode;
     }
 
     @Override
@@ -152,6 +155,16 @@ public class DevDataSeeder implements ApplicationRunner {
                 .pack(pack)
                 .codeHash(TokenHasher.sha256Hex(CodeGenerator.normalize(code)))
                 .maxUses(1).usedCount(0).revoked(false)
+                .createdBy(admin)
+                .build());
+        }
+
+        // Deterministic activation code for automated e2e (set E2E_SEED_CODE only in the e2e stack).
+        if (!e2eSeedCode.isBlank()) {
+            activationCodeRepository.save(ActivationCode.builder()
+                .pack(pack)
+                .codeHash(TokenHasher.sha256Hex(CodeGenerator.normalize(e2eSeedCode)))
+                .maxUses(1000).usedCount(0).revoked(false)
                 .createdBy(admin)
                 .build());
         }
