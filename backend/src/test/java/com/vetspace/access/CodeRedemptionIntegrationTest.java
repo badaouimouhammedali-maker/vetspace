@@ -156,7 +156,12 @@ class CodeRedemptionIntegrationTest {
 
         pack = packRepository.save(Pack.builder()
             .school(school).studyYear(3).name("Pack 3A").academicYear("2026-2027")
-            .priceDa(3500).active(true).expiresAt(Instant.now().plus(300, ChronoUnit.DAYS)).build());
+            .priceDa(3500).active(true)
+            // Truncate to micros: Postgres timestamps hold microseconds, while Instant.now()
+            // is nanosecond-precision on Linux (and micro on macOS). Without this the in-memory
+            // value never equals the DB round-trip, so assertions pass locally but fail on CI.
+            .expiresAt(Instant.now().plus(300, ChronoUnit.DAYS).truncatedTo(ChronoUnit.MICROS))
+            .build());
 
         adminToken = tokenFor(newUser(Role.ADMIN));
 
