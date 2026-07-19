@@ -23,6 +23,8 @@
         <jjwt.version>0.12.6</jjwt.version>
         <aws.version>2.26.2</aws.version>
         <bucket4j.version>8.0.1</bucket4j.version>
+        <!-- Optional NVD API key for the `security` profile's dependency-check scan; pass -Dnvd.api.key=... -->
+        <nvd.api.key></nvd.api.key>
     </properties>
 
     <dependencies>
@@ -146,4 +148,39 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!--
+          Slow, network-bound scan (downloads the NVD feed) kept out of the default `verify`.
+          Run: ./mvnw -Psecurity verify   (an NVD API key via -Dnvd.api.key speeds it up a lot).
+          Fails the build on any dependency with CVSS >= 7 (HIGH/CRITICAL); justified
+          false-positives go in dependency-check-suppressions.xml.
+        -->
+        <profile>
+            <id>security</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <version>10.0.4</version>
+                        <configuration>
+                            <failBuildOnCVSS>7</failBuildOnCVSS>
+                            <suppressionFiles>
+                                <suppressionFile>dependency-check-suppressions.xml</suppressionFile>
+                            </suppressionFiles>
+                            <nvdApiKey>${nvd.api.key}</nvdApiKey>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

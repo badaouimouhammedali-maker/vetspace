@@ -298,6 +298,26 @@ class SessionIntegrationTest {
     }
 
     @Test
+    void answerRejectsForeignQuestionAndNegativeTime() throws Exception {
+        String sessionId = createSession(10);
+
+        // A question id that is not part of this session reads as nonexistent -> 404.
+        mockMvc.perform(put("/api/sessions/" + sessionId + "/questions/" + UUID.randomUUID() + "/answer")
+                .header("Authorization", "Bearer " + studentToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("selectedPropositionIds", List.of(), "secondsSpent", 5))))
+            .andExpect(status().isNotFound());
+
+        // Negative time fails bean validation -> 400.
+        mockMvc.perform(put("/api/sessions/" + sessionId + "/questions/" + q1.getId() + "/answer")
+                .header("Authorization", "Bearer " + studentToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of(
+                    "selectedPropositionIds", truePropositionIds(q1), "secondsSpent", -5))))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void autoTitleUsesModuleName() throws Exception {
         String body = objectMapper.writeValueAsString(Map.of(
             "sessionType", "ENTRAINEMENT",

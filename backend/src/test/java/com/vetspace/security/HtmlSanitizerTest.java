@@ -97,6 +97,31 @@ class HtmlSanitizerTest {
     }
 
     @Test
+    void stripsJavascriptAndDataUriImages() {
+        String result = sanitizer.sanitize(
+            "<img src=\"javascript:alert(1)\">"
+                + "<img src=\"data:image/png;base64,AAAA\" alt=\"x\">"
+                + "<p>keep</p>");
+        assertThat(result).isEqualTo("<p>keep</p>");
+        assertThat(result).doesNotContain("javascript", "data:", "<img");
+    }
+
+    @Test
+    void stripsCssBackgroundUrl() {
+        String result = sanitizer.sanitize("<span style=\"background: url('https://evil.example/x.png')\">t</span>");
+        assertThat(result).isEqualTo("<span>t</span>");
+        assertThat(result).doesNotContain("background", "url(", "evil");
+    }
+
+    @Test
+    void keepsNestedSpanColors() {
+        String result = sanitizer.sanitize(
+            "<span style=\"color: #111111\">outer <span style=\"color: #222222\">inner</span></span>");
+        assertThat(result).isEqualTo(
+            "<span style=\"color: #111111\">outer <span style=\"color: #222222\">inner</span></span>");
+    }
+
+    @Test
     void nullAndBlankPassThrough() {
         assertThat(sanitizer.sanitize(null)).isNull();
         assertThat(sanitizer.sanitize("")).isEmpty();

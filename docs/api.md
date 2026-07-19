@@ -559,6 +559,25 @@ in-memory (single-instance):
 Exceeding a limit returns `429 Too Many Requests` with the standard error
 shape.
 
+## Security headers & limits
+
+Every response carries: `X-Content-Type-Options: nosniff`,
+`X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`,
+and `Cache-Control: no-cache, no-store, max-age=0, must-revalidate`.
+
+- CORS: origins from `CORS_ALLOWED_ORIGINS` (no wildcard), credentials
+  allowed, methods `GET/POST/PUT/PATCH/DELETE/OPTIONS`, request headers
+  restricted to `Authorization, Content-Type`.
+- Request bodies: non-multipart requests are capped at **2MB** (`413`
+  otherwise); multipart media uploads allow up to **5MB** (content images;
+  profile photos additionally capped at 2MB in code).
+- Swagger UI / OpenAPI (`/swagger-ui/**`, `/v3/api-docs/**`) are served and
+  permitted **only under the `dev` profile**.
+
+Dependency vulnerability scanning: `./mvnw -Psecurity verify` runs OWASP
+dependency-check, failing on any dependency with CVSS ≥ 7 (justified
+false-positives live in `dependency-check-suppressions.xml`).
+
 ## Dev data seed
 
 On startup with the `dev` profile, if the `users` table is empty and
