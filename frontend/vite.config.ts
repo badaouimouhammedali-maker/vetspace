@@ -1,9 +1,16 @@
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 // Port 3000 matches the backend's FRONTEND_URL default and CORS allowlist.
 export default defineConfig({
   plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/test/setup.ts',
+    css: false,
+    restoreMocks: true,
+  },
   server: {
     port: 3000,
     proxy: {
