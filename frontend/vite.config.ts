@@ -25,11 +25,24 @@ export default defineConfig({
       output: {
         // Keep heavy libraries in their own long-cached vendor chunks so the
         // charts bundle (recharts/d3) only loads with the Stats page, etc.
+        // The 'react' chunk must stay a LEAF — react/react-dom/scheduler depend on
+        // nothing outside themselves. Adding a library that pulls in other
+        // node_modules (react-helmet-async pulls invariant/shallowequal) makes
+        // 'react' depend on 'vendor' while 'vendor' already depends on 'react';
+        // Rollup then evaluates vendor first and every `extends React.Component`
+        // at module scope throws on undefined, blanking the whole app.
         manualChunks(id) {
           if (!id.includes('node_modules')) {
             return undefined;
           }
-          if (id.includes('recharts') || id.includes('/d3-') || id.includes('victory')) {
+          // react-smooth is recharts' animation lib — keep it with the charts it
+          // serves so it stays out of the initial bundle (and out of vendor).
+          if (
+            id.includes('recharts') ||
+            id.includes('/d3-') ||
+            id.includes('victory') ||
+            id.includes('react-smooth')
+          ) {
             return 'charts';
           }
           if (id.includes('react-router') || id.includes('@remix-run')) {
@@ -41,12 +54,7 @@ export default defineConfig({
           if (id.includes('dompurify') || id.includes('marked')) {
             return 'htmldeps';
           }
-          if (
-            id.includes('/react/') ||
-            id.includes('/react-dom/') ||
-            id.includes('/scheduler/') ||
-            id.includes('react-helmet')
-          ) {
+          if (id.includes('/react/') || id.includes('/react-dom/') || id.includes('/scheduler/')) {
             return 'react';
           }
           return 'vendor';

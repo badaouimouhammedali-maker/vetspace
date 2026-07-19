@@ -1,21 +1,14 @@
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/vetspace
-    username: vetspace
-    password: ${DB_PASSWORD:vetspace}
-  mail:
-    host: localhost
-    port: 1025
-
+# Local-development overrides.
+#
+# Deliberately does NOT redeclare datasource / mail / media: application.yml
+# already reads those from env vars whose defaults point at the local
+# docker-compose services, so plain `spring-boot:run` needs nothing here.
+# Hardcoding localhost in this profile silently clobbered DB_URL, MAIL_HOST
+# and MEDIA_ENDPOINT for the containerised e2e stack, which runs with this
+# profile to get the data seeder — the backend then died on Flyway startup.
 app:
   recaptcha:
     enabled: false
-  media:
-    endpoint: http://localhost:9000
-    bucket: vetspace
-    access-key: minioadmin
-    secret-key: minioadmin
-    public-base-url: http://localhost:9000/vetspace
 
 springdoc:
   api-docs:

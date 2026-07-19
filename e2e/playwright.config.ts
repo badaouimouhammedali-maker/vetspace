@@ -9,7 +9,9 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: process.env.CI ? 1 : 0,
-  reporter: [['list']],
+  // On CI also emit the HTML report the workflow uploads as an artifact —
+  // with 'list' alone there was nothing on disk to upload.
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list']],
   use: {
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:8088',
     trace: 'on-first-retry',

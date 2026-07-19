@@ -98,8 +98,15 @@ jobs:
         run: docker compose --profile e2e up -d --build
       - name: Wait for backend + frontend
         run: |
-          for _ in $(seq 1 60); do curl -sf http://localhost:8080/actuator/health && break || sleep 3; done
-          for _ in $(seq 1 30); do curl -sf http://localhost:8088 && break || sleep 2; done
+          # Poll, then assert. A bare retry loop "succeeds" when the service never
+          # comes up at all, which sends Playwright at a dead stack and reports the
+          # failure as a confusing test error instead of a startup crash.
+          for _ in $(seq 1 60); do curl -sf http://localhost:8080/actuator/health >/dev/null && break; sleep 3; done
+          curl -sf http://localhost:8080/actuator/health >/dev/null || {
+            echo "::error::backend never became healthy"; exit 1; }
+          for _ in $(seq 1 30); do curl -sf http://localhost:8088 >/dev/null && break; sleep 2; done
+          curl -sf http://localhost:8088 >/dev/null || {
+            echo "::error::frontend never became reachable"; exit 1; }
       - name: Install Playwright + browsers
         working-directory: e2e
         run: |
@@ -111,6 +118,9 @@ jobs:
           E2E_BASE_URL: http://localhost:8088
           E2E_SEED_CODE: E2E1-2345-6789-ABCD
         run: npm test
+      - name: Stack logs on failure
+        if: failure()
+        run: docker compose --profile e2e logs --tail=200
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
