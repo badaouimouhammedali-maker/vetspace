@@ -1,7 +1,18 @@
 import { useEffect } from 'react';
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
-import { ProtectedRoute } from './auth/guards';
+import { AdminRoute, ProtectedRoute } from './auth/guards';
 import { AppLayout } from './components/layout/AppLayout';
+import { AdminLayout } from './components/layout/AdminLayout';
+import { OverviewPage } from './pages/admin/OverviewPage';
+import { EcolesPage } from './pages/admin/EcolesPage';
+import { QuestionsPage } from './pages/admin/QuestionsPage';
+import { SourcesPage } from './pages/admin/SourcesPage';
+import { AdminMindmapsPage } from './pages/admin/AdminMindmapsPage';
+import { PacksPage } from './pages/admin/PacksPage';
+import { AbonnesPage } from './pages/admin/AbonnesPage';
+import { SignalementsPage } from './pages/admin/SignalementsPage';
+import { AdminNotificationsPage } from './pages/admin/AdminNotificationsPage';
+import { AdminSupportPage } from './pages/admin/AdminSupportPage';
 import { useToast } from './components/ToastProvider';
 import { t } from './i18n/fr';
 import { API_EVENTS } from './lib/api';
@@ -89,6 +100,27 @@ export function App() {
           <Route path="support" element={<SupportPage />} />
           <Route path="profil" element={<ProfilePage />} />
         </Route>
+
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<OverviewPage />} />
+          <Route path="ecoles" element={<EcolesPage />} />
+          <Route path="questions" element={<QuestionsPage />} />
+          <Route path="sources" element={<SourcesPage />} />
+          <Route path="mindmaps" element={<AdminMindmapsPage />} />
+          <Route path="packs" element={<PacksPage />} />
+          <Route path="abonnes" element={<AbonnesPage />} />
+          <Route path="signalements" element={<SignalementsPage />} />
+          <Route path="notifications" element={<AdminNotificationsPage />} />
+          <Route path="support" element={<AdminSupportPage />} />
+        </Route>
+
         <Route path="*" element={<Navigate to="/app" replace />} />
       </Routes>
     </>

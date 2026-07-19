@@ -2,6 +2,7 @@ package com.vetspace.repository;
 
 import com.vetspace.domain.session.Session;
 import com.vetspace.domain.session.SessionType;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,4 +24,6 @@ public interface SessionRepository extends JpaRepository<Session, UUID> {
     Optional<Session> findByIdAndUserId(UUID id, UUID userId);
 
     long countByUserId(UUID userId);
+
+    long countByStartedAtGreaterThanEqual(Instant startOfDay);
 }

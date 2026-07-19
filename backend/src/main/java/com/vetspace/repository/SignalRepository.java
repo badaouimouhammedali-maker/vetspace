@@ -13,4 +13,6 @@ public interface SignalRepository extends JpaRepository<Signal, UUID> {
     List<Signal> findByUserIdOrderByCreatedAtDesc(UUID userId);
 
     Page<Signal> findByStatus(SignalStatus status, Pageable pageable);
+
+    long countByStatus(SignalStatus status);
 }

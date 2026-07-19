@@ -38,6 +38,19 @@ export function RichTextEditor({
     emit();
   }
 
+  /**
+   * Couleur de texte : on force `styleWithCSS` pour produire `<span style="color:…">`
+   * plutôt que `<font color>` — seul le span coloré passe l'allowlist de nettoyage
+   * (client DOMPurify + serveur jsoup), donc c'est la seule forme qui « survit ».
+   */
+  function applyColor(value: string) {
+    document.execCommand('styleWithCSS', false, 'true');
+    document.execCommand('foreColor', false, value);
+    document.execCommand('styleWithCSS', false, 'false');
+    ref.current?.focus();
+    emit();
+  }
+
   return (
     <div className="rounded-lg border border-gray-300 focus-within:border-brand-green focus-within:ring-2 focus-within:ring-brand-green/20">
       <div className="flex flex-wrap items-center gap-1 border-b border-gray-200 p-1.5">
@@ -60,7 +73,7 @@ export function RichTextEditor({
             type="button"
             aria-label={`${t('notes.color')} ${color}`}
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() => cmd('foreColor', color)}
+            onClick={() => applyColor(color)}
             className="h-5 w-5 rounded-full ring-1 ring-gray-200"
             style={{ backgroundColor: color }}
           />

@@ -485,6 +485,9 @@ through the same server-side sanitizer as question explanations.
 - `POST /api/admin/notifications` (ADMIN/TEACHER)
   `{kind: UPDATE|QUESTIONS|INFO, title, body, schoolId?, studyYear?}` —
   null targeting fields mean "everyone".
+- `GET /api/admin/notifications` (ADMIN/TEACHER) — broadcast history,
+  newest first: `[{id, kind, title, body, schoolId?, schoolName?,
+  studyYear?, createdAt}]` (null school/year = everyone).
 - `GET /api/notifications` — the caller's targeted feed (own school/year +
   broadcasts; staff see everything), newest first, each with `read`;
   soft-deleted ones are excluded.
@@ -498,6 +501,25 @@ through the same server-side sanitizer as question explanations.
 `POST /api/support` `{subject, body}` → `201`. Stores the message and
 emails `SUPPORT_INBOX` with **Reply-To set to the student's email**. Rate
 limit **5 per day per user** → `429`.
+
+`GET /api/admin/support?page=&size=` (ADMIN/TEACHER) — read-only inbox,
+paged, newest first: `{content: [{id, userEmail, username, fullName,
+subject, body, createdAt}], …}`. Replies happen out-of-band by email.
+
+### Admin console (overview & subscribers)
+
+- `GET /api/admin/overview` (ADMIN/TEACHER) → `{students, questions,
+  sessionsToday, activeSubscriptions, openSignals, latestRegistrations:
+  [{id, username, email, fullName, schoolName?, studyYear?, createdAt}]}`
+  (8 most recent student registrations).
+- `GET /api/admin/users?query=&page=&size=` (ADMIN/TEACHER) — student
+  search (blank query = all), paged, newest first: `{content: [{id,
+  username, email, fullName, role, status, schoolName?, studyYear?,
+  activeSubscriptions, createdAt}], …}`.
+- `PATCH /api/admin/users/{id}/status` **(ADMIN only)** `{status:
+  ACTIVE|DISABLED}` — enable/disable a student; disabling revokes their
+  live refresh tokens so access ends immediately (a `DISABLED` account
+  cannot log in). An admin **cannot** change their own status → `409`.
 
 ### Profile (authenticated, self only)
 

@@ -1,13 +1,35 @@
 package com.vetspace.repository;
 
+import com.vetspace.domain.user.Role;
 import com.vetspace.domain.user.User;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByEmailIgnoreCase(String email);
 
     Optional<User> findByUsername(String username);
+
+    long countByRole(Role role);
+
+    List<User> findTop8ByRoleOrderByCreatedAtDesc(Role role);
+
+    /** Admin "Abonnés" search: students only, blank query matches all, case-insensitive over identity fields. */
+    @Query("""
+        select u from User u
+        where u.role = com.vetspace.domain.user.Role.STUDENT
+          and (:q is null or :q = ''
+               or lower(u.email) like lower(concat('%', :q, '%'))
+               or lower(u.username) like lower(concat('%', :q, '%'))
+               or lower(u.firstName) like lower(concat('%', :q, '%'))
+               or lower(u.lastName) like lower(concat('%', :q, '%')))
+        """)
+    Page<User> searchStudents(@Param("q") String q, Pageable pageable);
 }

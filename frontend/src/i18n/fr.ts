@@ -321,6 +321,20 @@ export const fr = {
   'profile.deleteFinal': 'Supprimer définitivement',
   'profile.deleteError': 'Mot de passe incorrect.',
   'profile.deleted': 'Compte supprimé. À bientôt.',
+
+  // Admin — navigation
+  'nav.admin.overview': "Vue d'ensemble",
+  'nav.admin.schools': 'Écoles & Modules',
+  'nav.admin.questions': 'Questions',
+  'nav.admin.sourceExams': "Sources d'examen",
+  'nav.admin.mindmaps': 'MindMaps',
+  'nav.admin.packs': 'Packs & Codes',
+  'nav.admin.users': 'Abonnés',
+  'nav.admin.signals': 'Signalements',
+  'nav.admin.notifications': 'Notifications',
+  'nav.admin.support': 'Support',
+  'admin.backToApp': "Retour à l'application",
+  'admin.console': 'Console admin',
 } as const;
 
 export type TranslationKey = keyof typeof fr;

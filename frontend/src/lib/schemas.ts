@@ -337,3 +337,226 @@ export const notificationSchema = z.object({
   read: z.boolean(),
 });
 export type Notification = z.infer<typeof notificationSchema>;
+
+// ---------------------------------------------------------------------
+// Admin console
+// ---------------------------------------------------------------------
+
+export const difficultySchema = z.enum(['EASY', 'MEDIUM', 'HARD']);
+export type Difficulty = z.infer<typeof difficultySchema>;
+
+export const examTypeSchema = z.enum(['ENTRAINEMENT', 'EXAMEN']);
+export type ExamType = z.infer<typeof examTypeSchema>;
+
+export const userStatusSchema = z.enum(['ACTIVE', 'DISABLED']);
+export type UserStatus = z.infer<typeof userStatusSchema>;
+
+export const roleSchema = z.enum(['ADMIN', 'TEACHER', 'STUDENT']);
+export type Role = z.infer<typeof roleSchema>;
+
+// Écoles & modules & cours (admin views)
+export const adminSchoolSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  slug: z.string(),
+});
+export type AdminSchool = z.infer<typeof adminSchoolSchema>;
+
+export const adminModuleSchema = z.object({
+  id: z.string().uuid(),
+  schoolId: z.string().uuid(),
+  studyYear: z.number(),
+  name: z.string(),
+  position: z.number(),
+  published: z.boolean(),
+});
+export type AdminModule = z.infer<typeof adminModuleSchema>;
+
+export const adminCourseSchema = z.object({
+  id: z.string().uuid(),
+  moduleId: z.string().uuid(),
+  name: z.string(),
+  position: z.number(),
+  published: z.boolean(),
+  freePreview: z.boolean(),
+});
+export type AdminCourse = z.infer<typeof adminCourseSchema>;
+
+export const adminSourceExamSchema = z.object({
+  id: z.string().uuid(),
+  schoolId: z.string().uuid(),
+  label: z.string(),
+  year: z.number(),
+  examType: examTypeSchema,
+});
+export type AdminSourceExam = z.infer<typeof adminSourceExamSchema>;
+
+export const adminMindmapSchema = z.object({
+  id: z.string().uuid(),
+  courseId: z.string().uuid(),
+  title: z.string(),
+  imageUrl: z.string(),
+  published: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type AdminMindmap = z.infer<typeof adminMindmapSchema>;
+
+export const adminPackSchema = z.object({
+  id: z.string().uuid(),
+  schoolId: z.string().uuid(),
+  studyYear: z.number().nullable(),
+  name: z.string(),
+  academicYear: z.string(),
+  priceDa: z.number(),
+  active: z.boolean(),
+  expiresAt: z.string(),
+});
+export type AdminPack = z.infer<typeof adminPackSchema>;
+
+// Codes
+export const codeStatusSchema = z.enum(['ACTIVE', 'EXHAUSTED', 'REVOKED', 'EXPIRED']);
+export type CodeStatus = z.infer<typeof codeStatusSchema>;
+
+export const adminCodeSchema = z.object({
+  id: z.string().uuid(),
+  packId: z.string().uuid(),
+  packName: z.string(),
+  maxUses: z.number(),
+  usedCount: z.number(),
+  revoked: z.boolean(),
+  status: codeStatusSchema,
+  createdAt: z.string(),
+});
+export type AdminCode = z.infer<typeof adminCodeSchema>;
+
+export const generateCodesResponseSchema = z.object({
+  packId: z.string().uuid(),
+  count: z.number(),
+  codes: z.array(z.string()),
+  csvToken: z.string(),
+});
+export type GenerateCodesResponse = z.infer<typeof generateCodesResponseSchema>;
+
+// Questions (admin, full view with truth + explanations)
+export const propositionAdminSchema = z.object({
+  id: z.string().uuid(),
+  letter: z.string(),
+  text: z.string(),
+  isTrue: z.boolean(),
+  explanationHtml: z.string().nullable(),
+  explanationImages: z.array(z.string()).nullable(),
+  position: z.number(),
+});
+export type PropositionAdmin = z.infer<typeof propositionAdminSchema>;
+
+export const questionAdminSchema = z.object({
+  id: z.string().uuid(),
+  courseId: z.string().uuid(),
+  statement: z.string(),
+  statementImages: z.array(z.string()).nullable(),
+  sourceExamId: z.string().uuid().nullable(),
+  difficulty: difficultySchema.nullable(),
+  published: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  propositions: z.array(propositionAdminSchema),
+});
+export type QuestionAdmin = z.infer<typeof questionAdminSchema>;
+
+export const importResultSchema = z.object({
+  imported: z.number(),
+  questionIds: z.array(z.string().uuid()),
+});
+export const importRowErrorSchema = z.object({
+  row: z.number(),
+  field: z.string(),
+  message: z.string(),
+});
+export type ImportRowError = z.infer<typeof importRowErrorSchema>;
+
+// Overview
+export const registrationSchema = z.object({
+  id: z.string().uuid(),
+  username: z.string(),
+  email: z.string(),
+  fullName: z.string(),
+  schoolName: z.string().nullable(),
+  studyYear: z.number().nullable(),
+  createdAt: z.string(),
+});
+export const adminOverviewSchema = z.object({
+  students: z.number(),
+  questions: z.number(),
+  sessionsToday: z.number(),
+  activeSubscriptions: z.number(),
+  openSignals: z.number(),
+  latestRegistrations: z.array(registrationSchema),
+});
+export type AdminOverview = z.infer<typeof adminOverviewSchema>;
+
+// Abonnés (users)
+export const adminUserSchema = z.object({
+  id: z.string().uuid(),
+  username: z.string(),
+  email: z.string(),
+  fullName: z.string(),
+  role: roleSchema,
+  status: userStatusSchema,
+  schoolName: z.string().nullable(),
+  studyYear: z.number().nullable(),
+  activeSubscriptions: z.number(),
+  createdAt: z.string(),
+});
+export type AdminUser = z.infer<typeof adminUserSchema>;
+
+export const subscriptionAuditSchema = z.object({
+  id: z.string().uuid(),
+  userEmail: z.string(),
+  username: z.string(),
+  packId: z.string().uuid(),
+  packName: z.string(),
+  startsAt: z.string(),
+  endsAt: z.string(),
+  activationCodeId: z.string().uuid(),
+});
+export type SubscriptionAudit = z.infer<typeof subscriptionAuditSchema>;
+
+// Signalements (admin)
+export const signalAdminSchema = z.object({
+  id: z.string().uuid(),
+  questionId: z.string().uuid(),
+  questionStatement: z.string(),
+  userEmail: z.string(),
+  message: z.string(),
+  status: signalStatusSchema,
+  adminReply: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type SignalAdmin = z.infer<typeof signalAdminSchema>;
+
+// Notifications (admin history)
+export const notificationAdminSchema = z.object({
+  id: z.string().uuid(),
+  kind: notificationKindSchema,
+  title: z.string(),
+  body: z.string(),
+  schoolId: z.string().uuid().nullable(),
+  schoolName: z.string().nullable(),
+  studyYear: z.number().nullable(),
+  createdAt: z.string(),
+});
+export type NotificationAdmin = z.infer<typeof notificationAdminSchema>;
+
+// Support inbox
+export const supportMessageSchema = z.object({
+  id: z.string().uuid(),
+  userEmail: z.string(),
+  username: z.string(),
+  fullName: z.string(),
+  subject: z.string(),
+  body: z.string(),
+  createdAt: z.string(),
+});
+export type SupportMessage = z.infer<typeof supportMessageSchema>;

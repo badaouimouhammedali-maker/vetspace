@@ -73,6 +73,11 @@ public final class ExtrasDtos {
                                    Instant createdAt, boolean read) {
     }
 
+    /** Admin broadcast history: shows targeting (null school/year = everyone). */
+    public record NotificationAdminDto(UUID id, NotificationKind kind, String title, String body,
+                                        UUID schoolId, String schoolName, Integer studyYear, Instant createdAt) {
+    }
+
     // Support --------------------------------------------------------
 
     public record SupportRequest(@NotBlank @Size(max = 255) String subject, @NotBlank @Size(max = 5000) String body) {

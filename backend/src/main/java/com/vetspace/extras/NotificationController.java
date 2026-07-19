@@ -1,5 +1,6 @@
 package com.vetspace.extras;
 
+import com.vetspace.extras.dto.ExtrasDtos.NotificationAdminDto;
 import com.vetspace.extras.dto.ExtrasDtos.NotificationDto;
 import com.vetspace.extras.dto.ExtrasDtos.NotificationRequest;
 import jakarta.validation.Valid;
@@ -31,6 +32,12 @@ public class NotificationController {
     @ResponseStatus(HttpStatus.CREATED)
     public NotificationDto broadcast(@Valid @RequestBody NotificationRequest request) {
         return notificationService.broadcast(request);
+    }
+
+    @GetMapping("/api/admin/notifications")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public List<NotificationAdminDto> history() {
+        return notificationService.history();
     }
 
     @GetMapping("/api/notifications")

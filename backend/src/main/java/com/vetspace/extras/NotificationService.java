@@ -5,6 +5,7 @@ import com.vetspace.domain.extras.NotificationRead;
 import com.vetspace.domain.extras.NotificationReadId;
 import com.vetspace.domain.user.Role;
 import com.vetspace.domain.user.User;
+import com.vetspace.extras.dto.ExtrasDtos.NotificationAdminDto;
 import com.vetspace.extras.dto.ExtrasDtos.NotificationDto;
 import com.vetspace.extras.dto.ExtrasDtos.NotificationRequest;
 import com.vetspace.repository.NotificationReadRepository;
@@ -67,6 +68,16 @@ public class NotificationService {
                 return read == null || !read.isDeleted();
             })
             .map(n -> toDto(n, reads.containsKey(n.getId())))
+            .toList();
+    }
+
+    /** Full broadcast history for the admin console, newest first. */
+    public List<NotificationAdminDto> history() {
+        return notificationRepository.findAllByOrderByCreatedAtDesc().stream()
+            .map(n -> new NotificationAdminDto(n.getId(), n.getKind(), n.getTitle(), n.getBody(),
+                n.getSchool() == null ? null : n.getSchool().getId(),
+                n.getSchool() == null ? null : n.getSchool().getName(),
+                n.getStudyYear(), n.getCreatedAt()))
             .toList();
     }
 

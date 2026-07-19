@@ -16,6 +16,12 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, UUID
     @Query("select s from Subscription s where lower(s.user.email) = lower(:email) order by s.startsAt desc")
     List<Subscription> findByUserEmail(@Param("email") String email);
 
+    @Query("select count(s) from Subscription s where :now between s.startsAt and s.endsAt")
+    long countActive(@Param("now") Instant now);
+
+    @Query("select count(s) from Subscription s where s.user.id = :userId and :now between s.startsAt and s.endsAt")
+    long countActiveForUser(@Param("userId") UUID userId, @Param("now") Instant now);
+
     /** The access gate: an in-window subscription whose pack targets the student's school and study year (null = any year). */
     @Query("""
         select count(s) > 0 from Subscription s
