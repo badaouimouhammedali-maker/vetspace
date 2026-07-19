@@ -14,6 +14,10 @@ dist/
 .idea/
 .vscode/
 
+# Claude Code — ignore local settings/secrets; keep the shared preview config
+.claude/
+!.claude/launch.json
+
 # Logs
 *.log
 # macOS
