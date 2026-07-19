@@ -560,3 +560,11 @@ export const supportMessageSchema = z.object({
   createdAt: z.string(),
 });
 export type SupportMessage = z.infer<typeof supportMessageSchema>;
+
+// Public marketing stats
+export const publicStatsSchema = z.object({
+  questions: z.number(),
+  examens: z.number(),
+  mindmaps: z.number(),
+});
+export type PublicStats = z.infer<typeof publicStatsSchema>;

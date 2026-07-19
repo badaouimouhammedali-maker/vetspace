@@ -75,7 +75,7 @@ public class SecurityConfiguration {
                         "/api/auth/logout", "/api/auth/forgot-password", "/api/auth/reset-password")
                     .permitAll()
                     .requestMatchers("/api/ping", "/actuator/health").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/schools", "/api/packs").permitAll();
+                    .requestMatchers(HttpMethod.GET, "/api/schools", "/api/packs", "/api/public/**").permitAll();
                 if (devProfile) {
                     auth.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll();
                 }

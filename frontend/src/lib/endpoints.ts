@@ -15,6 +15,7 @@ import {
   overviewSchema,
   pageSchema,
   publicPackSchema,
+  publicStatsSchema,
   questionPlaySchema,
   redeemResponseSchema,
   schoolSchema,
@@ -122,6 +123,10 @@ export const deleteSession = (sessionId: string) => api.delete(`/api/sessions/${
 export const fetchOverview = () => apiGet('/api/stats/overview', overviewSchema);
 
 export const fetchWeekly = () => apiGet('/api/stats/weekly', z.array(dailyStatsSchema));
+
+// Public marketing -----------------------------------------------------
+
+export const fetchPublicStats = () => apiGet('/api/public/stats', publicStatsSchema);
 
 // Abonnement -----------------------------------------------------------
 

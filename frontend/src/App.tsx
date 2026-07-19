@@ -1,37 +1,52 @@
-import { useEffect } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { AdminRoute, ProtectedRoute } from './auth/guards';
-import { AppLayout } from './components/layout/AppLayout';
-import { AdminLayout } from './components/layout/AdminLayout';
-import { OverviewPage } from './pages/admin/OverviewPage';
-import { EcolesPage } from './pages/admin/EcolesPage';
-import { QuestionsPage } from './pages/admin/QuestionsPage';
-import { SourcesPage } from './pages/admin/SourcesPage';
-import { AdminMindmapsPage } from './pages/admin/AdminMindmapsPage';
-import { PacksPage } from './pages/admin/PacksPage';
-import { AbonnesPage } from './pages/admin/AbonnesPage';
-import { SignalementsPage } from './pages/admin/SignalementsPage';
-import { AdminNotificationsPage } from './pages/admin/AdminNotificationsPage';
-import { AdminSupportPage } from './pages/admin/AdminSupportPage';
 import { useToast } from './components/ToastProvider';
 import { t } from './i18n/fr';
 import { API_EVENTS } from './lib/api';
-import { AbonnementPage } from './pages/app/AbonnementPage';
-import { DashboardPage } from './pages/app/DashboardPage';
-import { LabelsPage } from './pages/app/LabelsPage';
-import { MindmapsPage } from './pages/app/MindmapsPage';
-import { NotesPage } from './pages/app/NotesPage';
-import { NotificationsPage } from './pages/app/NotificationsPage';
-import { PlayPage } from './pages/app/PlayPage';
-import { ProfilePage } from './pages/app/ProfilePage';
-import { SessionsPage } from './pages/app/SessionsPage';
-import { SignalsPage } from './pages/app/SignalsPage';
-import { StatsPage } from './pages/app/StatsPage';
-import { SupportPage } from './pages/app/SupportPage';
-import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
-import { LoginPage } from './pages/auth/LoginPage';
-import { RegisterPage } from './pages/auth/RegisterPage';
-import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
+
+// Route-level code splitting: each page group is a lazy chunk, so the initial
+// download is just the shell + landing. Named exports are adapted to default.
+const named = <T,>(p: Promise<Record<string, T>>, key: string) => p.then((m) => ({ default: m[key]! }));
+
+// Landing (public)
+const LandingPage = lazy(() => named(import('./pages/landing/LandingPage'), 'LandingPage'));
+
+// Auth
+const LoginPage = lazy(() => named(import('./pages/auth/LoginPage'), 'LoginPage'));
+const RegisterPage = lazy(() => named(import('./pages/auth/RegisterPage'), 'RegisterPage'));
+const ForgotPasswordPage = lazy(() => named(import('./pages/auth/ForgotPasswordPage'), 'ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => named(import('./pages/auth/ResetPasswordPage'), 'ResetPasswordPage'));
+
+// Student app
+const AppLayout = lazy(() => named(import('./components/layout/AppLayout'), 'AppLayout'));
+const DashboardPage = lazy(() => named(import('./pages/app/DashboardPage'), 'DashboardPage'));
+const StatsPage = lazy(() => named(import('./pages/app/StatsPage'), 'StatsPage'));
+const MindmapsPage = lazy(() => named(import('./pages/app/MindmapsPage'), 'MindmapsPage'));
+const SessionsPage = lazy(() => named(import('./pages/app/SessionsPage'), 'SessionsPage'));
+const LabelsPage = lazy(() => named(import('./pages/app/LabelsPage'), 'LabelsPage'));
+const NotesPage = lazy(() => named(import('./pages/app/NotesPage'), 'NotesPage'));
+const SignalsPage = lazy(() => named(import('./pages/app/SignalsPage'), 'SignalsPage'));
+const NotificationsPage = lazy(() => named(import('./pages/app/NotificationsPage'), 'NotificationsPage'));
+const AbonnementPage = lazy(() => named(import('./pages/app/AbonnementPage'), 'AbonnementPage'));
+const SupportPage = lazy(() => named(import('./pages/app/SupportPage'), 'SupportPage'));
+const ProfilePage = lazy(() => named(import('./pages/app/ProfilePage'), 'ProfilePage'));
+const PlayPage = lazy(() => named(import('./pages/app/PlayPage'), 'PlayPage'));
+
+// Admin console
+const AdminLayout = lazy(() => named(import('./components/layout/AdminLayout'), 'AdminLayout'));
+const OverviewPage = lazy(() => named(import('./pages/admin/OverviewPage'), 'OverviewPage'));
+const EcolesPage = lazy(() => named(import('./pages/admin/EcolesPage'), 'EcolesPage'));
+const QuestionsPage = lazy(() => named(import('./pages/admin/QuestionsPage'), 'QuestionsPage'));
+const SourcesPage = lazy(() => named(import('./pages/admin/SourcesPage'), 'SourcesPage'));
+const AdminMindmapsPage = lazy(() => named(import('./pages/admin/AdminMindmapsPage'), 'AdminMindmapsPage'));
+const PacksPage = lazy(() => named(import('./pages/admin/PacksPage'), 'PacksPage'));
+const AbonnesPage = lazy(() => named(import('./pages/admin/AbonnesPage'), 'AbonnesPage'));
+const SignalementsPage = lazy(() => named(import('./pages/admin/SignalementsPage'), 'SignalementsPage'));
+const AdminNotificationsPage = lazy(() =>
+  named(import('./pages/admin/AdminNotificationsPage'), 'AdminNotificationsPage'),
+);
+const AdminSupportPage = lazy(() => named(import('./pages/admin/AdminSupportPage'), 'AdminSupportPage'));
 
 /** Réactions globales aux événements de l'intercepteur API. */
 function ApiEventBridge() {
@@ -58,71 +73,85 @@ function ApiEventBridge() {
   return null;
 }
 
+function PageLoader() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div
+        className="h-10 w-10 animate-spin rounded-full border-4 border-brand-green border-t-transparent"
+        role="status"
+        aria-label={t('common.loading')}
+      />
+    </div>
+  );
+}
+
 export function App() {
   return (
     <>
       <ApiEventBridge />
-      <Routes>
-        <Route path="/" element={<Navigate to="/app" replace />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* Écran de jeu plein écran, hors gabarit */}
-        <Route
-          path="/app/session/:id"
-          element={
-            <ProtectedRoute>
-              <PlayPage />
-            </ProtectedRoute>
-          }
-        />
+          {/* Écran de jeu plein écran, hors gabarit */}
+          <Route
+            path="/app/session/:id"
+            element={
+              <ProtectedRoute>
+                <PlayPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/app"
-          element={
-            <ProtectedRoute>
-              <AppLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<DashboardPage />} />
-          <Route path="statistiques" element={<StatsPage />} />
-          <Route path="mindmaps" element={<MindmapsPage />} />
-          <Route path="sessions/entrainement" element={<SessionsPage type="ENTRAINEMENT" />} />
-          <Route path="sessions/examens" element={<SessionsPage type="EXAMEN" />} />
-          <Route path="labels" element={<LabelsPage />} />
-          <Route path="notes" element={<NotesPage />} />
-          <Route path="signals" element={<SignalsPage />} />
-          <Route path="notifications" element={<NotificationsPage />} />
-          <Route path="abonnement" element={<AbonnementPage />} />
-          <Route path="support" element={<SupportPage />} />
-          <Route path="profil" element={<ProfilePage />} />
-        </Route>
+          <Route
+            path="/app"
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<DashboardPage />} />
+            <Route path="statistiques" element={<StatsPage />} />
+            <Route path="mindmaps" element={<MindmapsPage />} />
+            <Route path="sessions/entrainement" element={<SessionsPage type="ENTRAINEMENT" />} />
+            <Route path="sessions/examens" element={<SessionsPage type="EXAMEN" />} />
+            <Route path="labels" element={<LabelsPage />} />
+            <Route path="notes" element={<NotesPage />} />
+            <Route path="signals" element={<SignalsPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="abonnement" element={<AbonnementPage />} />
+            <Route path="support" element={<SupportPage />} />
+            <Route path="profil" element={<ProfilePage />} />
+          </Route>
 
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <AdminLayout />
-            </AdminRoute>
-          }
-        >
-          <Route index element={<OverviewPage />} />
-          <Route path="ecoles" element={<EcolesPage />} />
-          <Route path="questions" element={<QuestionsPage />} />
-          <Route path="sources" element={<SourcesPage />} />
-          <Route path="mindmaps" element={<AdminMindmapsPage />} />
-          <Route path="packs" element={<PacksPage />} />
-          <Route path="abonnes" element={<AbonnesPage />} />
-          <Route path="signalements" element={<SignalementsPage />} />
-          <Route path="notifications" element={<AdminNotificationsPage />} />
-          <Route path="support" element={<AdminSupportPage />} />
-        </Route>
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }
+          >
+            <Route index element={<OverviewPage />} />
+            <Route path="ecoles" element={<EcolesPage />} />
+            <Route path="questions" element={<QuestionsPage />} />
+            <Route path="sources" element={<SourcesPage />} />
+            <Route path="mindmaps" element={<AdminMindmapsPage />} />
+            <Route path="packs" element={<PacksPage />} />
+            <Route path="abonnes" element={<AbonnesPage />} />
+            <Route path="signalements" element={<SignalementsPage />} />
+            <Route path="notifications" element={<AdminNotificationsPage />} />
+            <Route path="support" element={<AdminSupportPage />} />
+          </Route>
 
-        <Route path="*" element={<Navigate to="/app" replace />} />
-      </Routes>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </>
   );
 }

@@ -282,6 +282,13 @@ The **only** way images enter the system.
 
 Response: `201` `{ "url": "<MEDIA_PUBLIC_BASE_URL>/media/<uuid>.<ext>" }`
 
+### Public marketing
+
+#### `GET /api/public/stats` — **public** (landing page)
+No auth. Aggregate totals for the marketing counters:
+`{questions, examens, mindmaps}` — published questions, exam sources, and
+published mindmaps. Result is memoized server-side for 60s.
+
 ### Packs & activation codes
 
 #### `GET /api/packs` — **public** (pricing page)

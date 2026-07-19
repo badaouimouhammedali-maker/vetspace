@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="Sessions d'entraînement">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0F766E"/><stop offset="1" stop-color="#12355B"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" rx="16" fill="#F1F5F9"/>
+  <rect x="0" y="0" width="800" height="54" rx="16" fill="url(#g)"/>
+  <circle cx="28" cy="27" r="6" fill="#ffffff" opacity="0.5"/>
+  <circle cx="50" cy="27" r="6" fill="#ffffff" opacity="0.5"/>
+  <circle cx="72" cy="27" r="6" fill="#ffffff" opacity="0.5"/>
+  <rect x="40" y="86" width="220" height="374" rx="12" fill="#ffffff" stroke="#E2E8F0"/>
+  <rect x="284" y="86" width="476" height="120" rx="12" fill="#ffffff" stroke="#E2E8F0"/>
+  <rect x="284" y="222" width="476" height="238" rx="12" fill="#ffffff" stroke="#E2E8F0"/>
+  <rect x="60" y="110" width="150" height="14" rx="7" fill="#0F766E" opacity="0.85"/>
+  <rect x="60" y="140" width="120" height="10" rx="5" fill="#CBD5E1"/>
+  <rect x="60" y="164" width="140" height="10" rx="5" fill="#CBD5E1"/>
+  <rect x="304" y="110" width="180" height="16" rx="8" fill="#12355B"/>
+  <text x="522" y="352" text-anchor="middle" font-family="Manrope,Arial,sans-serif" font-size="22" font-weight="700" fill="#0F766E">Sessions d'entraînement</text>
+  <text x="522" y="384" text-anchor="middle" font-family="Manrope,Arial,sans-serif" font-size="13" fill="#94A3B8">Capture d'écran — à remplacer</text>
+</svg>
