@@ -26,7 +26,10 @@ export const fr = {
   'login.submit': 'Se connecter',
   'login.noAccount': "Pas encore de compte ?",
   'login.registerLink': "S'inscrire",
-  'login.failed': 'E-mail ou mot de passe incorrect.',
+  // Deliberately covers wrong password, unknown account and temporary lockout with one
+  // wording: naming which one applies would tell an attacker whether an address is
+  // registered, and when a lock has lapsed.
+  'login.failed': 'Identifiants invalides ou compte temporairement verrouillé.',
 
   // Inscription
   'register.title': 'Créer un compte',

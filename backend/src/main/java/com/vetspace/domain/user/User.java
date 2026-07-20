@@ -10,6 +10,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -66,4 +67,21 @@ public class User extends AuditableEntity {
 
     @Column(name = "theme_tertiary", length = 20)
     private String themeTertiary;
+
+    /**
+     * Failed-login tracking for per-account lockout. Persisted rather than held in memory so
+     * it survives restarts and applies across instances — an in-memory counter resets on
+     * every deploy, which an attacker only has to outlast.
+     */
+    @Builder.Default
+    @Column(name = "failed_login_attempts", nullable = false)
+    private int failedLoginAttempts = 0;
+
+    /** Start of the window the current attempt count belongs to. */
+    @Column(name = "first_failed_login_at")
+    private Instant firstFailedLoginAt;
+
+    /** Non-null and in the future means the account is locked. */
+    @Column(name = "locked_until")
+    private Instant lockedUntil;
 }

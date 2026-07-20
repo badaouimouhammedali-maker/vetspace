@@ -26,15 +26,18 @@ public class AuthService {
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
     private final RecaptchaVerifier recaptchaVerifier;
+    private final LoginAttemptService loginAttemptService;
 
     public AuthService(UserRepository userRepository, SchoolRepository schoolRepository, PasswordEncoder passwordEncoder,
-                        JwtService jwtService, RefreshTokenService refreshTokenService, RecaptchaVerifier recaptchaVerifier) {
+                        JwtService jwtService, RefreshTokenService refreshTokenService, RecaptchaVerifier recaptchaVerifier,
+                        LoginAttemptService loginAttemptService) {
         this.userRepository = userRepository;
         this.schoolRepository = schoolRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
         this.recaptchaVerifier = recaptchaVerifier;
+        this.loginAttemptService = loginAttemptService;
     }
 
     @Transactional
@@ -66,12 +69,30 @@ public class AuthService {
         return new RegisterResponse(user.getId(), user.getEmail(), user.getUsername(), user.getRole(), user.getStatus());
     }
 
+    /**
+     * One message for every failure mode — unknown email, wrong password, disabled account,
+     * locked account. Anything more specific is an oracle: it would let an attacker confirm
+     * which addresses are registered, and tell them exactly when a lockout has lapsed.
+     */
+    static final String INVALID_CREDENTIALS =
+        "Identifiants invalides ou compte temporairement verrouillé";
+
     @Transactional
     public LoginResult login(String email, String password) {
         User user = userRepository.findByEmailIgnoreCase(email).orElse(null);
-        if (user == null || user.getStatus() != UserStatus.ACTIVE || !passwordEncoder.matches(password, user.getPasswordHash())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
+        if (user == null || user.getStatus() != UserStatus.ACTIVE) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS);
         }
+        if (loginAttemptService.isLocked(user)) {
+            // Checked before the password so a locked account cannot be probed for the
+            // correct password, and the response is identical either way.
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS);
+        }
+        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+            loginAttemptService.recordFailure(user);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS);
+        }
+        loginAttemptService.clear(user);
         String accessToken = jwtService.generateAccessToken(user);
         RefreshTokenService.IssuedRefreshToken issued = refreshTokenService.issueNewFamily(user);
         return new LoginResult(accessToken, JwtService.ACCESS_TOKEN_TTL, issued.rawValue());
