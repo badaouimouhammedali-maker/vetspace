@@ -17,8 +17,24 @@ jobs:
   dependency-check:
     name: OWASP dependency-check
     runs-on: ubuntu-latest
+    # A keyless scan rate-limits itself into a multi-hour hang against the NVD feed.
+    # Cap the whole job so it dies instead of burning runner time; the reporting steps
+    # below still fire because they are gated on failure(), which a timeout satisfies.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+
+      # Fail immediately, with a clear message, rather than starting a scan that cannot
+      # work — the NVD download is unusably rate-limited without a key. The failure()
+      # step at the end then files an issue saying exactly this.
+      - name: Require NVD_API_KEY
+        env:
+          KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::NVD_API_KEY secret is not set — refusing keyless scan"
+            exit 1
+          fi
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
