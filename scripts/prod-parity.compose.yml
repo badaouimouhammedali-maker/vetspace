@@ -70,7 +70,10 @@ services:
       # this stack matches the prod profile.
       RECAPTCHA_ENABLED: "false"
       # One-shot admin bootstrap, exactly as documented for Railway.
-      SEED_ADMIN: "true"
+      # Phase A only. In Phase B the dev seeder creates the admin, and enabling both
+      # would race: AdminBootstrap creating a user first makes DevDataSeeder skip
+      # ("already seeded"), leaving an empty catalog and a journey with nothing to play.
+      SEED_ADMIN: "${SEED_ADMIN:-true}"
       ADMIN_EMAIL: admin@vetspace.local
       ADMIN_PASSWORD: parity-admin-password
       # Deterministic activation code, seeded only when the dev seeder runs.

@@ -97,6 +97,10 @@ public class DevDataSeeder implements ApplicationRunner {
     @Transactional
     public void run(ApplicationArguments args) {
         if (userRepository.count() > 0) {
+            // Says so out loud: with SEED_ADMIN also enabled, AdminBootstrap can create a
+            // user first and silently turn this into a no-op, leaving an empty catalog and
+            // a very confusing "why is there no content?" afterwards.
+            log.info("Skipping dev seed: the database already has users.");
             return;
         }
         if (adminEmail.isBlank() || adminPassword.isBlank()) {

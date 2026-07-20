@@ -37,13 +37,39 @@ wait_for_api() {
   return 1
 }
 
+# Health goes UP as soon as the web server binds, but AdminBootstrap and the dev
+# seeder are ApplicationRunners that execute AFTER that. Polling only health races
+# them: the login below arrives before the admin row exists and gets a truthful 401.
+# Wait for the seeded state itself, not for the port to open.
+wait_for() {
+  local what="$1"; shift
+  for _ in $(seq 1 45); do
+    if "$@" >/dev/null 2>&1; then return 0; fi
+    sleep 2
+  done
+  echo "timed out waiting for $what; recent logs:" >&2
+  "${COMPOSE[@]}" logs --tail=40 backend >&2
+  return 1
+}
+
+admin_can_log_in() {
+  [[ "$(curl -s -o /dev/null -w '%{http_code}' -X POST "$SPA/api/auth/login" \
+      -H 'Content-Type: application/json' \
+      -d '{"email":"admin@vetspace.local","password":"parity-admin-password"}')" == "200" ]]
+}
+
+catalog_is_seeded() {
+  [[ "$(curl -s "$API/api/public/stats" | grep -o '"questions":[0-9]*' | grep -o '[0-9]*')" -gt 0 ]]
+}
+
 echo "==> Building production images"
 cleanup
-PROFILES=prod "${COMPOSE[@]}" build
+SEED_ADMIN=true PROFILES=prod "${COMPOSE[@]}" build
 
 echo "==> Phase A: prod profile only — hardening"
-PROFILES=prod "${COMPOSE[@]}" up -d
+SEED_ADMIN=true PROFILES=prod "${COMPOSE[@]}" up -d
 wait_for_api
+wait_for "the SEED_ADMIN bootstrap to finish" admin_can_log_in
 
 health=$(curl -s "$API/actuator/health")
 [[ "$health" == *'"status":"UP"'* ]] && pass "health is UP" || fail "health not UP: $health"
@@ -99,8 +125,9 @@ echo "==> Phase B: dev,prod — seeded catalog, full journey"
 # Phase A's SEED_ADMIN bootstrap leaves an admin behind — without this reset the
 # catalog is never seeded and the journey fails on an empty École dropdown.
 "${COMPOSE[@]}" down -v >/dev/null 2>&1
-PROFILES=dev,prod "${COMPOSE[@]}" up -d
+SEED_ADMIN=false PROFILES=dev,prod "${COMPOSE[@]}" up -d
 wait_for_api
+wait_for "the dev seeder to populate the catalog" catalog_is_seeded
 
 spa_code=$(curl -s -o /dev/null -w '%{http_code}' "$SPA")
 [[ "$spa_code" == "200" ]] && pass "production bundle is served" || fail "SPA returned $spa_code"
