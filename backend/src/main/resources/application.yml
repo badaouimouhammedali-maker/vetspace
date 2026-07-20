@@ -54,7 +54,10 @@ app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000}
   jwt:
-    secret: ${JWT_SECRET:change-me}
+    # No default on purpose. A fallback value here would be a published signing key,
+    # and ProductionConfigValidator refuses to start the prod profile without a real
+    # one. application-dev.yml carries an explicitly dev-only value.
+    secret: ${JWT_SECRET:}
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
   mail:
     from: ${MAIL_FROM:noreply@vetspace.local}
