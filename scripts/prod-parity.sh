@@ -75,6 +75,23 @@ for flag in HttpOnly Secure 'SameSite=Lax' 'Path=/api/auth'; do
 done
 rm -f "$login" "$login.h"
 
+# CORS allowlist: the API must not hand a cross-origin grant to anyone but the SPA.
+# Under the proxy topology the browser never needs CORS at all, so a grant to a
+# foreign origin would be pure attack surface.
+foreign=$(curl -s -o /dev/null -D - -X OPTIONS "$API/api/auth/login" \
+  -H 'Origin: https://evil.example' \
+  -H 'Access-Control-Request-Method: POST' 2>/dev/null \
+  | grep -i '^access-control-allow-origin' | tr -d '\r' || true)
+[[ -z "$foreign" ]] && pass "foreign origin gets no CORS grant" \
+  || fail "foreign origin was granted CORS: $foreign"
+
+allowed=$(curl -s -o /dev/null -D - -X OPTIONS "$API/api/auth/login" \
+  -H "Origin: $SPA" \
+  -H 'Access-Control-Request-Method: POST' 2>/dev/null \
+  | grep -i '^access-control-allow-origin' | tr -d '\r' || true)
+[[ "$allowed" == *"$SPA"* ]] && pass "allowlisted origin is granted (allowlist works, not a blanket deny)" \
+  || fail "allowlisted origin was not granted: ${allowed:-none}"
+
 echo "==> Phase B: dev,prod — seeded catalog, full journey"
 # Reset the database first. The dev seeder only populates an EMPTY database, and
 # Phase A's SEED_ADMIN bootstrap leaves an admin behind — without this reset the

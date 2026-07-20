@@ -319,3 +319,33 @@ bash scripts/prod-parity.sh
 It builds the backend image, runs it with `SPRING_PROFILES_ACTIVE=prod`, serves
 the production `dist/`, and drives the full student journey against it. See
 `scripts/prod-parity.sh` for the exact wiring.
+
+## 10. Verifying the live deployment
+
+Once deployed, run the same class of checks against the real thing:
+
+```bash
+bash scripts/verify-live.sh https://your-app.vercel.app
+
+# include the refresh-cookie flags (needs a real account):
+LIVE_EMAIL=you@example.com LIVE_PASSWORD='...' \
+  bash scripts/verify-live.sh https://your-app.vercel.app
+```
+
+It asserts HTTPS on both ends, health UP with details hidden, swagger and the
+actuator paths non-200, no CORS grant to a foreign origin, error bodies without
+stack traces, no secret material in the bundle, and the full cookie flag set.
+
+On `SameSite` it encodes the rule from §3: `Lax` passes (first-party via the
+proxy), and `None` raises a warning, because seeing `None` means the SPA is
+talking to the API cross-domain and Safari users are being logged out on every
+reload.
+
+**Two checks it deliberately does not make**, because neither can be observed
+honestly from outside:
+
+- **The student journey.** Registration is behind a captcha in production, as it
+  should be. Automating it would mean weakening the live site. Walk it in a
+  browser instead — the checklist in §8 lists exactly what to click.
+- **`SEED_ADMIN` removed.** That is the state of your Railway variables, not
+  something the running app reports. Confirm it in the dashboard.
