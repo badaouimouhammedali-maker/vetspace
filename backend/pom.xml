@@ -213,6 +213,12 @@
                         <version>10.0.4</version>
                         <configuration>
                             <failBuildOnCVSS>7</failBuildOnCVSS>
+                            <!-- HTML to read, JSON so the weekly workflow can turn findings
+                                 into an issue body instead of just a red square. -->
+                            <formats>
+                                <format>HTML</format>
+                                <format>JSON</format>
+                            </formats>
                             <suppressionFiles>
                                 <suppressionFile>dependency-check-suppressions.xml</suppressionFile>
                             </suppressionFiles>

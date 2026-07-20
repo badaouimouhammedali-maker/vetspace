@@ -430,3 +430,37 @@ them — but see §11: this app must run exactly one instance for other reasons 
 `leak-detection-threshold` is 60s in dev only: it logs a stack trace for any connection
 held longer than a minute, which is almost always a leak. It is off in production, where
 a slow query would otherwise fill the log with false positives.
+
+---
+
+## 14. Dependency scanning
+
+OWASP dependency-check runs **weekly** (Mondays 06:00 UTC) and on demand via
+*Actions → Weekly dependency scan → Run workflow*. It is deliberately **not** part of
+the push/PR pipeline.
+
+The reasoning: a CVE published overnight in a transitive dependency has nothing to do
+with the commit being merged. Blocking unrelated work on it teaches everyone to ignore
+the result, which is how a scan ends up permanently red and unread. So:
+
+- **push/PR** keeps only fast, commit-scoped checks — tests, lint, build, `npm audit`.
+- **the weekly scan** has no `continue-on-error`: a finding at CVSS ≥ 7 makes the run
+  red, and the workflow opens (or comments on) a GitHub issue titled
+  *"Weekly dependency scan: findings"* with a table of CVEs and the HTML report attached.
+  It comments on the existing open issue rather than filing a new one each Monday.
+- **fixes arrive as Dependabot PRs**, with a concrete version bump to review — that is
+  the channel allowed to touch merges.
+
+### Setup
+
+One repository secret is required: **`NVD_API_KEY`**
+(Settings → Secrets and variables → Actions). Request a free key at
+<https://nvd.nist.gov/developers/request-an-api-key>. Without it the NVD download is
+rate-limited to the point of timing out — which is exactly why this scan was
+non-blocking for so long.
+
+### False positives
+
+Suppress in `backend/dependency-check-suppressions.xml`, with a comment saying why the
+finding does not apply. Suppressing without a reason turns the next reader's five-minute
+check into an hour.

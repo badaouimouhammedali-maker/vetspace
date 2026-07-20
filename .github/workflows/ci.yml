@@ -61,26 +61,10 @@ jobs:
         working-directory: frontend
         run: npm audit --omit=dev --audit-level=high
 
-  dependency-check:
-    name: OWASP dependency-check (non-blocking without NVD key)
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-          cache: maven
-      - name: Cache NVD data
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository/org/owasp/dependency-check-data
-          key: nvd-${{ runner.os }}
-      - name: dependency-check (fails on CVSS >= 7)
-        working-directory: backend
-        run: ./mvnw -B --no-transfer-progress -Psecurity verify -DskipTests -Djacoco.skip=true -Dnvd.api.key=${{ secrets.NVD_API_KEY }}
+  # The OWASP dependency-check job used to live here. It moved to
+  # .github/workflows/dependency-scan.yml — weekly and on demand — because a CVE
+  # published overnight in a transitive dependency has nothing to do with the commit
+  # being merged. This pipeline keeps only fast, commit-scoped checks.
 
   e2e:
     name: E2E (Playwright vs seeded docker-compose stack)

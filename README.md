@@ -22,7 +22,7 @@ flowchart LR
     SEC["JWT filter + method @PreAuthorize<br/>Bucket4j rate limiting<br/>jsoup HTML sanitizer"]
     SVC["Services<br/>(sessions, access, stats, catalog…)"]
   end
-  DB[("PostgreSQL<br/>Flyway V1–V5")]
+  DB[("PostgreSQL<br/>Flyway V1–V8")]
   OBJ[("Object storage<br/>MinIO / R2")]
   MAIL[["SMTP<br/>Mailpit / provider"]]
 
@@ -61,8 +61,11 @@ MinIO console: http://localhost:9001.
 ```bash
 (cd backend && ./mvnw verify)          # integration tests (Testcontainers) + JaCoCo >=70% service gate
 (cd frontend && npm run lint && npm test && npm run build)   # eslint + Vitest + type-check/build
-bash scripts/e2e.sh                    # Playwright smoke on the seeded docker-compose "e2e" stack
+bash scripts/e2e.sh                    # Playwright smoke on the seeded e2e stack
 ```
+
+Dependency scanning runs on its own weekly schedule rather than on every push — see
+[`docs/deploy.md`](docs/deploy.md) §14.
 
 ## Environment variables
 
@@ -70,7 +73,7 @@ bash scripts/e2e.sh                    # Playwright smoke on the seeded docker-c
 |---|---|---|
 | `DB_NAME` / `DB_USER` / `DB_PASSWORD` | `vetspace` | PostgreSQL database + credentials |
 | `DB_URL` | `jdbc:postgresql://localhost:5432/vetspace` | JDBC URL (override for non-local DB) |
-| `JWT_SECRET` | `change-me` | Signs access tokens — **set a strong value** |
+| `JWT_SECRET` | *(none)* | Signs access tokens. No default by design — the `prod` profile refuses to boot without one ≥32 bytes. `openssl rand -base64 48` |
 | `FRONTEND_URL` | `http://localhost:3000` | Base URL used to build password-reset links |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:3000,http://127.0.0.1:3000` | Comma-separated CORS allowlist (no wildcard) |
 | `MAIL_HOST` / `MAIL_PORT` | `localhost` / `1025` | SMTP server (Mailpit in dev) |
@@ -87,13 +90,20 @@ bash scripts/e2e.sh                    # Playwright smoke on the seeded docker-c
 | `SUPPORT_INBOX` | `support@vetspace.local` | Destination for support messages |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | — | First-admin bootstrap (dev seeder only) |
 | `E2E_SEED_CODE` | — | Deterministic activation code seeded for e2e only — leave empty in real deploys |
+| `SEED_ADMIN` | `false` | One-shot first-admin bootstrap; set `true` for a single deploy, then delete |
+| `AUTO_VERIFY_EMAILS` | `false` | Dev/e2e only — skips email verification. Rejected by the `prod` profile |
+| `RATE_LIMITS_ENABLED` | `true` | Dev/e2e only — `false` disables every rate limiter. Rejected by the `prod` profile |
+| `COOKIE_SAME_SITE` / `COOKIE_SECURE` | `Strict` / `true` | Refresh-cookie attributes; prod defaults to `Lax` behind the Vercel proxy |
+| `DB_POOL_MAX` / `DB_POOL_MIN` | `10` / `2` | Hikari pool bounds |
 
 Frontend build-time: `VITE_RECAPTCHA_SITE_KEY` (empty disables the widget),
 `VITE_API_URL` (empty = same-origin `/api`).
 
 ## Creating the first admin
 
-The admin is bootstrapped by the dev seeder on an **empty** database:
+In production, use the one-shot `SEED_ADMIN` bootstrap — see
+[`docs/deploy.md`](docs/deploy.md) §5. Locally, the dev seeder does it on an
+**empty** database:
 
 1. In `.env`, set `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
 2. Start the backend with the `dev` profile against a fresh DB. On first run

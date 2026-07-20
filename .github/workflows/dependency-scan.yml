@@ -1,0 +1,122 @@
+name: Weekly dependency scan
+
+# Deliberately NOT part of the push/PR pipeline. A CVE published overnight in a
+# transitive dependency has nothing to do with the commit being merged, and blocking
+# unrelated work on it trains everyone to ignore the result. This runs on its own
+# schedule and reports somewhere that gets read.
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC
+  workflow_dispatch: # and on demand
+
+permissions:
+  contents: read
+  issues: write # to file the findings issue
+
+jobs:
+  dependency-check:
+    name: OWASP dependency-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Cache NVD data
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/owasp/dependency-check-data
+          # Rotate weekly so the cache cannot go stale enough to hide a new CVE,
+          # while still sparing most runs the full ~370k-record download.
+          key: nvd-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: nvd-${{ runner.os }}-
+
+      # No continue-on-error: a failed scan must leave the run red. The reporting
+      # steps below use `if: failure()`, which runs them *without* masking that.
+      - name: dependency-check (fails on CVSS >= 7)
+        working-directory: backend
+        run: ./mvnw -B --no-transfer-progress -Psecurity verify -DskipTests -Djacoco.skip=true -Dnvd.api.key=${{ secrets.NVD_API_KEY }}
+
+      - name: Summarise findings
+        if: failure()
+        env:
+          # Passed through the environment rather than interpolated into the script:
+          # ${{ }} is substituted into the run block before the shell sees it, so
+          # inlining values is both harder to read and an injection surface.
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          python3 - <<'PY' > summary.md
+          import json, os, pathlib
+
+          report = pathlib.Path("backend/target/dependency-check-report.json")
+          if not report.exists():
+              print("The scan failed before producing a report — most likely a bad or missing")
+              print("`NVD_API_KEY`, or the NVD feed being unreachable. See the run log.")
+              raise SystemExit
+
+          data = json.loads(report.read_text())
+          rows = []
+          for dep in data.get("dependencies", []):
+              for v in dep.get("vulnerabilities", []):
+                  score = 0.0
+                  for key in ("cvssv3", "cvssv2"):
+                      block = v.get(key) or {}
+                      score = max(score, float(block.get("baseScore") or 0))
+                  if score >= 7:
+                      rows.append((score, dep.get("fileName", "?"), v.get("name", "?"),
+                                   v.get("severity", "?")))
+
+          rows.sort(reverse=True)
+          print("The weekly dependency scan found vulnerabilities at CVSS >= 7.\n")
+          if rows:
+              print("| CVSS | Severity | Dependency | CVE |")
+              print("|---:|---|---|---|")
+              for score, dep, cve, sev in rows:
+                  print(f"| {score} | {sev} | `{dep}` | [{cve}](https://nvd.nist.gov/vuln/detail/{cve}) |")
+          else:
+              print("The build failed but no CVSS >= 7 entry was parsed from the report —")
+              print("check the run log and the attached HTML report.")
+
+          repo = os.environ["REPO"]
+          run_id = os.environ["RUN_ID"]
+          print("\n**Full HTML report**: the `dependency-check-report` artifact on the run.")
+          print(f"\n[Run](https://github.com/{repo}/actions/runs/{run_id})")
+          print("\n---")
+          print("Fixes normally arrive as Dependabot PRs with a concrete version bump.")
+          print("If a finding is a false positive, suppress it in")
+          print("`backend/dependency-check-suppressions.xml` with a comment saying why.")
+          PY
+
+      - name: File or update the findings issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TITLE="Weekly dependency scan: findings"
+          # Comment on the existing open issue rather than opening a new one every
+          # Monday — otherwise the signal drowns in duplicates within a month.
+          EXISTING=$(gh issue list --state open --search "$TITLE in:title" \
+            --json number,title --jq ".[] | select(.title == \"$TITLE\") | .number" | head -1)
+          if [ -n "$EXISTING" ]; then
+            echo "Updating issue #$EXISTING"
+            gh issue comment "$EXISTING" --body-file summary.md
+          else
+            echo "Opening a new issue"
+            gh issue create --title "$TITLE" --body-file summary.md
+          fi
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: |
+            backend/target/dependency-check-report.html
+            backend/target/dependency-check-report.json
+          if-no-files-found: ignore
