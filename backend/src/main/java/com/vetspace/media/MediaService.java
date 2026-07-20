@@ -16,9 +16,13 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class MediaService {
 
-    /** Upload policies per CLAUDE.md: content images 5MB (gif allowed), profile photos 2MB jpeg/png/webp. */
+    /**
+     * Upload policies: content images 4MB (gif allowed), profile photos 2MB jpeg/png/webp.
+     * Content images are capped at 4MB rather than 5 so uploads stay under the body limit of
+     * the Vercel edge proxy that fronts the API (see docs/deploy.md).
+     */
     public enum Kind {
-        CONTENT(5L * 1024 * 1024, Set.of(ImageType.JPEG, ImageType.PNG, ImageType.WEBP, ImageType.GIF), "media"),
+        CONTENT(4L * 1024 * 1024, Set.of(ImageType.JPEG, ImageType.PNG, ImageType.WEBP, ImageType.GIF), "media"),
         PROFILE(2L * 1024 * 1024, Set.of(ImageType.JPEG, ImageType.PNG, ImageType.WEBP), "profile");
 
         final long maxBytes;

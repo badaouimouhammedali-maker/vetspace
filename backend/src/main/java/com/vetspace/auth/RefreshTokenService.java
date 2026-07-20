@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
@@ -26,9 +27,15 @@ public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenService self;
+    private final String sameSite;
+    private final boolean secure;
 
-    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository, @Lazy RefreshTokenService self) {
+    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository, @Lazy RefreshTokenService self,
+                               @Value("${app.cookie.same-site:Strict}") String sameSite,
+                               @Value("${app.cookie.secure:true}") boolean secure) {
         this.refreshTokenRepository = refreshTokenRepository;
+        this.sameSite = sameSite;
+        this.secure = secure;
         // Self-injected proxy: revokeFamily() must run in its own REQUIRES_NEW transaction so the
         // revocation survives even though the caller (AuthService.refresh) goes on to throw and roll
         // back. Calling "this.revokeFamily(...)" directly would bypass the proxy and silently ignore
@@ -100,24 +107,28 @@ public class RefreshTokenService {
         refreshTokenRepository.saveAll(active);
     }
 
+    /**
+     * SameSite defaults to Strict, which is right when the SPA is served from the same
+     * origin as the API (local dev, the nginx-proxied container stack). A split deploy —
+     * SPA on Vercel, API on Railway — makes every API call cross-site, and a Strict (or
+     * Lax) cookie is simply not attached to those requests, so refresh silently fails and
+     * users are logged out after the 15-minute access token expires. Prod therefore sets
+     * SameSite=None, which browsers only honour together with Secure.
+     */
     public ResponseCookie buildCookie(String rawValue) {
-        return ResponseCookie.from(COOKIE_NAME, rawValue)
-            .httpOnly(true)
-            .secure(true)
-            .sameSite("Strict")
-            .path(COOKIE_PATH)
-            .maxAge(REFRESH_TOKEN_TTL)
-            .build();
+        return baseCookie(rawValue).maxAge(REFRESH_TOKEN_TTL).build();
     }
 
     public ResponseCookie expiredCookie() {
-        return ResponseCookie.from(COOKIE_NAME, "")
+        return baseCookie("").maxAge(0).build();
+    }
+
+    private ResponseCookie.ResponseCookieBuilder baseCookie(String value) {
+        return ResponseCookie.from(COOKIE_NAME, value)
             .httpOnly(true)
-            .secure(true)
-            .sameSite("Strict")
-            .path(COOKIE_PATH)
-            .maxAge(0)
-            .build();
+            .secure(secure)
+            .sameSite(sameSite)
+            .path(COOKIE_PATH);
     }
 
     public record IssuedRefreshToken(String rawValue, RefreshToken entity) {

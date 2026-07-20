@@ -1,0 +1,83 @@
+# Production profile. Activate with SPRING_PROFILES_ACTIVE=prod.
+#
+# Every value here is either a hard production stance (swagger off, captcha on)
+# or an env placeholder — no credential, host or origin is baked into the image.
+spring:
+  flyway:
+    # Migrations run at boot so a deploy and its schema change ship together.
+    enabled: true
+    locations: classpath:db/migration
+  jpa:
+    hibernate:
+      # Flyway owns the schema; Hibernate only validates that entities match it
+      # and refuses to start on drift, rather than "fixing" a live database.
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  mail:
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+server:
+  # PaaS platforms (Railway, Render, Fly) inject the port to bind.
+  port: ${PORT:8080}
+  # Behind the platform's TLS terminator the app sees plain HTTP. Trusting
+  # X-Forwarded-* makes it generate https:// links and, critically, treat the
+  # request as secure so Secure cookies are actually set.
+  forward-headers-strategy: framework
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+
+app:
+  cookie:
+    # Lax, because the browser only ever talks to the SPA's own origin: Vercel
+    # proxies /api through to Railway (see docs/deploy.md §3), so the refresh
+    # cookie is first-party and survives Safari's third-party-cookie blocking.
+    #
+    # Set COOKIE_SAME_SITE=None only if you drop that proxy and point the SPA
+    # straight at the API on another domain — that makes the cookie third-party,
+    # which Safari blocks outright, logging users out on every page reload.
+    # Moving both onto one registrable domain (vetspace.dz + api.vetspace.dz)
+    # keeps Lax working with no proxy at all.
+    same-site: ${COOKIE_SAME_SITE:Lax}
+    secure: ${COOKIE_SECURE:true}
+  recaptcha:
+    # Never disabled in production: this is the bot gate on register/login.
+    enabled: ${RECAPTCHA_ENABLED:true}
+
+# The API surface is not public documentation; both are off and the security
+# config only permits the swagger paths under the dev profile.
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # Health only — no env/beans/metrics/heapdump exposure.
+        include: health
+  endpoint:
+    health:
+      # Do not leak DB vendor, disk paths or component internals to the internet.
+      show-details: never
+      show-components: never
+
+logging:
+  level:
+    root: INFO
+    com.vetspace: INFO
+    # No SQL or bound parameters in production logs.
+    org.hibernate.SQL: WARN
+    org.hibernate.orm.jdbc.bind: WARN
+    org.springframework.web: WARN

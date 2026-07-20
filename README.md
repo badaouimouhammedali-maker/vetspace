@@ -128,6 +128,20 @@ Operational safety: activation codes are never logged (the dev seeder is the
 only, profile-gated exception), and redemption failures return one generic
 message so codes can't be probed.
 
+## Deployment
+
+Vercel (SPA) + Railway (API + Postgres) + Cloudflare R2 (images), including the
+full environment-variable matrix, the first-admin bootstrap and a post-deploy
+checklist: [`docs/deploy.md`](docs/deploy.md).
+
+Verify the production artifacts before shipping — this runs the real backend
+image on the `prod` profile plus the production bundle, and drives the whole
+student journey through them:
+
+```bash
+bash scripts/prod-parity.sh
+```
+
 ## API & schema docs
 
 - REST API reference: [`docs/api.md`](docs/api.md)

@@ -41,7 +41,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiError> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
-        return error(HttpStatus.PAYLOAD_TOO_LARGE, "File exceeds the 5MB limit");
+        return error(HttpStatus.PAYLOAD_TOO_LARGE, "File exceeds the 4MB limit");
     }
 
     @ExceptionHandler(com.vetspace.admin.ImportValidationException.class)

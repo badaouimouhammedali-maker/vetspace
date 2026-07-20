@@ -15,7 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * Caps non-multipart request bodies at 2MB (multipart/media uploads are governed separately by
- * spring.servlet.multipart, which allows up to the 5MB media limit). Oversized bodies are rejected
+ * spring.servlet.multipart, which allows up to the 4MB media limit). Oversized bodies are rejected
  * up front with the standard error shape so no controller ever buffers a huge payload.
  */
 @Component

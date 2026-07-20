@@ -273,7 +273,9 @@ is covered by a serialization test).
 The **only** way images enter the system.
 
 - `multipart/form-data`, field name `file`.
-- Max **5MB** → larger uploads get `413`.
+- Max **4MB** for content images, **2MB** for profile photos → larger uploads get `413`.
+  The 4MB cap keeps uploads under the body limit of the Vercel proxy that fronts the
+  API in production (see [deploy.md](deploy.md) §3).
 - Accepted types: JPEG, PNG, WebP, GIF — verified by **magic bytes**; the
   filename and declared Content-Type are ignored. A PDF renamed to
   `.png` → `400`.
@@ -576,7 +578,7 @@ and `Cache-Control: no-cache, no-store, max-age=0, must-revalidate`.
   allowed, methods `GET/POST/PUT/PATCH/DELETE/OPTIONS`, request headers
   restricted to `Authorization, Content-Type`.
 - Request bodies: non-multipart requests are capped at **2MB** (`413`
-  otherwise); multipart media uploads allow up to **5MB** (content images;
+  otherwise); multipart media uploads allow up to **4MB** (content images;
   profile photos additionally capped at 2MB in code).
 - Swagger UI / OpenAPI (`/swagger-ui/**`, `/v3/api-docs/**`) are served and
   permitted **only under the `dev` profile**.
