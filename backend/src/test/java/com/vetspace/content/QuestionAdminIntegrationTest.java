@@ -62,6 +62,9 @@ class QuestionAdminIntegrationTest {
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.flyway.enabled", () -> true);
         registry.add("app.recaptcha.enabled", () -> false);
+        // Registration now sends a verification email and login requires a verified
+        // address; these suites predate that and are not testing it.
+        registry.add("app.auth.auto-verify-emails", () -> true);
     }
 
     @Autowired
@@ -129,6 +132,7 @@ class QuestionAdminIntegrationTest {
             .role(role).status(UserStatus.ACTIVE)
             .school(school)
             .studyYear(role == Role.STUDENT ? 3 : null)
+            .emailVerified(true)
             .build());
         if (role == Role.STUDENT) {
             // This suite tests question mechanics, not the paywall — students get a matching subscription.

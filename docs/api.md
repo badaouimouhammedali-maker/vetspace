@@ -627,3 +627,64 @@ files. The main keys are:
 3. Test the endpoints:
    - `curl http://localhost:8080/api/ping`
    - `curl http://localhost:8080/actuator/health`
+
+### `POST /api/auth/verify-email`
+
+Public. Consumes a single-use verification token from the emailed link.
+
+```json
+{ "token": "..." }
+```
+
+`200` on success. `400` if the token is unknown, already used, or older than 24h.
+
+### `POST /api/auth/resend-verification`
+
+Public. Sends a fresh verification link and invalidates any previous one.
+
+```json
+{ "email": "etudiant@example.com" }
+```
+
+Always `200`, whether or not the address matches an unverified account — a different
+response would confirm which addresses are registered. Rate limited to **3 per hour per
+account**; `429` beyond that.
+
+### Login and unverified addresses
+
+`POST /api/auth/login` returns `403` with `message: "EMAIL_NOT_VERIFIED"` when the
+password is correct but the address has not been confirmed. The check runs *after* the
+password matches, so it reveals nothing to an attacker; the SPA routes this to the
+resend screen.
+
+Every other login failure — wrong password, unknown account, disabled account, or an
+account temporarily locked after 5 failed attempts in 15 minutes — returns `401` with
+one identical message, `"Identifiants invalides ou compte temporairement verrouillé"`.
+Distinguishing them would be an oracle for account enumeration and lockout timing.
+
+### `GET /api/admin/codes/batches`
+
+ADMIN. Every code-generation run, newest first.
+
+```json
+[
+  {
+    "id": "…", "packId": "…", "packName": "Pack 3e année — 2026/2027",
+    "codeCount": 100, "maxUses": 1, "generatedAt": "2026-07-20T10:00:00Z",
+    "downloaded": false, "downloadedAt": null,
+    "activeCount": 100, "usedCount": 0, "revokedCount": 0
+  }
+]
+```
+
+`downloaded: false` means the one-shot CSV was never fetched — those codes exist only as
+hashes and cannot be sold. Revoke the batch and generate a new one.
+
+### `POST /api/admin/codes/batches/{id}/revoke`
+
+ADMIN. Revokes every **unused** code in the batch; already-redeemed codes are left alone
+so students who paid keep their access. Idempotent.
+
+```json
+{ "batchId": "…", "revokedCount": 98 }
+```

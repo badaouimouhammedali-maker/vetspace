@@ -69,6 +69,15 @@ public class User extends AuditableEntity {
     private String themeTertiary;
 
     /**
+     * False until the address is confirmed. Existing users were grandfathered in as
+     * verified by V7 — they predate the rule, and locking them out on deploy would be a
+     * self-inflicted outage.
+     */
+    @Builder.Default
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
+    /**
      * Failed-login tracking for per-account lockout. Persisted rather than held in memory so
      * it survives restarts and applies across instances — an in-memory counter resets on
      * every deploy, which an attacker only has to outlast.

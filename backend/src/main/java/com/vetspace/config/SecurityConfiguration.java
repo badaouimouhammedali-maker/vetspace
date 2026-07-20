@@ -72,7 +72,10 @@ public class SecurityConfiguration {
                 auth
                     .requestMatchers(HttpMethod.POST,
                         "/api/auth/register", "/api/auth/login", "/api/auth/refresh",
-                        "/api/auth/logout", "/api/auth/forgot-password", "/api/auth/reset-password")
+                        "/api/auth/logout", "/api/auth/forgot-password", "/api/auth/reset-password",
+                        // Both must be reachable without a token: the user cannot log in
+                        // until the address is verified.
+                        "/api/auth/verify-email", "/api/auth/resend-verification")
                     .permitAll()
                     .requestMatchers("/api/ping", "/actuator/health").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/schools", "/api/packs", "/api/public/**").permitAll();

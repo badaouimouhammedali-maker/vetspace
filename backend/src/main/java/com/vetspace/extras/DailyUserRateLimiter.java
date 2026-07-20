@@ -18,9 +18,14 @@ public class DailyUserRateLimiter {
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
 
     public void check(String scope, UUID userId, int perDay) {
+        check(scope, userId, perDay, Duration.ofDays(1));
+    }
+
+    /** Same quota mechanism over an arbitrary period — e.g. verification resends, 3 per hour. */
+    public void check(String scope, UUID userId, int limit, Duration period) {
         Bucket bucket = buckets.computeIfAbsent(scope + ":" + userId,
             k -> Bucket.builder()
-                .addLimit(Bandwidth.classic(perDay, Refill.intervally(perDay, Duration.ofDays(1))))
+                .addLimit(Bandwidth.classic(limit, Refill.intervally(limit, period)))
                 .build());
         if (!bucket.tryConsume(1)) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Rate limit exceeded");

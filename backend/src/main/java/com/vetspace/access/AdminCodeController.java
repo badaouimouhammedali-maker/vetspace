@@ -1,8 +1,10 @@
 package com.vetspace.access;
 
+import com.vetspace.access.dto.AccessDtos.CodeBatchDto;
 import com.vetspace.access.dto.AccessDtos.CodeDto;
 import com.vetspace.access.dto.AccessDtos.GenerateCodesRequest;
 import com.vetspace.access.dto.AccessDtos.GenerateCodesResponse;
+import com.vetspace.access.dto.AccessDtos.RevokeBatchResponse;
 import com.vetspace.access.dto.AccessDtos.SubscriptionAuditDto;
 import com.vetspace.web.PageResponse;
 import com.vetspace.web.Paging;
@@ -64,6 +66,17 @@ public class AdminCodeController {
     @PostMapping("/codes/{id}/revoke")
     public CodeDto revoke(@PathVariable UUID id) {
         return service.revoke(id);
+    }
+
+    @GetMapping("/codes/batches")
+    public List<CodeBatchDto> listBatches() {
+        return service.listBatches();
+    }
+
+    /** Revokes every unused code of a batch — recovery for a batch whose CSV was lost. */
+    @PostMapping("/codes/batches/{id}/revoke")
+    public RevokeBatchResponse revokeBatch(@PathVariable UUID id) {
+        return service.revokeBatch(id);
     }
 
     @GetMapping("/subscriptions")

@@ -27,10 +27,12 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final RecaptchaVerifier recaptchaVerifier;
     private final LoginAttemptService loginAttemptService;
+    private final EmailVerificationService emailVerificationService;
 
     public AuthService(UserRepository userRepository, SchoolRepository schoolRepository, PasswordEncoder passwordEncoder,
                         JwtService jwtService, RefreshTokenService refreshTokenService, RecaptchaVerifier recaptchaVerifier,
-                        LoginAttemptService loginAttemptService) {
+                        LoginAttemptService loginAttemptService,
+                        EmailVerificationService emailVerificationService) {
         this.userRepository = userRepository;
         this.schoolRepository = schoolRepository;
         this.passwordEncoder = passwordEncoder;
@@ -38,6 +40,7 @@ public class AuthService {
         this.refreshTokenService = refreshTokenService;
         this.recaptchaVerifier = recaptchaVerifier;
         this.loginAttemptService = loginAttemptService;
+        this.emailVerificationService = emailVerificationService;
     }
 
     @Transactional
@@ -62,10 +65,14 @@ public class AuthService {
             .firstName(request.firstName())
             .role(Role.STUDENT)
             .status(UserStatus.ACTIVE)
+            // AUTO_VERIFY_EMAILS short-circuits the whole flow for dev and e2e, where
+            // there is no mailbox to click through. Never enabled in production.
+            .emailVerified(emailVerificationService.isAutoVerifyEnabled())
             .school(school)
             .studyYear(request.studyYear())
             .build();
         user = userRepository.save(user);
+        emailVerificationService.sendVerification(user);
         return new RegisterResponse(user.getId(), user.getEmail(), user.getUsername(), user.getRole(), user.getStatus());
     }
 
@@ -76,6 +83,9 @@ public class AuthService {
      */
     static final String INVALID_CREDENTIALS =
         "Identifiants invalides ou compte temporairement verrouillé";
+
+    /** Signals the dedicated "confirm your address" screen; see the login flow below. */
+    public static final String EMAIL_NOT_VERIFIED = "EMAIL_NOT_VERIFIED";
 
     @Transactional
     public LoginResult login(String email, String password) {
@@ -93,6 +103,12 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS);
         }
         loginAttemptService.clear(user);
+        if (!user.isEmailVerified()) {
+            // Deliberately distinct from INVALID_CREDENTIALS, and only reachable AFTER the
+            // password matched — so it tells an attacker nothing they did not already know,
+            // while letting the UI offer "resend the link" instead of a dead end.
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, EMAIL_NOT_VERIFIED);
+        }
         String accessToken = jwtService.generateAccessToken(user);
         RefreshTokenService.IssuedRefreshToken issued = refreshTokenService.issueNewFamily(user);
         return new LoginResult(accessToken, JwtService.ACCESS_TOKEN_TTL, issued.rawValue());

@@ -17,15 +17,22 @@ public class CodeBatchStore {
 
     static final long TTL_SECONDS = 15 * 60;
 
-    private record Batch(List<String> codes, String packName, Instant expiresAt) {
+    private record Batch(List<String> codes, String packName, UUID batchId, Instant expiresAt) {
     }
 
     private final Map<String, Batch> batches = new ConcurrentHashMap<>();
 
-    public String store(List<String> codes, String packName) {
+    public String store(List<String> codes, String packName, UUID batchId) {
         String token = UUID.randomUUID().toString();
-        batches.put(token, new Batch(List.copyOf(codes), packName, Instant.now().plusSeconds(TTL_SECONDS)));
+        batches.put(token, new Batch(List.copyOf(codes), packName, batchId,
+            Instant.now().plusSeconds(TTL_SECONDS)));
         return token;
+    }
+
+    /** The batch this token belongs to, so a successful download can be recorded. */
+    public UUID batchIdFor(String token) {
+        Batch batch = batches.get(token);
+        return batch == null ? null : batch.batchId();
     }
 
     /** Single use: the batch is removed atomically on retrieval. Returns null if unknown, already downloaded, or expired. */

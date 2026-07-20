@@ -117,6 +117,7 @@ public class DevDataSeeder implements ApplicationRunner {
             .firstName("VetSpace")
             .role(Role.ADMIN)
             .status(UserStatus.ACTIVE)
+            .emailVerified(true)
             .build());
 
         Module module = moduleRepository.save(Module.builder()

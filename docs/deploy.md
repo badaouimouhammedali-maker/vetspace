@@ -52,6 +52,7 @@ values.
 | `ADMIN_PASSWORD` | 🔒 | ≥12 chars | First-admin bootstrap. Rotate in-app, then delete this variable. |
 | `ADMIN_USERNAME` | ⚙️ | `admin` *(default)* | Only needed if `admin` is taken. |
 | `SEED_ADMIN` | ⚙️ | `true` **once**, then delete | Runs the one-shot admin bootstrap. |
+| `AUTO_VERIFY_EMAILS` | ⚙️ | *(leave unset)* | Dev/e2e only. `true` marks new accounts verified without sending mail — setting it in production disables email verification entirely. |
 | `COOKIE_SAME_SITE` | ⚙️ | `Lax` | Correct for the proxied same-origin setup in §3. Use `None` only if the SPA calls Railway directly. |
 | `COOKIE_SECURE` | ⚙️ | `true` | Always `true` in production. |
 
@@ -349,3 +350,47 @@ honestly from outside:
   browser instead — the checklist in §8 lists exactly what to click.
 - **`SEED_ADMIN` removed.** That is the state of your Railway variables, not
   something the running app reports. Confirm it in the dashboard.
+
+---
+
+## 11. Run exactly ONE instance
+
+Rate limiting (login by IP, per-account lockout counters aside, code redemption, signals,
+support, verification resends), the public-stats cache and the one-time activation-code
+batch store are all **in-memory and per-instance**. That is deliberate and fine on a
+single instance, but on two:
+
+- every rate limit is effectively multiplied by the replica count — five login attempts
+  per IP becomes ten;
+- a code batch generated on instance A **cannot be downloaded from instance B**, and the
+  plaintext is lost for good.
+
+Per-account lockout is the exception: it lives in the `users` table, so it survives
+restarts and holds across instances.
+
+**Keep the Railway service at 1 replica** until these move to a shared store (Redis, or
+the database). The app logs a loud `WARN` at startup if `RAILWAY_REPLICA_COUNT`,
+`WEB_CONCURRENCY`, `REPLICAS` or `NUM_REPLICAS` is greater than 1 — it will not refuse to
+start, because a degraded rate limit is better than an outage, but nothing else would
+tell you.
+
+---
+
+## 12. Runbook: generated codes, lost the CSV
+
+Plaintext codes are shown **once** and held only in memory for 15 minutes. If the browser
+tab is closed, the instance restarts, or the download is simply forgotten, those codes
+are unrecoverable — they exist as hashes, attached to the pack, sellable to nobody.
+
+Recovery:
+
+1. **Admin → Packs & Codes → Batches.** Find the batch: it shows the generation time and
+   `Téléchargé: non`, which is the signal that nothing was ever saved.
+2. **Revoke the batch.** `POST /api/admin/codes/batches/{id}/revoke` retires every unused
+   code in it. Codes already redeemed are deliberately left active — revoking them would
+   strip access from students who paid.
+3. **Generate a replacement batch** and download the CSV *immediately*, before doing
+   anything else.
+
+Prevention: download the CSV the moment the dialog appears, and confirm the batch shows
+`Téléchargé: oui` before closing it.

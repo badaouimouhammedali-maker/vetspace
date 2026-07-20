@@ -82,6 +82,9 @@ public class AdminBootstrap implements ApplicationRunner {
             .firstName("VetSpace")
             .role(Role.ADMIN)
             .status(UserStatus.ACTIVE)
+            // Created by an operator from env vars, not by self-registration: there is no
+            // link to click, and requiring one would lock the first admin out of the app.
+            .emailVerified(true)
             .build());
 
         // Email only — the password is never logged.

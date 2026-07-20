@@ -32,6 +32,19 @@ public final class AccessDtos {
                            boolean revoked, CodeStatus status, Instant createdAt) {
     }
 
+    /**
+     * A generation run and what became of it. {@code downloaded} false means the plaintext
+     * CSV was never fetched, so those codes exist only as hashes and cannot be sold —
+     * revoke the batch and generate a new one.
+     */
+    public record CodeBatchDto(UUID id, UUID packId, String packName, int codeCount, int maxUses,
+                                Instant generatedAt, boolean downloaded, Instant downloadedAt,
+                                long activeCount, long usedCount, long revokedCount) {
+    }
+
+    public record RevokeBatchResponse(UUID batchId, int revokedCount) {
+    }
+
     public record RedeemRequest(@NotBlank String code) {
     }
 

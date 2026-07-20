@@ -14,43 +14,38 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
 
+/**
+ * One code-generation run. Exists so a batch whose plaintext was never downloaded can be
+ * identified and revoked wholesale — the codes themselves are only ever stored hashed.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "activation_codes")
-public class ActivationCode extends BaseEntity {
+@Table(name = "code_batches")
+public class CodeBatch extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "pack_id", nullable = false)
     private Pack pack;
 
-    @Column(name = "code_hash", nullable = false, unique = true)
-    private String codeHash;
-
-    @Column(name = "max_uses", nullable = false)
-    private Integer maxUses;
-
-    @Column(name = "used_count", nullable = false)
-    private Integer usedCount;
-
-    @Column(nullable = false)
-    private boolean revoked;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;
 
-    /** Null for codes generated before batches were recorded. */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "batch_id")
-    private CodeBatch batch;
+    @Column(name = "code_count", nullable = false)
+    private int codeCount;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+    @Column(name = "max_uses", nullable = false)
+    private int maxUses;
+
+    @Column(name = "generated_at", nullable = false)
+    private Instant generatedAt;
+
+    /** Null means the one-shot CSV was never fetched — the plaintext is gone. */
+    @Column(name = "downloaded_at")
+    private Instant downloadedAt;
 }

@@ -70,6 +70,9 @@ class StatsIntegrationTest {
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.flyway.enabled", () -> true);
         registry.add("app.recaptcha.enabled", () -> false);
+        // Registration now sends a verification email and login requires a verified
+        // address; these suites predate that and are not testing it.
+        registry.add("app.auth.auto-verify-emails", () -> true);
     }
 
     @Autowired
@@ -150,6 +153,7 @@ class StatsIntegrationTest {
             .lastName("T").firstName("S")
             .role(Role.STUDENT).status(UserStatus.ACTIVE)
             .school(school).studyYear(3)
+            .emailVerified(true)
             .build());
         subscribe(student);
         studentToken = jwtService.generateAccessToken(student);
@@ -273,6 +277,7 @@ class StatsIntegrationTest {
             .lastName("T").firstName("O")
             .role(Role.STUDENT).status(UserStatus.ACTIVE)
             .school(school).studyYear(3)
+            .emailVerified(true)
             .build());
         mockMvc.perform(get("/api/stats/sessions/" + sessionId + "/by-course")
                 .header("Authorization", "Bearer " + jwtService.generateAccessToken(other)))

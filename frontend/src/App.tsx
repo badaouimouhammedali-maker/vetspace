@@ -17,6 +17,7 @@ const LoginPage = lazy(() => named(import('./pages/auth/LoginPage'), 'LoginPage'
 const RegisterPage = lazy(() => named(import('./pages/auth/RegisterPage'), 'RegisterPage'));
 const ForgotPasswordPage = lazy(() => named(import('./pages/auth/ForgotPasswordPage'), 'ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => named(import('./pages/auth/ResetPasswordPage'), 'ResetPasswordPage'));
+const VerifyEmailPage = lazy(() => named(import('./pages/auth/VerifyEmailPage'), 'VerifyEmailPage'));
 
 // Student app
 const AppLayout = lazy(() => named(import('./components/layout/AppLayout'), 'AppLayout'));
@@ -96,6 +97,7 @@ export function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
 
           {/* Écran de jeu plein écran, hors gabarit */}
           <Route

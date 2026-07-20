@@ -7,6 +7,9 @@
 # and MEDIA_ENDPOINT for the containerised e2e stack, which runs with this
 # profile to get the data seeder — the backend then died on Flyway startup.
 app:
+  auth:
+    # Local signups have no mailbox to click through.
+    auto-verify-emails: ${AUTO_VERIFY_EMAILS:true}
   jwt:
     # Dev-only convenience so `spring-boot:run` needs no setup. The prod profile has
     # no default at all and refuses to boot without a real JWT_SECRET.

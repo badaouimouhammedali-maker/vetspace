@@ -1,6 +1,7 @@
 package com.vetspace.repository;
 
 import com.vetspace.domain.access.ActivationCode;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,8 @@ public interface ActivationCodeRepository extends JpaRepository<ActivationCode, 
     Optional<ActivationCode> findByCodeHash(String codeHash);
 
     Page<ActivationCode> findByPackId(UUID packId, Pageable pageable);
+
+    List<ActivationCode> findByBatchId(UUID batchId);
 
     /**
      * The redemption race guard: the WHERE clause re-checks every validity condition inside the

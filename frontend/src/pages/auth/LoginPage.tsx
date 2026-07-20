@@ -26,9 +26,14 @@ export function LoginPage() {
       await login(email, password);
       navigate(from, { replace: true });
     } catch (err) {
-      setError(
-        apiErrorStatus(err) === 429 ? t('api.rateLimited') : t('login.failed'),
-      );
+      const status = apiErrorStatus(err);
+      if (status === 403) {
+        // The address is not confirmed yet. Send the user somewhere they can act —
+        // the verify screen with a resend — rather than a dead end on this form.
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`, { replace: true });
+        return;
+      }
+      setError(status === 429 ? t('api.rateLimited') : t('login.failed'));
     } finally {
       setLoading(false);
     }

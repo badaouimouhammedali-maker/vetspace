@@ -265,6 +265,7 @@ class SchemaIntegrityDataJpaTest {
             .firstName("Jane")
             .role(Role.STUDENT)
             .status(UserStatus.ACTIVE)
+            .emailVerified(true)
             .build();
     }
 

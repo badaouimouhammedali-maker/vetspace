@@ -17,6 +17,8 @@ cd "$(dirname "$0")"
 COMPOSE=(docker compose -f prod-parity.compose.yml)
 API=http://localhost:19080
 SPA=http://localhost:19088
+# The origin the API allows for direct cross-origin callers (see the compose file).
+ALLOWED_ORIGIN=https://parity.invalid
 
 pass() { printf '  \033[32mPASS\033[0m  %s\n' "$1"; }
 fail() { printf '  \033[31mFAIL\033[0m  %s\n' "$1"; FAILURES=$((FAILURES + 1)); }
@@ -86,10 +88,10 @@ foreign=$(curl -s -o /dev/null -D - -X OPTIONS "$API/api/auth/login" \
   || fail "foreign origin was granted CORS: $foreign"
 
 allowed=$(curl -s -o /dev/null -D - -X OPTIONS "$API/api/auth/login" \
-  -H "Origin: $SPA" \
+  -H "Origin: $ALLOWED_ORIGIN" \
   -H 'Access-Control-Request-Method: POST' 2>/dev/null \
   | grep -i '^access-control-allow-origin' | tr -d '\r' || true)
-[[ "$allowed" == *"$SPA"* ]] && pass "allowlisted origin is granted (allowlist works, not a blanket deny)" \
+[[ "$allowed" == *"$ALLOWED_ORIGIN"* ]] && pass "allowlisted origin is granted (allowlist works, not a blanket deny)" \
   || fail "allowlisted origin was not granted: ${allowed:-none}"
 
 echo "==> Phase B: dev,prod — seeded catalog, full journey"

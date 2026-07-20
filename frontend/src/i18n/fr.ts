@@ -30,6 +30,8 @@ export const fr = {
   // wording: naming which one applies would tell an attacker whether an address is
   // registered, and when a lock has lapsed.
   'login.failed': 'Identifiants invalides ou compte temporairement verrouillé.',
+  'login.notVerified':
+    'Votre adresse e-mail n’est pas encore confirmée. Vérifiez votre boîte de réception.',
 
   // Inscription
   'register.title': 'Créer un compte',
@@ -72,6 +74,21 @@ export const fr = {
   'reset.success': 'Mot de passe réinitialisé ! Vous pouvez vous connecter.',
   'reset.invalidToken': 'Lien invalide ou expiré. Refaites une demande.',
   'reset.missingToken': 'Lien de réinitialisation incomplet.',
+
+  // Confirmation d'adresse e-mail
+  'verify.title': 'Confirmez votre adresse e-mail',
+  'verify.checking': 'Vérification en cours…',
+  'verify.success': 'Votre adresse est confirmée. Vous pouvez maintenant vous connecter.',
+  'verify.invalid': 'Ce lien est invalide ou a expiré.',
+  'verify.resendIntro':
+    'Saisissez votre adresse pour recevoir un nouveau lien de confirmation (valable 24 heures).',
+  'verify.email': 'Adresse e-mail',
+  'verify.resend': 'Renvoyer le lien',
+  'verify.resent':
+    'Si un compte non confirmé correspond à cette adresse, un lien vient d’être envoyé.',
+  'verify.resendLimited': 'Trop de demandes. Réessayez dans une heure.',
+  'verify.goToLogin': 'Aller à la connexion',
+  'verify.backToLogin': 'Retour à la connexion',
 
   // App (placeholders pour les prochaines étapes)
   'app.dashboard': 'Tableau de bord',

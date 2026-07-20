@@ -5,7 +5,9 @@ import com.vetspace.auth.dto.LoginRequest;
 import com.vetspace.auth.dto.LoginResponse;
 import com.vetspace.auth.dto.RegisterRequest;
 import com.vetspace.auth.dto.RegisterResponse;
+import com.vetspace.auth.dto.ResendVerificationRequest;
 import com.vetspace.auth.dto.ResetPasswordRequest;
+import com.vetspace.auth.dto.VerifyEmailRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -25,12 +27,15 @@ public class AuthController {
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
     private final PasswordResetService passwordResetService;
+    private final EmailVerificationService emailVerificationService;
 
     public AuthController(AuthService authService, RefreshTokenService refreshTokenService,
-                           PasswordResetService passwordResetService) {
+                           PasswordResetService passwordResetService,
+                           EmailVerificationService emailVerificationService) {
         this.authService = authService;
         this.refreshTokenService = refreshTokenService;
         this.passwordResetService = passwordResetService;
+        this.emailVerificationService = emailVerificationService;
     }
 
     @PostMapping("/register")
@@ -69,6 +74,22 @@ public class AuthController {
     @PostMapping("/reset-password")
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         passwordResetService.resetPassword(request.token(), request.newPassword());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<Void> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        emailVerificationService.verify(request.token());
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Always 200, whether or not the address matches an unverified account — a different
+     * response would confirm which addresses are registered. Rate-limited per account.
+     */
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Void> resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
+        emailVerificationService.resend(request.email());
         return ResponseEntity.ok().build();
     }
 

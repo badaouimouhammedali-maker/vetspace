@@ -63,6 +63,9 @@ class AdminConsoleIntegrationTest {
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.flyway.enabled", () -> true);
         registry.add("app.recaptcha.enabled", () -> false);
+        // Registration now sends a verification email and login requires a verified
+        // address; these suites predate that and are not testing it.
+        registry.add("app.auth.auto-verify-emails", () -> true);
     }
 
     @Autowired private MockMvc mockMvc;
@@ -132,6 +135,7 @@ class AdminConsoleIntegrationTest {
             .lastName("T").firstName(role.name())
             .role(role).status(UserStatus.ACTIVE)
             .school(school).studyYear(year)
+            .emailVerified(true)
             .build();
     }
 
