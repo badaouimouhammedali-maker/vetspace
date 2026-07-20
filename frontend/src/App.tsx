@@ -1,6 +1,8 @@
 import { Suspense, lazy, useEffect } from 'react';
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 import { AdminRoute, ProtectedRoute } from './auth/guards';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { useToast } from './components/ToastProvider';
 import { t } from './i18n/fr';
 import { API_EVENTS } from './lib/api';
@@ -86,25 +88,61 @@ function PageLoader() {
   );
 }
 
+/** Dev-only helper for /__boundary-check. */
+function ThrowsOnRender(): JSX.Element {
+  throw new Error('Deliberate error from /__boundary-check');
+}
+
 export function App() {
   return (
     <>
       <ApiEventBridge />
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
+      {/*
+        Outermost boundary: catches anything the per-group boundaries miss — a failure
+        in the router itself, or in a chunk that fails while Suspense is resolving.
+      */}
+      <ErrorBoundary scope="router">
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+          <Route
+            path="/"
+            element={
+              <ErrorBoundary scope="landing">
+                <LandingPage />
+              </ErrorBoundary>
+            }
+          />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
 
+          {/*
+            Dev-only: renders a component that throws, so the ErrorBoundary can be seen
+            and checked by hand. import.meta.env.DEV is statically false in a production
+            build, so Rollup drops this branch entirely — the route does not exist in the
+            shipped bundle.
+          */}
+          {import.meta.env.DEV ? (
+            <Route
+              path="/__boundary-check"
+              element={
+                <ErrorBoundary scope="boundary-check">
+                  <ThrowsOnRender />
+                </ErrorBoundary>
+              }
+            />
+          ) : null}
+
           {/* Écran de jeu plein écran, hors gabarit */}
           <Route
             path="/app/session/:id"
             element={
               <ProtectedRoute>
-                <PlayPage />
+                <ErrorBoundary scope="player">
+                  <PlayPage />
+                </ErrorBoundary>
               </ProtectedRoute>
             }
           />
@@ -113,7 +151,9 @@ export function App() {
             path="/app"
             element={
               <ProtectedRoute>
-                <AppLayout />
+                <ErrorBoundary scope="app">
+                  <AppLayout />
+                </ErrorBoundary>
               </ProtectedRoute>
             }
           >
@@ -129,13 +169,17 @@ export function App() {
             <Route path="abonnement" element={<AbonnementPage />} />
             <Route path="support" element={<SupportPage />} />
             <Route path="profil" element={<ProfilePage />} />
+            {/* Unknown /app/* path: a real 404 inside the shell, not a bounce to "/". */}
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
 
           <Route
             path="/admin"
             element={
               <AdminRoute>
-                <AdminLayout />
+                <ErrorBoundary scope="admin">
+                  <AdminLayout />
+                </ErrorBoundary>
               </AdminRoute>
             }
           >
@@ -149,11 +193,17 @@ export function App() {
             <Route path="signalements" element={<SignalementsPage />} />
             <Route path="notifications" element={<AdminNotificationsPage />} />
             <Route path="support" element={<AdminSupportPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
+          {/*
+            A silent redirect to "/" made every typo look like an intentional landing on
+            the marketing page — and once disguised a mistyped URL as a routing bug.
+          */}
+          <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
     </>
   );
 }

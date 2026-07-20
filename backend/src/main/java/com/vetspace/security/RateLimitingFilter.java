@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -31,15 +32,19 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper;
+    private final boolean enabled;
 
-    public RateLimitingFilter(ObjectMapper objectMapper) {
+    public RateLimitingFilter(ObjectMapper objectMapper,
+                              @Value("${app.rate-limits-enabled:true}") boolean enabled) {
         this.objectMapper = objectMapper;
+        this.enabled = enabled;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
         throws ServletException, IOException {
-        Bandwidth limit = "POST".equalsIgnoreCase(request.getMethod()) ? limitFor(request.getRequestURI()) : null;
+        Bandwidth limit = enabled && "POST".equalsIgnoreCase(request.getMethod())
+            ? limitFor(request.getRequestURI()) : null;
         if (limit != null) {
             String key = request.getRequestURI() + ":" + clientIp(request);
             Bucket bucket = buckets.computeIfAbsent(key, k -> Bucket.builder().addLimit(limit).build());

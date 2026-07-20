@@ -1,0 +1,82 @@
+# Self-contained end-to-end stack.
+#
+# Deliberately a SEPARATE FILE rather than a profile inside docker-compose.yml. Two
+# things make the profile approach unsafe no matter which project name you use:
+#
+#   * `container_name` is global, not per-project, so a second project starting the
+#     same services collides with the running dev containers by name;
+#   * services with no `profiles:` key start on EVERY compose invocation, so
+#     `--profile e2e up` also tried to bring up dev's postgres/minio/mailpit.
+#
+# Together those meant a `--profile e2e down -v` operated on the same names and volumes
+# the developer's stack uses. Its own file, own project name and own volumes remove the
+# possibility entirely — nothing here can touch vetspace_postgres_data.
+name: vetspace-e2e
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${DB_NAME:-vetspace}
+      POSTGRES_USER: ${DB_USER:-vetspace}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-vetspace}
+    volumes:
+      - e2e_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-vetspace} -d ${DB_NAME:-vetspace}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - e2e_minio_data:/data
+
+  mailpit:
+    image: axllent/mailpit
+
+  backend:
+    build: ../backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev            # dev profile runs the data seeder
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-vetspace}
+      DB_USER: ${DB_USER:-vetspace}
+      DB_PASSWORD: ${DB_PASSWORD:-vetspace}
+      ADMIN_EMAIL: admin@vetspace.local
+      ADMIN_PASSWORD: e2e-admin-password
+      E2E_SEED_CODE: E2E1-2345-6789-ABCD      # deterministic code the smoke test redeems
+      RECAPTCHA_ENABLED: "false"
+      # Repeated local runs otherwise trip the redeem limit (5/hour per IP) and fail
+      # with a confusing 429. Rejected outright by the prod profile.
+      RATE_LIMITS_ENABLED: "false"
+      # No mailbox to click through in an automated run.
+      AUTO_VERIFY_EMAILS: "true"
+      JWT_SECRET: e2e-only-secret-not-for-prod
+      CORS_ALLOWED_ORIGINS: http://localhost:${E2E_WEB_PORT:-8088}
+      MEDIA_ENDPOINT: http://minio:9000
+      MEDIA_PUBLIC_BASE_URL: http://localhost:9000/vetspace
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+    ports:
+      # Overridable so a running dev backend on 8080 does not block an e2e run.
+      - "${E2E_API_PORT:-8080}:8080"
+
+  frontend:
+    build: ../frontend
+    depends_on:
+      - backend
+    ports:
+      - "${E2E_WEB_PORT:-8088}:80"
+
+volumes:
+  # Namespaced under this file's project (vetspace-e2e_*), never the dev project's.
+  e2e_postgres_data:
+  e2e_minio_data:

@@ -52,7 +52,13 @@ services:
       # Must satisfy ProductionConfigValidator: not a known default, >= 32 bytes.
       JWT_SECRET: 8Xk2pQ7vR4mN9wZ3cF6hJ0tL5dA1gE8uI4oP2qS7yB=
       FRONTEND_URL: http://localhost:19088
-      AUTO_VERIFY_EMAILS: "true"
+      # Phase B only, and only because an unattended journey has no mailbox to click
+      # through. The prod profile REFUSES to start with this on, which is why Phase B
+      # runs the dev profile — see prod-parity.sh.
+      AUTO_VERIFY_EMAILS: "${AUTO_VERIFY_EMAILS:-false}"
+      # Same reasoning: repeated local runs otherwise trip the redeem limit. Also
+      # rejected outright by the prod profile.
+      RATE_LIMITS_ENABLED: "${RATE_LIMITS_ENABLED:-true}"
       # The prod profile rejects localhost origins. The browser never needs CORS here
       # anyway — nginx proxies /api same-origin — so this is only what the API allows
       # for direct cross-origin callers, and prod-parity.sh asserts against it.

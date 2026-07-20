@@ -52,7 +52,9 @@ values.
 | `ADMIN_PASSWORD` | 🔒 | ≥12 chars | First-admin bootstrap. Rotate in-app, then delete this variable. |
 | `ADMIN_USERNAME` | ⚙️ | `admin` *(default)* | Only needed if `admin` is taken. |
 | `SEED_ADMIN` | ⚙️ | `true` **once**, then delete | Runs the one-shot admin bootstrap. |
-| `AUTO_VERIFY_EMAILS` | ⚙️ | *(leave unset)* | Dev/e2e only. `true` marks new accounts verified without sending mail — setting it in production disables email verification entirely. |
+| `AUTO_VERIFY_EMAILS` | ⚙️ | *(leave unset)* | Dev/e2e only. `true` marks new accounts verified without sending mail. **The prod profile refuses to start with it on.** |
+| `RATE_LIMITS_ENABLED` | ⚙️ | *(leave unset)* | Dev/e2e only. `false` disables every rate limiter. **The prod profile refuses to start with it off.** |
+| `DB_POOL_MAX` / `DB_POOL_MIN` | ⚙️ | `10` / `2` | Hikari pool bounds — see §13 before raising. |
 | `COOKIE_SAME_SITE` | ⚙️ | `Lax` | Correct for the proxied same-origin setup in §3. Use `None` only if the SPA calls Railway directly. |
 | `COOKIE_SECURE` | ⚙️ | `true` | Always `true` in production. |
 
@@ -394,3 +396,37 @@ Recovery:
 
 Prevention: download the CSV the moment the dialog appears, and confirm the batch shows
 `Téléchargé: oui` before closing it.
+
+---
+
+## 13. Why the connection pool is capped at 10
+
+`spring.datasource.hikari.maximum-pool-size` is **10**, set explicitly rather than left
+to Hikari's default. The number is chosen against what Postgres will actually grant, not
+against what the app might like:
+
+- Railway's Postgres plugin runs with a `max_connections` in the low hundreds
+  (**~100** on the starter tiers), and that budget is shared by *everything* that
+  connects — the API, any `psql` session you open, a migration run, a backup job, and
+  Railway's own internal probes.
+- Postgres reserves a few connections for superusers (`superuser_reserved_connections`),
+  so the usable figure is lower than the headline number.
+- A pool is a **ceiling, not a target**: 10 busy connections already saturate a small
+  instance's CPU. Raising the pool past that point queues work inside Postgres instead of
+  inside the app, which is strictly worse — you lose the fast-fail and the queue is
+  invisible.
+
+10 leaves ample room for a second deploy overlapping the first during a rolling restart
+(2 × 10 = 20 connections at the crossover), for interactive `psql`, and for backups.
+
+`minimum-idle: 2` keeps a couple of connections warm so the first request after a quiet
+period does not pay TCP + TLS + auth setup.
+
+**Before raising it**, check `SHOW max_connections;` on the actual instance and divide by
+the number of things that connect, remembering that a rolling deploy briefly doubles the
+API's share. If you scale to more than one instance you must divide the pool between
+them — but see §11: this app must run exactly one instance for other reasons anyway.
+
+`leak-detection-threshold` is 60s in dev only: it logs a stack trace for any connection
+held longer than a minute, which is almost always a leak. It is off in production, where
+a slow query would otherwise fill the log with false positives.

@@ -38,15 +38,21 @@ public class ProductionConfigValidator {
     private final String mailMode;
     private final String corsAllowedOrigins;
     private final String adminPassword;
+    private final boolean rateLimitsEnabled;
+    private final boolean autoVerifyEmails;
 
     public ProductionConfigValidator(@Value("${app.jwt.secret:}") String jwtSecret,
                                      @Value("${app.mail.mode:}") String mailMode,
                                      @Value("${app.cors.allowed-origins:}") String corsAllowedOrigins,
-                                     @Value("${app.seed.admin-password:}") String adminPassword) {
+                                     @Value("${app.seed.admin-password:}") String adminPassword,
+                                     @Value("${app.rate-limits-enabled:true}") boolean rateLimitsEnabled,
+                                     @Value("${app.auth.auto-verify-emails:false}") boolean autoVerifyEmails) {
         this.jwtSecret = jwtSecret;
         this.mailMode = mailMode;
         this.corsAllowedOrigins = corsAllowedOrigins;
         this.adminPassword = adminPassword;
+        this.rateLimitsEnabled = rateLimitsEnabled;
+        this.autoVerifyEmails = autoVerifyEmails;
     }
 
     @PostConstruct
@@ -88,6 +94,18 @@ public class ProductionConfigValidator {
             && adminPassword.length() < MIN_ADMIN_PASSWORD_LENGTH) {
             problems.add("ADMIN_PASSWORD is shorter than " + MIN_ADMIN_PASSWORD_LENGTH
                 + " characters. Use a longer one, or unset it if the admin already exists.");
+        }
+
+        // --- Test-only switches that must never be on in production -----------
+        if (!rateLimitsEnabled) {
+            problems.add("RATE_LIMITS_ENABLED=false disables every rate limiter — brute-force "
+                + "protection on login, code redemption, signals and support. It exists for local "
+                + "test runs only. Unset it.");
+        }
+        if (autoVerifyEmails) {
+            problems.add("AUTO_VERIFY_EMAILS=true marks every new account verified without sending "
+                + "mail, defeating email verification entirely. It exists for dev and e2e only. "
+                + "Unset it.");
         }
 
         if (!problems.isEmpty()) {

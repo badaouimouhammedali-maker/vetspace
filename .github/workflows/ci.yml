@@ -95,7 +95,7 @@ jobs:
           cache: npm
           cache-dependency-path: e2e/package-lock.json
       - name: Build + start the seeded e2e stack
-        run: docker compose --profile e2e up -d --build
+        run: docker compose -f scripts/e2e.compose.yml up -d --build
       - name: Wait for backend + frontend
         run: |
           # Poll, then assert. A bare retry loop "succeeds" when the service never
@@ -107,6 +107,15 @@ jobs:
           for _ in $(seq 1 30); do curl -sf http://localhost:8088 >/dev/null && break; sleep 2; done
           curl -sf http://localhost:8088 >/dev/null || {
             echo "::error::frontend never became reachable"; exit 1; }
+          # Health is UP once the port binds, but the dev seeder runs after that.
+          # Starting Playwright here would race it onto an empty catalog.
+          for _ in $(seq 1 45); do
+            n=$(curl -s http://localhost:8080/api/public/stats | grep -o '"questions":[0-9]*' | grep -o '[0-9]*' || echo 0)
+            [ "${n:-0}" -gt 0 ] && break
+            sleep 2
+          done
+          [ "$(curl -s http://localhost:8080/api/public/stats | grep -o '"questions":[0-9]*' | grep -o '[0-9]*')" -gt 0 ] || {
+            echo "::error::catalog was never seeded"; exit 1; }
       - name: Install Playwright + browsers
         working-directory: e2e
         run: |
@@ -120,7 +129,7 @@ jobs:
         run: npm test
       - name: Stack logs on failure
         if: failure()
-        run: docker compose --profile e2e logs --tail=200
+        run: docker compose -f scripts/e2e.compose.yml logs --tail=200
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
@@ -130,4 +139,4 @@ jobs:
           if-no-files-found: ignore
       - name: Tear down
         if: always()
-        run: docker compose --profile e2e down -v
+        run: docker compose -f scripts/e2e.compose.yml down -v

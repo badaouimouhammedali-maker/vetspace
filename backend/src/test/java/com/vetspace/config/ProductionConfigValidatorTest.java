@@ -18,7 +18,14 @@ class ProductionConfigValidatorTest {
 
     private ProductionConfigValidator validator(String secret, String mailMode, String origins,
                                                 String adminPassword) {
-        return new ProductionConfigValidator(secret, mailMode, origins, adminPassword);
+        return validator(secret, mailMode, origins, adminPassword, true, false);
+    }
+
+    private ProductionConfigValidator validator(String secret, String mailMode, String origins,
+                                                String adminPassword, boolean rateLimitsEnabled,
+                                                boolean autoVerifyEmails) {
+        return new ProductionConfigValidator(secret, mailMode, origins, adminPassword,
+            rateLimitsEnabled, autoVerifyEmails);
     }
 
     private ProductionConfigValidator valid() {
@@ -90,6 +97,24 @@ class ProductionConfigValidatorTest {
         // Unset is the normal steady state once the admin exists.
         assertThatCode(() -> validator(GOOD_SECRET, "smtp", GOOD_ORIGINS, "").validate())
             .doesNotThrowAnyException();
+    }
+
+    @Test
+    void rejectsDisabledRateLimits() {
+        // The switch exists so repeated local test runs do not trip the redeem and login
+        // limits. In production it would remove brute-force protection outright.
+        assertThatThrownBy(() ->
+            validator(GOOD_SECRET, "smtp", GOOD_ORIGINS, "", false, false).validate())
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("RATE_LIMITS_ENABLED=false");
+    }
+
+    @Test
+    void rejectsAutoVerifiedEmails() {
+        assertThatThrownBy(() ->
+            validator(GOOD_SECRET, "smtp", GOOD_ORIGINS, "", true, true).validate())
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("AUTO_VERIFY_EMAILS=true");
     }
 
     @Test

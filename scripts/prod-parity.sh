@@ -6,8 +6,13 @@
 # Two phases, because they need different data:
 #   A. prod profile alone  -> hardening assertions (swagger/actuator dead,
 #      cookie flags, health detail hidden). No content required.
-#   B. dev,prod            -> the dev seeder supplies a catalog to play through;
-#      prod is last so its configuration still wins. Runs the smoke journey.
+#   B. dev profile         -> the dev seeder supplies a catalog to play through, and
+#      the journey runs against the same production IMAGE and BUNDLE.
+#
+# Phase B cannot use the prod profile: an unattended journey needs AUTO_VERIFY_EMAILS
+# (no mailbox to click through) and RATE_LIMITS_ENABLED=false (repeated runs trip the
+# redeem limit), and the prod profile refuses to start with either — by design. Phase A
+# is what proves the production configuration; Phase B proves the shipped artifacts.
 #
 # Deviation from real production: the captcha is disabled (it cannot be solved
 # unattended). Everything else — profile, image, bundle, cross-origin SPA — matches.
@@ -120,12 +125,13 @@ allowed=$(curl -s -o /dev/null -D - -X OPTIONS "$API/api/auth/login" \
 [[ "$allowed" == *"$ALLOWED_ORIGIN"* ]] && pass "allowlisted origin is granted (allowlist works, not a blanket deny)" \
   || fail "allowlisted origin was not granted: ${allowed:-none}"
 
-echo "==> Phase B: dev,prod — seeded catalog, full journey"
+echo "==> Phase B: dev profile — seeded catalog, full journey"
 # Reset the database first. The dev seeder only populates an EMPTY database, and
 # Phase A's SEED_ADMIN bootstrap leaves an admin behind — without this reset the
 # catalog is never seeded and the journey fails on an empty École dropdown.
 "${COMPOSE[@]}" down -v >/dev/null 2>&1
-SEED_ADMIN=false PROFILES=dev,prod "${COMPOSE[@]}" up -d
+SEED_ADMIN=false AUTO_VERIFY_EMAILS=true RATE_LIMITS_ENABLED=false \
+  PROFILES=dev "${COMPOSE[@]}" up -d
 wait_for_api
 wait_for "the dev seeder to populate the catalog" catalog_is_seeded
 

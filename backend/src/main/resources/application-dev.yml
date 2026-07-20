@@ -6,6 +6,12 @@
 # Hardcoding localhost in this profile silently clobbered DB_URL, MAIL_HOST
 # and MEDIA_ENDPOINT for the containerised e2e stack, which runs with this
 # profile to get the data seeder — the backend then died on Flyway startup.
+spring:
+  datasource:
+    hikari:
+      # Dev only: flags a connection held longer than 60s, which usually means a leak.
+      leak-detection-threshold: ${DB_LEAK_DETECTION_MS:60000}
+
 app:
   auth:
     # Local signups have no mailbox to click through.

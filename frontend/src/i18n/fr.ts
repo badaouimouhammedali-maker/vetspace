@@ -100,6 +100,18 @@ export const fr = {
   'app.welcome': 'Bienvenue',
   'app.forbidden': "Vous n'avez pas accès à cette page.",
 
+  // Erreur inattendue (ErrorBoundary)
+  'error.title': 'Une erreur est survenue',
+  'error.body':
+    "Cette page n'a pas pu s'afficher. Rechargez pour réessayer — si le problème persiste, contactez le support.",
+  'error.reload': 'Recharger la page',
+
+  // Page introuvable (404)
+  'notFound.title': 'Page introuvable',
+  'notFound.body': "Cette page n'existe pas ou a été déplacée.",
+  'notFound.backToApp': "Retour à l'application",
+  'notFound.backToHome': "Retour à l'accueil",
+
   // Erreurs API génériques
   'api.rateLimited': 'Trop de tentatives. Réessayez plus tard.',
   'api.sessionExpired': 'Votre session a expiré. Merci de vous reconnecter.',

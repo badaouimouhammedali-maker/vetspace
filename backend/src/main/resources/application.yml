@@ -13,6 +13,17 @@ spring:
     username: ${DB_USER:vetspace}
     password: ${DB_PASSWORD:vetspace}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      # Sized explicitly rather than left to the default: see docs/deploy.md §13 for
+      # why 10 is the ceiling that fits Railway's Postgres connection limit.
+      maximum-pool-size: ${DB_POOL_MAX:10}
+      minimum-idle: ${DB_POOL_MIN:2}
+      connection-timeout: 10000
+      # 0 disables; the dev profile turns it on to surface unclosed connections early.
+      leak-detection-threshold: ${DB_LEAK_DETECTION_MS:0}
+  lifecycle:
+    # Upper bound on the graceful drain above.
+    timeout-per-shutdown-phase: 20s
   jpa:
     hibernate:
       ddl-auto: validate
@@ -36,6 +47,8 @@ spring:
 
 server:
   port: ${SERVER_PORT:8080}
+  # Let in-flight requests finish instead of severing them mid-response on redeploy.
+  shutdown: graceful
 
 management:
   endpoints:
@@ -51,6 +64,10 @@ management:
       enabled: false
 
 app:
+  # Turns every rate limiter into a no-op. Test/dev convenience ONLY — repeated local
+  # e2e runs otherwise trip the redeem and login limits. ProductionConfigValidator
+  # refuses to start the prod profile when this is true.
+  rate-limits-enabled: ${RATE_LIMITS_ENABLED:true}
   auth:
     # Marks new registrations verified immediately and skips the email. Dev/e2e only —
     # ProductionConfigValidator has no say here, so never set it in a real deployment.

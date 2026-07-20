@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
@@ -22,9 +23,17 @@ public class RedeemRateLimiter {
     private static final Bandwidth LIMIT = Bandwidth.classic(5, Refill.intervally(5, Duration.ofHours(1)));
 
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
+    private final boolean enabled;
+
+    public RedeemRateLimiter(@Value("${app.rate-limits-enabled:true}") boolean enabled) {
+        this.enabled = enabled;
+    }
 
     /** Checks both buckets; the attempt counts against both regardless of whether the code turns out valid. */
     public void check(UUID userId, String clientIp) {
+        if (!enabled) {
+            return;
+        }
         if (!tryConsume("user:" + userId) | !tryConsume("ip:" + clientIp)) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Rate limit exceeded");
         }
