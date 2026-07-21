@@ -3,7 +3,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { Field, Select, TextInput } from '../../components/forms';
 import { Button, Disclosure, EmptyState, Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
-import { apiErrorMessage } from '../../lib/api';
+import { apiErrorMessage, apiErrorReference } from '../../lib/api';
 import {
   createCourse,
   createModule,
@@ -45,7 +45,7 @@ export function EcolesPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const invalidate = (key: string) => qc.invalidateQueries({ queryKey: ['admin', key] });
-  const onError = (e: unknown) => toast('error', apiErrorMessage(e) ?? 'Erreur');
+  const onError = (e: unknown) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e));
 
   const visibleModules = useMemo(
     () =>
@@ -437,7 +437,7 @@ function SchoolModal({
       toast('success', 'École enregistrée.');
       onSaved();
     },
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
   return (
     <Modal open onClose={onClose} title={school ? "Modifier l'école" : 'Nouvelle école'}>
@@ -495,7 +495,7 @@ function ModuleModal({
       toast('success', 'Module enregistré.');
       onSaved();
     },
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
   return (
     <Modal open onClose={onClose} title={module ? 'Modifier le module' : 'Nouveau module'}>
@@ -553,7 +553,7 @@ function CourseModal({
       toast('success', 'Cours enregistré.');
       onSaved();
     },
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
   return (
     <Modal open onClose={onClose} title={course ? 'Modifier le cours' : 'Nouveau cours'}>

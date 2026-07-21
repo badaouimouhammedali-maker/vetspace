@@ -15,7 +15,7 @@ import {
   fetchSourceExams,
   type SessionFilters,
 } from '../../lib/endpoints';
-import { apiErrorMessage } from '../../lib/api';
+import { apiErrorMessage, apiErrorReference } from '../../lib/api';
 import type { SessionType } from '../../lib/schemas';
 
 export function SessionBuilderDialog({
@@ -95,7 +95,7 @@ export function SessionBuilderDialog({
     },
     onError: (err) => {
       setError(apiErrorMessage(err) ?? t('common.error'));
-      toast('error', apiErrorMessage(err) ?? t('common.error'));
+      toast('error', apiErrorMessage(err) ?? t('common.error'), apiErrorReference(err));
     },
   });
 

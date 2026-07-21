@@ -115,3 +115,11 @@ springdoc:
     enabled: false
   swagger-ui:
     enabled: false
+
+logging:
+  pattern:
+    # `[%X{requestId}]` prints the correlation id set by RequestIdFilter on every line,
+    # so a request id quoted from an error toast greps straight to the request's own log
+    # output. Empty brackets mean the work happened outside a request — a scheduled job
+    # or startup — which is itself worth being able to tell apart.
+    console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%X{requestId}]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"

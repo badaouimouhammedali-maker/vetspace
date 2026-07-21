@@ -3,7 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { Field, Select, TextInput } from '../../components/forms';
 import { EmptyState, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
-import { apiErrorMessage } from '../../lib/api';
+import { apiErrorMessage, apiErrorReference } from '../../lib/api';
 import {
   broadcastNotification,
   fetchAdminSchools,
@@ -48,7 +48,7 @@ export function AdminNotificationsPage() {
       setBody('');
       qc.invalidateQueries({ queryKey: ['admin', 'notif-history'] });
     },
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
 
   return (

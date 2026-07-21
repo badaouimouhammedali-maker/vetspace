@@ -7,6 +7,9 @@ export const fr = {
   'common.appName': 'VetSpace',
   'common.loading': 'Chargement…',
   'common.error': 'Une erreur est survenue. Veuillez réessayer.',
+  // Prefixes the request id on an error toast. Kept short: it sits under the message
+  // and is meant to be copied into a support message, not read as a sentence.
+  'common.errorReference': 'Référence :',
   'common.save': 'Enregistrer',
   'common.cancel': 'Annuler',
   'common.confirm': 'Confirmer',

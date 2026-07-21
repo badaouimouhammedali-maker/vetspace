@@ -3,7 +3,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { Field, Select, TextInput } from '../../components/forms';
 import { EmptyState, Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
-import { apiErrorMessage } from '../../lib/api';
+import { apiErrorMessage, apiErrorReference } from '../../lib/api';
 import {
   createMindmap,
   deleteMindmap,
@@ -33,13 +33,13 @@ export function AdminMindmapsPage() {
       qc.invalidateQueries({ queryKey: ['admin', 'mindmaps'] });
       toast('success', 'MindMap supprimée.');
     },
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
   const pub = useMutation({
     mutationFn: ({ id, published }: { id: string; published: boolean }) =>
       publishMindmap(id, published),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'mindmaps'] }),
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
 
   return (
@@ -151,7 +151,7 @@ function MindmapModal({
       setImageUrl(r.url);
       toast('success', 'Image téléversée.');
     },
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Échec du téléversement'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Échec du téléversement', apiErrorReference(e)),
   });
 
   const save = useMutation({
@@ -163,7 +163,7 @@ function MindmapModal({
       toast('success', 'MindMap enregistrée.');
       onSaved();
     },
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
 
   return (

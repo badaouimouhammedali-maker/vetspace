@@ -15,7 +15,7 @@ import {
 import { SignalDialog } from '../../components/SignalDialog';
 import { useToast } from '../../components/ToastProvider';
 import { t } from '../../i18n/fr';
-import { apiErrorMessage } from '../../lib/api';
+import { apiErrorMessage, apiErrorReference } from '../../lib/api';
 import {
   answerQuestion,
   consultQuestion,
@@ -127,7 +127,7 @@ export function PlayPage() {
         [correction.questionId]: { state: 'ANSWERED', isCorrect: correction.isCorrect },
       }));
     },
-    onError: (err) => toast('error', apiErrorMessage(err) ?? t('common.error')),
+    onError: (err) => toast('error', apiErrorMessage(err) ?? t('common.error'), apiErrorReference(err)),
   });
 
   const consult = useMutation({
@@ -158,7 +158,7 @@ export function PlayPage() {
         queryClient.invalidateQueries({ queryKey: ['weekly'] }),
       ]);
     },
-    onError: (err) => toast('error', apiErrorMessage(err) ?? t('common.error')),
+    onError: (err) => toast('error', apiErrorMessage(err) ?? t('common.error'), apiErrorReference(err)),
   });
 
   const rate = useMutation({

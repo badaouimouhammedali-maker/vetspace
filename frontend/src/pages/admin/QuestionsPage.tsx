@@ -5,7 +5,7 @@ import { Field, Select, TextInput } from '../../components/forms';
 import { Button, EmptyState, Modal, SegmentToggle, TableSkeleton } from '../../components/ui';
 import { SafeHtml } from '../../lib/sanitize';
 import { useToast } from '../../components/ToastProvider';
-import { apiErrorMessage } from '../../lib/api';
+import { apiErrorMessage, apiErrorReference } from '../../lib/api';
 import {
   createQuestion,
   deleteQuestion,
@@ -138,12 +138,12 @@ function QuestionsTable({
       qc.invalidateQueries({ queryKey: ['admin', 'questions'] });
       toast('success', 'Question supprimée.');
     },
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
   const pub = useMutation({
     mutationFn: ({ id, p }: { id: string; p: boolean }) => publishQuestion(id, p),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'questions'] }),
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
 
   const resetPage = () => setPage(0);
@@ -410,7 +410,7 @@ function QuestionEditor({
       toast('success', 'Question enregistrée.');
       onDone();
     },
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
 
   function submit(e: FormEvent) {
@@ -676,7 +676,7 @@ function ImageAttacher({
     onMutate: () => setBusy(true),
     onSettled: () => setBusy(false),
     onSuccess: (r) => onChange([...images, r.url]),
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Échec du téléversement'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Échec du téléversement', apiErrorReference(e)),
   });
   return (
     <div>
@@ -739,7 +739,7 @@ function BulkImportModal({ onClose }: { onClose: () => void }) {
       if (parsed.success) {
         setRowErrors(parsed.data);
       } else {
-        toast('error', apiErrorMessage(e) ?? "Échec de l'import");
+        toast('error', apiErrorMessage(e) ?? "Échec de l'import", apiErrorReference(e));
       }
     },
   });

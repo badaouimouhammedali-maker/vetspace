@@ -3,7 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { Select } from '../../components/forms';
 import { EmptyState, Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
-import { apiErrorMessage } from '../../lib/api';
+import { apiErrorMessage, apiErrorReference } from '../../lib/api';
 import { fetchAdminSignals, rejectSignal, resolveSignal } from '../../lib/adminEndpoints';
 import type { SignalAdmin, SignalStatus } from '../../lib/schemas';
 import { AdminHeader, Card, GhostButton, Pager, PrimaryButton, StatusBadge } from './adminUi';
@@ -138,7 +138,7 @@ function ReplyModal({
       toast('success', action === 'resolve' ? 'Signalement résolu.' : 'Signalement rejeté.');
       onClose();
     },
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
   return (
     <Modal

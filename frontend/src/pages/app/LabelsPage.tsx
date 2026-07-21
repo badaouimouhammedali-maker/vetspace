@@ -5,7 +5,7 @@ import { Field, SubmitButton, TextInput } from '../../components/forms';
 import { Button, Disclosure, EmptyState, ListSkeleton, Modal, Skeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { t } from '../../i18n/fr';
-import { apiErrorMessage } from '../../lib/api';
+import { apiErrorMessage, apiErrorReference } from '../../lib/api';
 import {
   createLabel,
   createSession,
@@ -90,7 +90,7 @@ export function LabelsPage() {
     mutationFn: (labelId: string) =>
       createSession({ sessionType: 'ENTRAINEMENT', filters: { labelIds: [labelId] }, questionCount: 50 }),
     onSuccess: (session) => navigate(`/app/session/${session.id}`),
-    onError: (err) => toast('error', apiErrorMessage(err) ?? t('common.error')),
+    onError: (err) => toast('error', apiErrorMessage(err) ?? t('common.error'), apiErrorReference(err)),
   });
 
   return (

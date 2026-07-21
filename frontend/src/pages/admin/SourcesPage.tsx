@@ -3,7 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { Field, Select, TextInput } from '../../components/forms';
 import { EmptyState, Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
-import { apiErrorMessage } from '../../lib/api';
+import { apiErrorMessage, apiErrorReference } from '../../lib/api';
 import {
   createSourceExam,
   deleteSourceExam,
@@ -34,7 +34,7 @@ export function SourcesPage() {
       qc.invalidateQueries({ queryKey: ['admin', 'source-exams'] });
       toast('success', "Source d'examen supprimée.");
     },
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
 
   return (
@@ -134,7 +134,7 @@ function SourceModal({
       toast('success', 'Source enregistrée.');
       onSaved();
     },
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
   return (
     <Modal open onClose={onClose} title={source ? 'Modifier la source' : 'Nouvelle source'}>

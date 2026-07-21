@@ -17,9 +17,17 @@ unhandled exception) has the same shape and never includes a stack trace:
 {
   "error": "Unauthorized",
   "message": "Invalid email or password",
-  "timestamp": "2026-07-16T00:00:00Z"
+  "timestamp": "2026-07-16T00:00:00Z",
+  "requestId": "f2e35980e41d4b44b334d8aadbcebc94"
 }
 ```
+
+`requestId` is the correlation id for the request. It is also returned on **every**
+response — success or failure — as the `X-Request-Id` header, and printed on every log
+line the request produces, so an id quoted by a user leads straight to that request's
+log output. Clients may send their own `X-Request-Id` and it is echoed back, provided it
+matches `[A-Za-z0-9_-]{1,64}`; anything else is replaced with a generated id rather than
+written to the log verbatim. The field is omitted when there is nothing to correlate.
 
 A request to a path with no handler returns `404` in this same shape — not `500`.
 (Unauthenticated callers still get `401` first: authentication is checked before

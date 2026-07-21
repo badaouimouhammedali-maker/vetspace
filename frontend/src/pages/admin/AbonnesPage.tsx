@@ -4,7 +4,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { TextInput } from '../../components/forms';
 import { EmptyState, Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
-import { apiErrorMessage } from '../../lib/api';
+import { apiErrorMessage, apiErrorReference } from '../../lib/api';
 import {
   fetchSubscriptionAudit,
   searchAdminUsers,
@@ -43,7 +43,7 @@ export function AbonnesPage() {
       qc.invalidateQueries({ queryKey: ['admin', 'users'] });
       toast('success', u.status === 'DISABLED' ? 'Compte désactivé.' : 'Compte réactivé.');
     },
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
 
   return (

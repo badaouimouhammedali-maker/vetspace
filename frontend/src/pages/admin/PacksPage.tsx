@@ -3,7 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { Field, Select, TextInput } from '../../components/forms';
 import { EmptyState, Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
-import { apiErrorMessage } from '../../lib/api';
+import { apiErrorMessage, apiErrorReference } from '../../lib/api';
 import {
   createPack,
   deletePack,
@@ -36,7 +36,7 @@ export function PacksPage() {
       qc.invalidateQueries({ queryKey: ['admin', 'packs'] });
       toast('success', 'Pack supprimé.');
     },
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
 
   return (
@@ -149,7 +149,7 @@ function CodesSection({ packs }: { packs: AdminPack[] }) {
       qc.invalidateQueries({ queryKey: ['admin', 'codes'] });
       toast('success', 'Code révoqué.');
     },
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
 
   const rows = (codes.data?.content ?? []).filter((c) => !status || c.status === status);
@@ -283,7 +283,7 @@ function PackModal({
       toast('success', 'Pack enregistré.');
       onSaved();
     },
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
 
   return (
@@ -380,7 +380,7 @@ function GenerateModal({ pack, onClose }: { pack: AdminPack; onClose: () => void
       setResult(r);
       qc.invalidateQueries({ queryKey: ['admin', 'codes'] });
     },
-    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
 
   function downloadCsv() {

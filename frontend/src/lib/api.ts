@@ -126,3 +126,24 @@ export function apiErrorMessage(error: unknown): string | null {
 export function apiErrorStatus(error: unknown): number | null {
   return axios.isAxiosError(error) ? (error.response?.status ?? null) : null;
 }
+
+/**
+ * Correlation id for a failed request — the "référence" a student can quote in a
+ * support message so the exact request can be found in the log.
+ *
+ * <p>Reads the header first and the body second. The header is set by a filter ahead of
+ * the whole chain, so it survives responses that never reach a controller (401 from the
+ * security chain, 429 from the rate limiter, 413 from the size filter) and bodies that
+ * are not our JSON at all — a proxy's own 502 page, for instance.
+ */
+export function apiErrorReference(error: unknown): string | null {
+  if (!axios.isAxiosError(error)) {
+    return null;
+  }
+  const header = error.response?.headers?.['x-request-id'];
+  if (typeof header === 'string' && header.length > 0) {
+    return header;
+  }
+  const parsed = apiErrorSchema.safeParse(error.response?.data);
+  return parsed.success ? (parsed.data.requestId ?? null) : null;
+}

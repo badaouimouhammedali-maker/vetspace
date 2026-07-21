@@ -48,11 +48,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(com.vetspace.admin.ImportValidationException.class)
     public ResponseEntity<ImportErrorBody> handleImportValidation(com.vetspace.admin.ImportValidationException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(new ImportErrorBody(HttpStatus.BAD_REQUEST.getReasonPhrase(), ex.getMessage(), Instant.now(), ex.getErrors()));
+            .body(new ImportErrorBody(HttpStatus.BAD_REQUEST.getReasonPhrase(), ex.getMessage(), Instant.now(),
+                com.vetspace.web.RequestIdFilter.current(), ex.getErrors()));
     }
 
     /** Standard error shape plus the per-row detail list the import contract promises. */
-    public record ImportErrorBody(String error, String message, Instant timestamp,
+    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+    public record ImportErrorBody(String error, String message, Instant timestamp, String requestId,
                                    java.util.List<com.vetspace.admin.dto.QuestionDtos.ImportRowError> errors) {
     }
 

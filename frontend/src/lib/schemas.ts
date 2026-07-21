@@ -53,6 +53,10 @@ export const apiErrorSchema = z.object({
   error: z.string(),
   message: z.string(),
   timestamp: z.string(),
+  // Correlation id, mirrored from the X-Request-Id response header. Optional because a
+  // request that never reached the API (offline, DNS, a proxy 502) has no id to carry —
+  // and because parsing must not fail on an older backend that predates it.
+  requestId: z.string().optional(),
 });
 export type ApiError = z.infer<typeof apiErrorSchema>;
 

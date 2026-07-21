@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { t } from '../i18n/fr';
 
 type ToastKind = 'success' | 'error' | 'info';
 
@@ -16,10 +17,17 @@ interface Toast {
   id: number;
   kind: ToastKind;
   message: string;
+  /** Correlation id of the failed request, when there was one. */
+  reference?: string | undefined;
 }
 
 interface ToastContextValue {
-  toast: (kind: ToastKind, message: string) => void;
+  /**
+   * `reference` is the X-Request-Id of the request that failed. Pass it for anything
+   * that came back from the API; omit it for client-side validation, which never
+   * reached the server and therefore has nothing for support to look up.
+   */
+  toast: (kind: ToastKind, message: string, reference?: string | null) => void;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -48,8 +56,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setToasts((current) => current.filter((item) => item.id !== id));
   }, []);
 
-  const toast = useCallback((kind: ToastKind, message: string) => {
-    setToasts((current) => [...current, { id: nextId++, kind, message }]);
+  const toast = useCallback((kind: ToastKind, message: string, reference?: string | null) => {
+    setToasts((current) => [
+      ...current,
+      { id: nextId++, kind, message, reference: reference ?? undefined },
+    ]);
   }, []);
 
   const value = useMemo(() => ({ toast }), [toast]);
@@ -106,7 +117,19 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: number)
       >
         {KIND_ICONS[toast.kind]}
       </span>
-      <span>{toast.message}</span>
+      <span>
+        {toast.message}
+        {/* The reference is the whole point of the correlation id reaching the client:
+            a student can copy these characters into a support message and the exact
+            request is one grep away. `select-all` so one click takes the id and not the
+            sentence around it; tabular-nums so it is legible character by character
+            when read aloud or retyped. */}
+        {toast.reference ? (
+          <span className="mt-1 block select-all font-mono text-caption font-normal opacity-70 tabular-nums">
+            {t('common.errorReference')} {toast.reference}
+          </span>
+        ) : null}
+      </span>
     </div>
   );
 }

@@ -15,7 +15,7 @@ import {
 } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { t } from '../../i18n/fr';
-import { apiErrorMessage } from '../../lib/api';
+import { apiErrorMessage, apiErrorReference } from '../../lib/api';
 import {
   deleteSession,
   fetchSessions,
@@ -141,7 +141,7 @@ export function SessionsPage({ type }: { type: SessionType }) {
       await invalidate();
       setRepeatTarget(null);
     },
-    onError: (err) => toast('error', apiErrorMessage(err) ?? t('repeat.error')),
+    onError: (err) => toast('error', apiErrorMessage(err) ?? t('repeat.error'), apiErrorReference(err)),
   });
 
   const reset = useMutation({
