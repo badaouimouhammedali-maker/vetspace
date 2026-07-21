@@ -24,19 +24,43 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Fail immediately, with a clear message, rather than starting a scan that cannot
-      # work — the NVD download is unusably rate-limited without a key. The failure()
-      # step at the end then files an issue saying exactly this.
-      - name: Require NVD_API_KEY
+      # Skip, loudly, when the key is absent — do not fail.
+      #
+      # A keyless scan cannot work (the NVD download is unusably rate-limited), so this
+      # used to exit 1. The result was a scheduled job that went red every Monday and
+      # stayed red, which is worse than useless: a permanently failing check is one
+      # people mute, and then a genuine finding arrives on a red square nobody looks at.
+      # Skipping keeps red meaning "vulnerabilities found", while the warning and the
+      # job summary keep the missing secret visible.
+      - name: Check for NVD_API_KEY
+        id: key
         env:
           KEY: ${{ secrets.NVD_API_KEY }}
         run: |
           if [ -z "$KEY" ]; then
-            echo "::error::NVD_API_KEY secret is not set — refusing keyless scan"
-            exit 1
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Dependency scan skipped::NVD_API_KEY is not set, so the OWASP scan cannot run. Add the secret to enable it."
+            {
+              echo "### Dependency scan skipped"
+              echo
+              echo "\`NVD_API_KEY\` is not configured, and the NVD feed is unusably"
+              echo "rate-limited without a key — a keyless run would hang for hours and"
+              echo "then fail."
+              echo
+              echo "**To enable:** get a free key at"
+              echo "<https://nvd.nist.gov/developers/request-an-api-key>, then add it as"
+              echo "repository secret \`NVD_API_KEY\` (Settings → Secrets and variables →"
+              echo "Actions)."
+              echo
+              echo "This job is green because nothing was checked — not because nothing"
+              echo "was found."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Set up JDK 21
+        if: steps.key.outputs.present == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -44,6 +68,7 @@ jobs:
           cache: maven
 
       - name: Cache NVD data
+        if: steps.key.outputs.present == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository/org/owasp/dependency-check-data
@@ -55,11 +80,14 @@ jobs:
       # No continue-on-error: a failed scan must leave the run red. The reporting
       # steps below use `if: failure()`, which runs them *without* masking that.
       - name: dependency-check (fails on CVSS >= 7)
+        if: steps.key.outputs.present == 'true'
         working-directory: backend
         run: ./mvnw -B --no-transfer-progress -Psecurity verify -DskipTests -Djacoco.skip=true -Dnvd.api.key=${{ secrets.NVD_API_KEY }}
 
       - name: Summarise findings
-        if: failure()
+        # `failure()` alone would also fire when the job broke for an unrelated reason
+        # (a bad checkout, a runner hiccup) and file that under "dependency findings".
+        if: failure() && steps.key.outputs.present == 'true'
         env:
           # Passed through the environment rather than interpolated into the script:
           # ${{ }} is substituted into the run block before the shell sees it, so
@@ -110,7 +138,7 @@ jobs:
           PY
 
       - name: File or update the findings issue
-        if: failure()
+        if: failure() && steps.key.outputs.present == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -128,7 +156,7 @@ jobs:
           fi
 
       - name: Upload report
-        if: always()
+        if: always() && steps.key.outputs.present == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: dependency-check-report

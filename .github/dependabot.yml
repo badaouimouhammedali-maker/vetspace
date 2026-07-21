@@ -1,0 +1,85 @@
+version: 2
+
+# Dependabot is where fixes are meant to arrive.
+#
+# The weekly OWASP scan reports what is vulnerable but never changes a version; these
+# updates are the other half of that loop. Minor and patch bumps are grouped into one PR
+# per ecosystem so a normal week is a single reviewable diff rather than fifteen
+# near-identical ones — the outcome of ungrouped updates is that nobody reads any of
+# them. Majors stay separate: they carry breaking changes and deserve their own review.
+updates:
+  # --- Backend (Maven) -----------------------------------------------------
+  - package-ecosystem: maven
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels: [dependencies, backend]
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      backend-minor-and-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  # --- Frontend (npm) ------------------------------------------------------
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels: [dependencies, frontend]
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      frontend-minor-and-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  # --- E2E harness (npm) ---------------------------------------------------
+  # Separate manifest, so Dependabot needs to be pointed at it explicitly. Playwright
+  # ships browser binaries pinned to the package version; letting it drift silently is
+  # how an e2e suite starts failing for reasons unrelated to the application.
+  - package-ecosystem: npm
+    directory: /e2e
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Etc/UTC
+    open-pull-requests-limit: 3
+    labels: [dependencies, e2e]
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      e2e-minor-and-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  # --- GitHub Actions ------------------------------------------------------
+  # Pinned action versions rot quietly: a deprecated runtime keeps working until the day
+  # GitHub turns it off, and then every workflow fails at once.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Etc/UTC
+    open-pull-requests-limit: 3
+    labels: [dependencies, ci]
+    commit-message:
+      prefix: ci
+    groups:
+      actions-minor-and-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
