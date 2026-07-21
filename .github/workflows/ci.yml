@@ -73,6 +73,45 @@ jobs:
   # published overnight in a transitive dependency has nothing to do with the commit
   # being merged. This pipeline keeps only fast, commit-scoped checks.
 
+  config-sanity:
+    name: Config sanity (placeholders + prod image boots + refuses unsafe config)
+    runs-on: ubuntu-latest
+    # Independent of the unit jobs on purpose: this catches deployment-shaped failures
+    # (a placeholder left in, an image that will not boot) which have nothing to do with
+    # whether the tests pass, and it is the slowest signal — no reason to queue it.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: vetspace
+          POSTGRES_USER: vetspace
+          POSTGRES_PASSWORD: vetspace
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U vetspace -d vetspace"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm ci
+      - name: Run config sanity
+        env:
+          # The runner's postgres service is published on localhost; the script runs the
+          # image with --network host so the container resolves it the same way.
+          DB_HOST: localhost
+          DB_PORT: '5432'
+          DB_NAME: vetspace
+          DB_USER: vetspace
+          DB_PASSWORD: vetspace
+        run: scripts/config-sanity.sh
+
   e2e:
     name: E2E (Playwright vs seeded docker-compose stack)
     runs-on: ubuntu-latest
