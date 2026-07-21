@@ -69,7 +69,7 @@ jobs:
 
       - name: Cache NVD data
         if: steps.key.outputs.present == 'true'
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.m2/repository/org/owasp/dependency-check-data
           # Rotate weekly so the cache cannot go stale enough to hide a new CVE,
