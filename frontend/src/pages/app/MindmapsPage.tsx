@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { CoursePicker } from '../../components/CoursePicker';
-import { Button, CardGridSkeleton, EmptyState } from '../../components/ui';
+import { Button, CardGridSkeleton, EmptyState, PlainButton } from '../../components/ui';
 import { t } from '../../i18n/fr';
 import { fetchMindmaps } from '../../lib/endpoints';
 
@@ -85,10 +85,10 @@ export function MindmapsPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {mindmaps.data?.map((mindmap) => (
-            <button
+            <PlainButton
               key={mindmap.id}
               onClick={() => setViewing({ url: mindmap.imageUrl, title: mindmap.title })}
-              className="group overflow-hidden rounded-lg bg-surface text-left shadow-card transition hover:ring-brand-green"
+              className="group overflow-hidden rounded-lg bg-surface text-left shadow-card transition hover:ring-1 hover:ring-brand-green"
             >
               <div className="aspect-video overflow-hidden bg-gray-100">
                 <img
@@ -98,7 +98,7 @@ export function MindmapsPage() {
                 />
               </div>
               <p className="p-3 text-sm font-bold text-brand-navy">{mindmap.title}</p>
-            </button>
+            </PlainButton>
           ))}
         </div>
       )}

@@ -18,7 +18,9 @@ export function AdminHeader({
     <PageHeader
       title={title}
       {...(subtitle ? { caption: subtitle } : {})}
-      {...(children ? { action: <div className="flex flex-wrap items-center gap-2">{children}</div> } : {})}
+      {...(children
+        ? { action: <div className="flex flex-wrap items-center gap-2">{children}</div> }
+        : {})}
     />
   );
 }
@@ -67,10 +69,7 @@ export function PrimaryButton({
   disabled?: boolean;
 }) {
   return (
-    <Button variant="primary" size="md"
-   type={type}
-   onClick={onClick}
-   disabled={disabled}>
+    <Button variant="primary" size="md" type={type} onClick={onClick} disabled={disabled}>
       {children}
     </Button>
   );
@@ -85,18 +84,19 @@ export function GhostButton({
   onClick?: () => void;
   tone?: 'gray' | 'red';
 }) {
-  const cls =
-    tone === 'red'
-      ? 'border-danger text-danger hover:bg-danger/10'
-      : 'border-gray-300 text-brand-gray hover:bg-gray-50';
+  // Delegates rather than re-implements: this was the last place in the admin area with
+  // its own idea of what a button's radius, weight and transition are.
   return (
-    <button
-      type="button"
+    <Button
+      variant={tone === 'red' ? 'danger' : 'secondary'}
+      size="sm"
       onClick={onClick}
-      className={`rounded-lg border px-3 py-1.5 text-sm font-semibold transition ${cls}`}
+      {...(tone === 'red'
+        ? { className: 'bg-transparent border border-danger text-danger hover:bg-danger/10' }
+        : {})}
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -135,16 +135,15 @@ export function Pager({
   }
   return (
     <div className="mt-4 flex items-center justify-center gap-3 text-sm">
-      <Button variant="secondary" size="sm"
-        onClick={() => onPage(page - 1)}
-        disabled={page <= 0}
-      >
+      <Button variant="secondary" size="sm" onClick={() => onPage(page - 1)} disabled={page <= 0}>
         ← Précédent
       </Button>
       <span className="text-brand-gray">
         Page {page + 1} / {totalPages}
       </span>
-      <Button variant="secondary" size="sm"
+      <Button
+        variant="secondary"
+        size="sm"
         onClick={() => onPage(page + 1)}
         disabled={page >= totalPages - 1}
       >

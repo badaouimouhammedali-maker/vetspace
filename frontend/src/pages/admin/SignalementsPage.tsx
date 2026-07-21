@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { Select } from '../../components/forms';
-import { Modal, TableSkeleton } from '../../components/ui';
+import { EmptyState, Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { apiErrorMessage } from '../../lib/api';
 import { fetchAdminSignals, rejectSignal, resolveSignal } from '../../lib/adminEndpoints';
@@ -22,9 +22,10 @@ const STATUS_LABEL: Record<SignalStatus, string> = {
 export function SignalementsPage() {
   const [status, setStatus] = useState<SignalStatus | ''>('OPEN');
   const [page, setPage] = useState(0);
-  const [replyTo, setReplyTo] = useState<{ signal: SignalAdmin; action: 'resolve' | 'reject' } | null>(
-    null,
-  );
+  const [replyTo, setReplyTo] = useState<{
+    signal: SignalAdmin;
+    action: 'resolve' | 'reject';
+  } | null>(null);
 
   const signals = useQuery({
     queryKey: ['admin', 'signals', status, page],
@@ -33,7 +34,10 @@ export function SignalementsPage() {
 
   return (
     <div>
-      <AdminHeader title="Signalements" subtitle="File d'attente des erreurs signalées par les étudiants." />
+      <AdminHeader
+        title="Signalements"
+        subtitle="File d'attente des erreurs signalées par les étudiants."
+      />
 
       <div className="mb-3">
         <Select
@@ -54,7 +58,12 @@ export function SignalementsPage() {
         <TableSkeleton rows={5} />
       ) : (signals.data?.content ?? []).length === 0 ? (
         <Card>
-          <p className="text-sm text-brand-gray">Aucun signalement.</p>
+          <EmptyState
+            icon="🚩"
+            title="Aucun signalement"
+            caption="Rien à traiter pour le moment."
+            compact
+          />
         </Card>
       ) : (
         <div className="space-y-3">
@@ -84,7 +93,10 @@ export function SignalementsPage() {
                   <PrimaryButton onClick={() => setReplyTo({ signal: s, action: 'resolve' })}>
                     Résoudre
                   </PrimaryButton>
-                  <GhostButton tone="red" onClick={() => setReplyTo({ signal: s, action: 'reject' })}>
+                  <GhostButton
+                    tone="red"
+                    onClick={() => setReplyTo({ signal: s, action: 'reject' })}
+                  >
                     Rejeter
                   </GhostButton>
                 </div>
@@ -129,7 +141,11 @@ function ReplyModal({
     onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
   });
   return (
-    <Modal open onClose={onClose} title={action === 'resolve' ? 'Résoudre le signalement' : 'Rejeter le signalement'}>
+    <Modal
+      open
+      onClose={onClose}
+      title={action === 'resolve' ? 'Résoudre le signalement' : 'Rejeter le signalement'}
+    >
       <form
         onSubmit={(e: FormEvent) => {
           e.preventDefault();

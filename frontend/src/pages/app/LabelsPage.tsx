@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Field, SubmitButton, TextInput } from '../../components/forms';
-import { Button, EmptyState, ListSkeleton, Modal, Skeleton } from '../../components/ui';
+import { Button, Disclosure, EmptyState, ListSkeleton, Modal, Skeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { t } from '../../i18n/fr';
 import { apiErrorMessage } from '../../lib/api';
@@ -122,19 +122,20 @@ export function LabelsPage() {
           {labels.data?.map((label) => (
             <div key={label.id} className="rounded-lg bg-surface p-4 shadow-card">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <button
+                <Disclosure
+                  open={expanded === label.id}
                   onClick={() => setExpanded(expanded === label.id ? null : label.id)}
-                  className="flex items-center gap-2 font-bold text-brand-navy"
+                  className="w-auto"
                 >
                   <span
-                    className="inline-block h-4 w-4 rounded-full"
+                    className="inline-block h-4 w-4 shrink-0 rounded-full"
                     style={{ backgroundColor: label.color }}
                   />
                   {label.name}
-                  <span className="text-xs font-normal text-brand-gray">
+                  <span className="text-caption font-normal text-gray-500">
                     {label.questionCount} {t('labels.questionCount')}
                   </span>
-                </button>
+                </Disclosure>
                 <div className="flex items-center gap-1.5">
                   <Button variant="primary" size="sm"
                     onClick={() => startSession.mutate(label.id)}

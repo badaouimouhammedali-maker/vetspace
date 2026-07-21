@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, type FormEvent } from 'react';
 import { RichTextEditor } from '../../components/RichTextEditor';
 import { Field, Select, TextInput } from '../../components/forms';
-import { Button, Modal, SegmentToggle, TableSkeleton } from '../../components/ui';
+import { Button, EmptyState, Modal, SegmentToggle, TableSkeleton } from '../../components/ui';
 import { SafeHtml } from '../../lib/sanitize';
 import { useToast } from '../../components/ToastProvider';
 import { apiErrorMessage } from '../../lib/api';
@@ -59,7 +59,11 @@ export function QuestionsPage() {
         question={editing === 'new' ? null : editing}
         courses={courses.data ?? []}
         sources={sources.data ?? []}
-        modules={(modules.data ?? []).map((m) => ({ id: m.id, name: m.name, studyYear: m.studyYear }))}
+        modules={(modules.data ?? []).map((m) => ({
+          id: m.id,
+          name: m.name,
+          studyYear: m.studyYear,
+        }))}
         onDone={() => setEditing(null)}
       />
     );
@@ -73,7 +77,11 @@ export function QuestionsPage() {
       </AdminHeader>
 
       <QuestionsTable
-        modules={(modules.data ?? []).map((m) => ({ id: m.id, name: m.name, studyYear: m.studyYear }))}
+        modules={(modules.data ?? []).map((m) => ({
+          id: m.id,
+          name: m.name,
+          studyYear: m.studyYear,
+        }))}
         courses={courses.data ?? []}
         sources={sources.data ?? []}
         onEdit={setEditing}
@@ -145,85 +153,85 @@ function QuestionsTable({
       <AdminToolbar
         search={
           <TextInput
-          placeholder="Rechercher dans l'énoncé…"
-          value={q}
-          onChange={(e) => {
-            setQ(e.target.value);
-            resetPage();
-          }}
-        />
+            placeholder="Rechercher dans l'énoncé…"
+            value={q}
+            onChange={(e) => {
+              setQ(e.target.value);
+              resetPage();
+            }}
+          />
         }
         filters={
           <>
             <Select
-          value={moduleId}
-          onChange={(e) => {
-            setModuleId(e.target.value);
-            setCourseId('');
-            resetPage();
-          }}
-        >
-          <option value="">Tous les modules</option>
-          {modules.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.name} (A{m.studyYear})
-            </option>
-          ))}
-        </Select>
-        <Select
-          value={courseId}
-          onChange={(e) => {
-            setCourseId(e.target.value);
-            resetPage();
-          }}
-          disabled={!moduleId}
-        >
-          <option value="">Tous les cours</option>
-          {moduleCourses.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </Select>
-        <Select
-          value={sourceExamId}
-          onChange={(e) => {
-            setSourceExamId(e.target.value);
-            resetPage();
-          }}
-        >
-          <option value="">Toutes les sources</option>
-          {sources.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.label} ({s.year})
-            </option>
-          ))}
-        </Select>
-        <Select
-          value={difficulty}
-          onChange={(e) => {
-            setDifficulty(e.target.value as Difficulty | '');
-            resetPage();
-          }}
-        >
-          <option value="">Toutes difficultés</option>
-          {DIFFICULTIES.map((d) => (
-            <option key={d.value} value={d.value}>
-              {d.label}
-            </option>
-          ))}
-        </Select>
-        <Select
-          value={published}
-          onChange={(e) => {
-            setPublished(e.target.value);
-            resetPage();
-          }}
-        >
-          <option value="">Tous les états</option>
-          <option value="true">Publiées</option>
-          <option value="false">Brouillons</option>
-        </Select>
+              value={moduleId}
+              onChange={(e) => {
+                setModuleId(e.target.value);
+                setCourseId('');
+                resetPage();
+              }}
+            >
+              <option value="">Tous les modules</option>
+              {modules.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name} (A{m.studyYear})
+                </option>
+              ))}
+            </Select>
+            <Select
+              value={courseId}
+              onChange={(e) => {
+                setCourseId(e.target.value);
+                resetPage();
+              }}
+              disabled={!moduleId}
+            >
+              <option value="">Tous les cours</option>
+              {moduleCourses.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </Select>
+            <Select
+              value={sourceExamId}
+              onChange={(e) => {
+                setSourceExamId(e.target.value);
+                resetPage();
+              }}
+            >
+              <option value="">Toutes les sources</option>
+              {sources.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.label} ({s.year})
+                </option>
+              ))}
+            </Select>
+            <Select
+              value={difficulty}
+              onChange={(e) => {
+                setDifficulty(e.target.value as Difficulty | '');
+                resetPage();
+              }}
+            >
+              <option value="">Toutes difficultés</option>
+              {DIFFICULTIES.map((d) => (
+                <option key={d.value} value={d.value}>
+                  {d.label}
+                </option>
+              ))}
+            </Select>
+            <Select
+              value={published}
+              onChange={(e) => {
+                setPublished(e.target.value);
+                resetPage();
+              }}
+            >
+              <option value="">Tous les états</option>
+              <option value="true">Publiées</option>
+              <option value="false">Brouillons</option>
+            </Select>
           </>
         }
       />
@@ -232,7 +240,14 @@ function QuestionsTable({
         {list.isLoading ? (
           <TableSkeleton rows={5} />
         ) : (list.data?.content ?? []).length === 0 ? (
-          <p className="p-5 text-sm text-brand-gray">Aucune question.</p>
+          <div className="p-5">
+            <EmptyState
+              icon="❓"
+              title="Aucune question"
+              caption="Aucune question ne correspond à ces filtres."
+              compact
+            />
+          </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
@@ -265,7 +280,9 @@ function QuestionsTable({
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-2">
-                      <GhostButton onClick={() => pub.mutate({ id: question.id, p: !question.published })}>
+                      <GhostButton
+                        onClick={() => pub.mutate({ id: question.id, p: !question.published })}
+                      >
                         {question.published ? 'Dépublier' : 'Publier'}
                       </GhostButton>
                       <GhostButton onClick={() => onEdit(question)}>Éditer</GhostButton>
@@ -355,7 +372,10 @@ function QuestionEditor({
   function addProp() {
     if (props.length >= 5) return;
     setProps((prev) =>
-      relabel([...prev, { letter: 'X', text: '', isTrue: false, explanationHtml: '', explanationImages: [] }]),
+      relabel([
+        ...prev,
+        { letter: 'X', text: '', isTrue: false, explanationHtml: '', explanationImages: [] },
+      ]),
     );
   }
   function removeProp(i: number) {
@@ -470,7 +490,11 @@ function QuestionEditor({
 
             <div className="grid grid-cols-2 gap-3">
               <Field label="Source d'examen" htmlFor="q-source">
-                <Select id="q-source" value={sourceExamId} onChange={(e) => setSourceExamId(e.target.value)}>
+                <Select
+                  id="q-source"
+                  value={sourceExamId}
+                  onChange={(e) => setSourceExamId(e.target.value)}
+                >
                   <option value="">— Aucune —</option>
                   {sources.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -518,14 +542,15 @@ function QuestionEditor({
                       FAUX
                     </SegmentToggle>
                     {props.length > 2 ? (
-                      <button
-                        type="button"
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => removeProp(i)}
                         aria-label="Supprimer la proposition"
-                        className="text-danger hover:text-danger"
+                        className="text-danger hover:bg-danger/10"
                       >
                         ✕
-                      </button>
+                      </Button>
                     ) : null}
                   </div>
                 </div>
@@ -548,9 +573,7 @@ function QuestionEditor({
                 />
               </Card>
             ))}
-            {props.length < 5 ? (
-              <GhostButton onClick={addProp}>+ Proposition</GhostButton>
-            ) : null}
+            {props.length < 5 ? <GhostButton onClick={addProp}>+ Proposition</GhostButton> : null}
           </div>
 
           <Card className="flex items-center justify-between">
@@ -579,14 +602,21 @@ function QuestionEditor({
           </p>
           <Card>
             {difficulty ? (
-              <StatusBadge tone="navy">{DIFFICULTIES.find((d) => d.value === difficulty)?.label}</StatusBadge>
+              <StatusBadge tone="navy">
+                {DIFFICULTIES.find((d) => d.value === difficulty)?.label}
+              </StatusBadge>
             ) : null}
             <p className="mt-2 whitespace-pre-wrap text-base font-semibold text-brand-navy">
               {statement || 'Énoncé…'}
             </p>
             <div className="mt-3 space-y-2">
               {statementImages.map((src) => (
-                <img key={src} src={src} alt="" className="max-h-48 rounded-lg ring-1 ring-subtle" />
+                <img
+                  key={src}
+                  src={src}
+                  alt=""
+                  className="max-h-48 rounded-lg ring-1 ring-subtle"
+                />
               ))}
             </div>
             <ul className="mt-4 space-y-2">
@@ -654,8 +684,15 @@ function ImageAttacher({
       <div className="flex flex-wrap items-center gap-2">
         {images.map((src) => (
           <div key={src} className="relative">
-            <img src={src} alt="" className="h-16 w-16 rounded-lg object-cover ring-1 ring-subtle" />
-            <Button variant="danger" size="sm" className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center"
+            <img
+              src={src}
+              alt=""
+              className="h-16 w-16 rounded-lg object-cover ring-1 ring-subtle"
+            />
+            <Button
+              variant="danger"
+              size="sm"
+              className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center"
               type="button"
               onClick={() => onChange(images.filter((i) => i !== src))}
               aria-label="Retirer l'image"
@@ -746,7 +783,8 @@ function BulkImportModal({ onClose }: { onClose: () => void }) {
             <ul className="space-y-1 text-danger">
               {rowErrors.map((err, idx) => (
                 <li key={idx}>
-                  Ligne {err.row + 1} — <span className="font-mono">{err.field}</span> : {err.message}
+                  Ligne {err.row + 1} — <span className="font-mono">{err.field}</span> :{' '}
+                  {err.message}
                 </li>
               ))}
             </ul>

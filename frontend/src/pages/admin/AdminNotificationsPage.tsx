@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { Field, Select, TextInput } from '../../components/forms';
-import { TableSkeleton } from '../../components/ui';
+import { EmptyState, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { apiErrorMessage } from '../../lib/api';
 import {
@@ -53,7 +53,10 @@ export function AdminNotificationsPage() {
 
   return (
     <div>
-      <AdminHeader title="Notifications" subtitle="Diffuser une annonce et consulter l'historique." />
+      <AdminHeader
+        title="Notifications"
+        subtitle="Diffuser une annonce et consulter l'historique."
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
@@ -68,7 +71,11 @@ export function AdminNotificationsPage() {
             className="space-y-4"
           >
             <Field label="Type" htmlFor="n-kind">
-              <Select id="n-kind" value={kind} onChange={(e) => setKind(e.target.value as NotificationKind)}>
+              <Select
+                id="n-kind"
+                value={kind}
+                onChange={(e) => setKind(e.target.value as NotificationKind)}
+              >
                 {KINDS.map((k) => (
                   <option key={k.value} value={k.value}>
                     {k.label}
@@ -77,7 +84,12 @@ export function AdminNotificationsPage() {
               </Select>
             </Field>
             <Field label="Titre" htmlFor="n-title">
-              <TextInput id="n-title" required value={title} onChange={(e) => setTitle(e.target.value)} />
+              <TextInput
+                id="n-title"
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
             </Field>
             <label className="block text-sm font-semibold text-brand-gray">
               Message
@@ -91,7 +103,11 @@ export function AdminNotificationsPage() {
             </label>
             <div className="grid grid-cols-2 gap-3">
               <Field label="École (facultatif)" htmlFor="n-school">
-                <Select id="n-school" value={schoolId} onChange={(e) => setSchoolId(e.target.value)}>
+                <Select
+                  id="n-school"
+                  value={schoolId}
+                  onChange={(e) => setSchoolId(e.target.value)}
+                >
                   <option value="">Toutes</option>
                   {(schools.data ?? []).map((s) => (
                     <option key={s.id} value={s.id}>
@@ -101,7 +117,11 @@ export function AdminNotificationsPage() {
                 </Select>
               </Field>
               <Field label="Année (facultatif)" htmlFor="n-year">
-                <Select id="n-year" value={studyYear} onChange={(e) => setStudyYear(e.target.value)}>
+                <Select
+                  id="n-year"
+                  value={studyYear}
+                  onChange={(e) => setStudyYear(e.target.value)}
+                >
                   <option value="">Toutes</option>
                   {YEARS.map((y) => (
                     <option key={y} value={y}>
@@ -121,12 +141,14 @@ export function AdminNotificationsPage() {
         </Card>
 
         <div>
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-gray">Historique</h2>
+          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-gray">
+            Historique
+          </h2>
           {history.isLoading ? (
             <TableSkeleton rows={5} />
           ) : (history.data ?? []).length === 0 ? (
             <Card>
-              <p className="text-sm text-brand-gray">Aucune notification envoyée.</p>
+              <EmptyState icon="🔔" title="Aucune notification envoyée" compact />
             </Card>
           ) : (
             <div className="space-y-3">

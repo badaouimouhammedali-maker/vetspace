@@ -58,9 +58,76 @@ export function SegmentToggle({
 }
 
 /**
+ * The header of a collapsible section — an FAQ entry, a module that expands to its
+ * courses.
+ *
+ * <p>Deliberately *not* `SelectableRow`: expanding a section is not selecting it, and
+ * `aria-pressed` would tell a screen reader the wrong thing. This announces
+ * `aria-expanded` instead, and owns the caret so it can never point the wrong way.
+ */
+export function Disclosure({
+  open,
+  children,
+  className = '',
+  ...rest
+}: Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
+  open: boolean;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      aria-expanded={open}
+      {...rest}
+      className={`flex w-full items-center gap-2 text-left text-body font-semibold text-brand-navy transition-colors duration-150 hover:text-brand-green ${className}`}
+    >
+      <span
+        aria-hidden
+        className={`shrink-0 text-caption text-brand-green transition-transform duration-150 ${
+          open ? 'rotate-90' : ''
+        }`}
+      >
+        ▸
+      </span>
+      {children}
+    </button>
+  );
+}
+
+/**
+ * A row in a list of actions — the choices in the "repeat this session" dialog.
+ *
+ * <p>These are neither the screen's primary action nor a toggle: they are a menu. So
+ * they get no `aria-pressed`, and a title/hint pair rather than a single label, which is
+ * what kept them hand-rolled.
+ */
+export function MenuRow({
+  title,
+  hint,
+  className = '',
+  ...rest
+}: Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'title'> & {
+  title: ReactNode;
+  hint?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      {...rest}
+      className={`w-full rounded-md border border-subtle px-4 py-3 text-left transition-colors duration-150 hover:border-brand-green hover:bg-brand-green/5 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+    >
+      <span className="block text-body font-semibold text-brand-navy">{title}</span>
+      {hint ? <span className="mt-0.5 block text-caption text-gray-500">{hint}</span> : null}
+    </button>
+  );
+}
+
+/**
  * A full-width row that can be picked: a question in the player's navigator, a saved
- * filter, an accordion header. Selected is a tint plus a green edge — the same language
- * the sidebar uses for the active link, so "you are here" reads the same app-wide.
+ * filter. Selected is a tint plus a green edge — the same language the sidebar uses for
+ * the active link, so "you are here" reads the same app-wide.
  */
 export function SelectableRow({ selected, children, className = '', ...rest }: ToggleProps) {
   return (

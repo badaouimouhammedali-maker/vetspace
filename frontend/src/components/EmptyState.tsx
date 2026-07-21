@@ -12,18 +12,31 @@ export function EmptyState({
   title,
   caption,
   action,
+  compact = false,
 }: {
   icon?: ReactNode;
   title: string;
   caption?: string;
   action?: ReactNode;
+  /**
+   * For an empty *region* inside an already-framed area — the courses under an expanded
+   * module, a sub-table in a drawer. The full-height panel is right for a page, but
+   * nested inside a card it shouts; this keeps the same visual language at a whisper.
+   */
+  compact?: boolean;
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-subtle bg-surface px-6 py-14 text-center">
-      <span className="text-3xl" aria-hidden="true">
+    <div
+      className={`flex flex-col items-center gap-3 rounded-lg border border-dashed border-subtle bg-surface text-center ${
+        compact ? 'gap-1 px-4 py-6' : 'px-6 py-14'
+      }`}
+    >
+      <span className={compact ? 'text-body' : 'text-3xl'} aria-hidden="true">
         {icon}
       </span>
-      <p className="text-h2 text-brand-navy">{title}</p>
+      <p className={compact ? 'text-caption font-semibold text-gray-500' : 'text-h2 text-brand-navy'}>
+        {title}
+      </p>
       {caption ? <p className="max-w-sm text-body text-gray-500">{caption}</p> : null}
       {action ? <div className="mt-2">{action}</div> : null}
     </div>

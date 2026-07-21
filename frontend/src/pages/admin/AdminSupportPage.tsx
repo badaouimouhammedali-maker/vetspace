@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { TableSkeleton } from '../../components/ui';
+import { EmptyState, TableSkeleton } from '../../components/ui';
 import { fetchSupportInbox } from '../../lib/adminEndpoints';
 import { AdminHeader, Card, Pager } from './adminUi';
 
@@ -22,7 +22,12 @@ export function AdminSupportPage() {
         <TableSkeleton rows={5} />
       ) : (inbox.data?.content ?? []).length === 0 ? (
         <Card>
-          <p className="text-sm text-brand-gray">Aucun message.</p>
+          <EmptyState
+            icon="💬"
+            title="Aucun message"
+            caption="Les demandes des étudiants apparaîtront ici."
+            compact
+          />
         </Card>
       ) : (
         <div className="space-y-3">

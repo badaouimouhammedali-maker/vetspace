@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { Field, Select, TextInput } from '../../components/forms';
-import { Modal, TableSkeleton } from '../../components/ui';
+import { EmptyState, Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { apiErrorMessage } from '../../lib/api';
 import {
@@ -51,7 +51,9 @@ export function PacksPage() {
             <TableSkeleton rows={5} />
           </div>
         ) : (packs.data ?? []).length === 0 ? (
-          <p className="p-5 text-sm text-brand-gray">Aucun pack.</p>
+          <div className="p-5">
+            <EmptyState icon="📦" title="Aucun pack" compact />
+          </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
@@ -70,7 +72,9 @@ export function PacksPage() {
                 <tr key={p.id} className="border-b border-gray-50 last:border-0">
                   <td className="px-4 py-3 font-semibold text-brand-navy">
                     {p.name}
-                    <span className="ml-1 text-xs font-normal text-brand-gray">{p.academicYear}</span>
+                    <span className="ml-1 text-xs font-normal text-brand-gray">
+                      {p.academicYear}
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-brand-gray">{schoolName(p.schoolId)}</td>
                   <td className="px-4 py-3 text-brand-gray">
@@ -186,7 +190,9 @@ function CodesSection({ packs }: { packs: AdminPack[] }) {
         {codes.isLoading ? (
           <TableSkeleton rows={5} />
         ) : rows.length === 0 ? (
-          <p className="p-5 text-sm text-brand-gray">Aucun code.</p>
+          <div className="p-5">
+            <EmptyState icon="🔑" title="Aucun code" compact />
+          </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
@@ -255,7 +261,9 @@ function PackModal({
   const [priceDa, setPriceDa] = useState(pack?.priceDa ?? 0);
   const [active, setActive] = useState(pack?.active ?? true);
   const [expiresAt, setExpiresAt] = useState(
-    pack ? pack.expiresAt.slice(0, 10) : new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 10),
+    pack
+      ? pack.expiresAt.slice(0, 10)
+      : new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 10),
   );
 
   const save = useMutation({

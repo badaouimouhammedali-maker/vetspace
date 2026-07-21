@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Button } from '../../components/ui';
+import { Button, CardGridSkeleton, Disclosure } from '../../components/ui';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
@@ -74,8 +74,11 @@ function Header() {
             S'inscrire
           </Link>
         </nav>
-        <Button variant="ghost" size="sm" className="md:hidden md:hidden"
-          
+        <Button
+          variant="ghost"
+          size="sm"
+          className="md:hidden md:hidden"
+
           aria-label="Ouvrir le menu"
           onClick={() => setOpen((o) => !o)}
         >
@@ -147,7 +150,9 @@ function Counter({ target, label }: { target: number; label: string }) {
         {value.toLocaleString('fr-FR')}
         <span className="text-brand-green">+</span>
       </div>
-      <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-white/60">{label}</div>
+      <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-white/60">
+        {label}
+      </div>
     </div>
   );
 }
@@ -202,30 +207,26 @@ function Hero() {
 
 const FEATURES: { title: string; body: string; image: string; alt: string }[] = [
   {
-    title: 'Des sessions d\'entraînement sur mesure',
-    body:
-      'Filtrez par module, cours, source d\'examen ou difficulté, choisissez le nombre de questions et lancez-vous. Chaque réponse est évaluée côté serveur, proposition par proposition.',
+    title: "Des sessions d'entraînement sur mesure",
+    body: "Filtrez par module, cours, source d'examen ou difficulté, choisissez le nombre de questions et lancez-vous. Chaque réponse est évaluée côté serveur, proposition par proposition.",
     image: '/landing/sessions.svg',
-    alt: 'Écran de session d\'entraînement',
+    alt: "Écran de session d'entraînement",
   },
   {
     title: 'Une correction claire et commentée',
-    body:
-      'Après chaque question, retrouvez les bonnes réponses et des explications riches (mise en forme, couleurs, schémas). Consultez la correction ou rejouez vos erreurs autant que nécessaire.',
+    body: 'Après chaque question, retrouvez les bonnes réponses et des explications riches (mise en forme, couleurs, schémas). Consultez la correction ou rejouez vos erreurs autant que nécessaire.',
     image: '/landing/correction.svg',
-    alt: 'Correction commentée d\'une question',
+    alt: "Correction commentée d'une question",
   },
   {
     title: 'Suivez votre progression',
-    body:
-      'Statistiques hebdomadaires, taux de réussite par cours, historique de vos sessions : visualisez ce qui est acquis et ce qu\'il reste à travailler avant l\'examen.',
+    body: "Statistiques hebdomadaires, taux de réussite par cours, historique de vos sessions : visualisez ce qui est acquis et ce qu'il reste à travailler avant l'examen.",
     image: '/landing/stats.svg',
     alt: 'Tableau de statistiques',
   },
   {
     title: 'Mémorisez avec les MindMaps',
-    body:
-      'Des cartes mentales et schémas synthétiques par cours pour ancrer l\'essentiel et réviser vite les points clés la veille de l\'épreuve.',
+    body: "Des cartes mentales et schémas synthétiques par cours pour ancrer l'essentiel et réviser vite les points clés la veille de l'épreuve.",
     image: '/landing/mindmaps.svg',
     alt: 'MindMaps et schémas',
   },
@@ -269,12 +270,37 @@ function Features() {
 // ---------------------------------------------------------------------
 
 const SPECS: { icon: string; title: string; body: string; accent?: boolean }[] = [
-  { icon: '⚡', title: 'Performance', body: 'Correction instantanée et interface rapide, pensée pour des sessions de révision intensives.' },
-  { icon: '🔄', title: 'Mises à jour', body: 'Une banque de questions enrichie et corrigée en continu par l\'équipe pédagogique.' },
-  { icon: '📚', title: 'Contenu', body: 'QCM par module et par cours, annales d\'examens et propositions expliquées en détail.' },
-  { icon: '🔔', title: 'Notification', body: 'Soyez prévenu des nouveaux contenus et des annonces importantes, ciblées par année.' },
-  { icon: '🧠', title: 'Schématisation', body: 'Des MindMaps synthétiques pour mémoriser l\'essentiel et réviser plus vite.', accent: true },
-  { icon: '💬', title: 'Support', body: 'Une équipe réactive et un système de signalement pour toute erreur repérée.' },
+  {
+    icon: '⚡',
+    title: 'Performance',
+    body: 'Correction instantanée et interface rapide, pensée pour des sessions de révision intensives.',
+  },
+  {
+    icon: '🔄',
+    title: 'Mises à jour',
+    body: "Une banque de questions enrichie et corrigée en continu par l'équipe pédagogique.",
+  },
+  {
+    icon: '📚',
+    title: 'Contenu',
+    body: "QCM par module et par cours, annales d'examens et propositions expliquées en détail.",
+  },
+  {
+    icon: '🔔',
+    title: 'Notification',
+    body: 'Soyez prévenu des nouveaux contenus et des annonces importantes, ciblées par année.',
+  },
+  {
+    icon: '🧠',
+    title: 'Schématisation',
+    body: "Des MindMaps synthétiques pour mémoriser l'essentiel et réviser plus vite.",
+    accent: true,
+  },
+  {
+    icon: '💬',
+    title: 'Support',
+    body: 'Une équipe réactive et un système de signalement pour toute erreur repérée.',
+  },
 ];
 
 function Specs() {
@@ -338,7 +364,9 @@ function Pricing() {
         />
 
         {packs.isLoading ? (
-          <p className="mt-10 text-center text-brand-gray">Chargement des offres…</p>
+          <div className="mt-10">
+            <CardGridSkeleton count={3} />
+          </div>
         ) : grouped.size === 0 ? (
           <p className="mt-10 text-center text-brand-gray">
             Les offres seront bientôt disponibles. Créez votre compte pour être prévenu.
@@ -365,7 +393,9 @@ function Pricing() {
                         </span>
                         <span className="font-semibold text-brand-gray">DA</span>
                       </div>
-                      <p className="mt-1 text-sm text-brand-gray">Jusqu'à la fin de l'année universitaire</p>
+                      <p className="mt-1 text-sm text-brand-gray">
+                        Jusqu'à la fin de l'année universitaire
+                      </p>
                       <Link
                         to="/register"
                         className="mt-5 rounded-lg bg-brand-green px-4 py-2.5 text-center text-sm font-bold text-white transition hover:bg-brand-green-hover"
@@ -380,8 +410,8 @@ function Pricing() {
           </div>
         )}
         <p className="mt-8 text-center text-sm text-brand-gray">
-          Paiement par codes d'activation (CCP / BaridiMob). Un code =
-          un abonnement à activer depuis votre compte.
+          Paiement par codes d'activation (CCP / BaridiMob). Un code = un abonnement à activer
+          depuis votre compte.
         </p>
       </div>
     </section>
@@ -395,23 +425,23 @@ function Pricing() {
 const FAQ: { q: string; a: string }[] = [
   {
     q: 'Comment choisir mon pack ?',
-    a: 'Sélectionnez le pack correspondant à votre école et à votre année d\'étude. Chaque pack donne accès à tout le contenu de cette année jusqu\'à la fin de l\'année universitaire.',
+    a: "Sélectionnez le pack correspondant à votre école et à votre année d'étude. Chaque pack donne accès à tout le contenu de cette année jusqu'à la fin de l'année universitaire.",
   },
   {
-    q: 'Comment payer ? (codes d\'activation, CCP, BaridiMob)',
-    a: 'Le paiement se fait par code d\'activation. Réglez par CCP ou BaridiMob pour recevoir un code, puis activez-le depuis la page Abonnement de votre compte pour débloquer immédiatement votre accès.',
+    q: "Comment payer ? (codes d'activation, CCP, BaridiMob)",
+    a: "Le paiement se fait par code d'activation. Réglez par CCP ou BaridiMob pour recevoir un code, puis activez-le depuis la page Abonnement de votre compte pour débloquer immédiatement votre accès.",
   },
   {
-    q: 'J\'ai oublié mon mot de passe, que faire ?',
+    q: "J'ai oublié mon mot de passe, que faire ?",
     a: 'Cliquez sur « Mot de passe oublié ? » sur la page de connexion. Vous recevrez un e-mail avec un lien sécurisé pour en choisir un nouveau.',
   },
   {
     q: 'Puis-je utiliser VetSpace sur mobile ?',
-    a: 'Oui. L\'interface est entièrement responsive et s\'adapte au téléphone, à la tablette et à l\'ordinateur — révisez où que vous soyez.',
+    a: "Oui. L'interface est entièrement responsive et s'adapte au téléphone, à la tablette et à l'ordinateur — révisez où que vous soyez.",
   },
   {
-    q: 'J\'ai repéré une erreur dans une question, comment la signaler ?',
-    a: 'Depuis l\'écran de jeu, utilisez le bouton de signalement pour nous transmettre le problème. L\'équipe pédagogique le traite et vous répond.',
+    q: "J'ai repéré une erreur dans une question, comment la signaler ?",
+    a: "Depuis l'écran de jeu, utilisez le bouton de signalement pour nous transmettre le problème. L'équipe pédagogique le traite et vous répond.",
   },
   {
     q: 'Existe-t-il des guides pour bien démarrer ?',
@@ -429,15 +459,17 @@ function Faq() {
           {FAQ.map((item, i) => {
             const isOpen = openIndex === i;
             return (
-              <div key={item.q} className="overflow-hidden rounded-xl border border-gray-100 bg-surface">
-                <button
+              <div
+                key={item.q}
+                className="overflow-hidden rounded-xl border border-gray-100 bg-surface"
+              >
+                <Disclosure
+                  open={isOpen}
                   onClick={() => setOpenIndex(isOpen ? null : i)}
-                  aria-expanded={isOpen}
-                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+                  className="px-5 py-4"
                 >
-                  <span className="font-bold text-brand-navy">{item.q}</span>
-                  <span className={`text-brand-green transition ${isOpen ? 'rotate-180' : ''}`}>▾</span>
-                </button>
+                  {item.q}
+                </Disclosure>
                 {isOpen ? <p className="px-5 pb-5 text-sm text-brand-gray">{item.a}</p> : null}
               </div>
             );
@@ -482,12 +514,22 @@ function Footer() {
             <h4 className="font-bold text-white">Suivez-nous</h4>
             <ul className="mt-3 space-y-2 text-white/70">
               <li>
-                <a href="https://www.instagram.com" target="_blank" rel="noopener" className="hover:text-white">
+                <a
+                  href="https://www.instagram.com"
+                  target="_blank"
+                  rel="noopener"
+                  className="hover:text-white"
+                >
                   Instagram
                 </a>
               </li>
               <li>
-                <a href="https://www.facebook.com" target="_blank" rel="noopener" className="hover:text-white">
+                <a
+                  href="https://www.facebook.com"
+                  target="_blank"
+                  rel="noopener"
+                  className="hover:text-white"
+                >
                   Facebook
                 </a>
               </li>
@@ -515,7 +557,9 @@ function SectionHeading({
 }) {
   return (
     <div className="mx-auto max-w-2xl text-center">
-      <span className="text-xs font-bold uppercase tracking-widest text-brand-green">{eyebrow}</span>
+      <span className="text-xs font-bold uppercase tracking-widest text-brand-green">
+        {eyebrow}
+      </span>
       <h2 className="mt-2 text-display text-brand-navy sm:text-4xl">{title}</h2>
       {subtitle ? <p className="mt-3 text-brand-gray">{subtitle}</p> : null}
     </div>

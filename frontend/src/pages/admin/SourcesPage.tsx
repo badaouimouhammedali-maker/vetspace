@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { Field, Select, TextInput } from '../../components/forms';
-import { Modal, TableSkeleton } from '../../components/ui';
+import { EmptyState, Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { apiErrorMessage } from '../../lib/api';
 import {
@@ -47,7 +47,9 @@ export function SourcesPage() {
         {sources.isLoading ? (
           <TableSkeleton rows={5} />
         ) : (sources.data ?? []).length === 0 ? (
-          <p className="p-5 text-sm text-brand-gray">Aucune source d'examen.</p>
+          <div className="p-5">
+            <EmptyState icon="📝" title="Aucune source d'examen" compact />
+          </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
@@ -153,7 +155,12 @@ function SourceModal({
           </Select>
         </Field>
         <Field label="Libellé" htmlFor="src-label">
-          <TextInput id="src-label" required value={label} onChange={(e) => setLabel(e.target.value)} />
+          <TextInput
+            id="src-label"
+            required
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+          />
         </Field>
         <Field label="Année" htmlFor="src-year">
           <TextInput

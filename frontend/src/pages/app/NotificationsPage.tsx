@@ -100,16 +100,18 @@ export function NotificationsPage() {
                 <p className="mt-1 text-sm text-brand-gray">{notification.body}</p>
                 <p className="mt-1 text-xs text-brand-gray">{relativeDate(notification.createdAt)}</p>
               </div>
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   remove.mutate(notification.id);
                 }}
                 aria-label={t('notifs.delete')}
-                className="shrink-0 rounded-lg p-1.5 text-sm text-brand-gray hover:text-danger"
+                className="shrink-0 text-gray-500 hover:bg-danger/10 hover:text-danger"
               >
                 🗑️
-              </button>
+              </Button>
             </div>
           ))}
         </div>

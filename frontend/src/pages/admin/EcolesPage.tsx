@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, type FormEvent } from 'react';
 import { Field, Select, TextInput } from '../../components/forms';
-import { Button, Modal, TableSkeleton } from '../../components/ui';
+import { Button, Disclosure, EmptyState, Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { apiErrorMessage } from '../../lib/api';
 import {
@@ -38,9 +38,10 @@ export function EcolesPage() {
   const [year, setYear] = useState(1);
   const [schoolModal, setSchoolModal] = useState<AdminSchool | 'new' | null>(null);
   const [moduleModal, setModuleModal] = useState<AdminModule | 'new' | null>(null);
-  const [courseModal, setCourseModal] = useState<{ course: AdminCourse | 'new'; moduleId: string } | null>(
-    null,
-  );
+  const [courseModal, setCourseModal] = useState<{
+    course: AdminCourse | 'new';
+    moduleId: string;
+  } | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const invalidate = (key: string) => qc.invalidateQueries({ queryKey: ['admin', key] });
@@ -77,7 +78,8 @@ export function EcolesPage() {
 
   // Modules -----------------------------------------------------------
   const modPublish = useMutation({
-    mutationFn: ({ id, published }: { id: string; published: boolean }) => publishModule(id, published),
+    mutationFn: ({ id, published }: { id: string; published: boolean }) =>
+      publishModule(id, published),
     onSuccess: () => invalidate('modules'),
     onError,
   });
@@ -97,7 +99,8 @@ export function EcolesPage() {
 
   // Courses -----------------------------------------------------------
   const crsPublish = useMutation({
-    mutationFn: ({ id, published }: { id: string; published: boolean }) => publishCourse(id, published),
+    mutationFn: ({ id, published }: { id: string; published: boolean }) =>
+      publishCourse(id, published),
     onSuccess: () => invalidate('courses'),
     onError,
   });
@@ -138,7 +141,10 @@ export function EcolesPage() {
 
   return (
     <div>
-      <AdminHeader title="Écoles & Modules" subtitle="Gérez le catalogue par école et année d'étude.">
+      <AdminHeader
+        title="Écoles & Modules"
+        subtitle="Gérez le catalogue par école et année d'étude."
+      >
         <PrimaryButton onClick={() => setSchoolModal('new')}>+ École</PrimaryButton>
       </AdminHeader>
 
@@ -148,7 +154,12 @@ export function EcolesPage() {
         {schools.isLoading ? (
           <TableSkeleton rows={5} />
         ) : (schools.data ?? []).length === 0 ? (
-          <p className="text-sm text-brand-gray">Aucune école. Créez-en une pour commencer.</p>
+          <EmptyState
+            icon="🏫"
+            title="Aucune école"
+            caption="Créez-en une pour commencer à construire le catalogue."
+            compact
+          />
         ) : (
           <ul className="divide-y divide-gray-100">
             {schools.data!.map((s) => (
@@ -214,7 +225,7 @@ export function EcolesPage() {
           {modules.isLoading || courses.isLoading ? (
             <TableSkeleton rows={5} />
           ) : visibleModules.length === 0 ? (
-            <p className="text-sm text-brand-gray">Aucun module pour cette année.</p>
+            <EmptyState icon="📚" title="Aucun module pour cette année" compact />
           ) : (
             <ul className="space-y-2">
               {visibleModules.map((m, mi) => {
@@ -224,38 +235,41 @@ export function EcolesPage() {
                   <li key={m.id} className="rounded-xl border border-gray-100">
                     <div className="flex items-center gap-2 p-3">
                       <div className="flex flex-col">
-                        <Button variant="ghost" size="sm"
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           aria-label="Monter"
                           disabled={mi === 0}
                           onClick={() => modReorder.mutate(move(visibleModules, mi, -1))}
-                          
                         >
                           ▲
                         </Button>
-                        <Button variant="ghost" size="sm"
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           aria-label="Descendre"
                           disabled={mi === visibleModules.length - 1}
                           onClick={() => modReorder.mutate(move(visibleModules, mi, 1))}
-                          
                         >
                           ▼
                         </Button>
                       </div>
-                      <button
+                      <Disclosure
+                        open={isOpen}
                         onClick={() => setExpanded(isOpen ? null : m.id)}
-                        className="flex-1 text-left text-sm font-bold text-brand-navy"
+                        className="flex-1"
                       >
-                        {isOpen ? '▾' : '▸'} {m.name}{' '}
-                        <span className="ml-1 font-normal text-brand-gray">
-                          ({mCourses.length} cours)
-                        </span>
-                      </button>
+                        {m.name}
+                        <span className="font-normal text-gray-500">({mCourses.length} cours)</span>
+                      </Disclosure>
                       {m.published ? (
                         <StatusBadge tone="green">Publié</StatusBadge>
                       ) : (
                         <StatusBadge tone="gray">Brouillon</StatusBadge>
                       )}
-                      <GhostButton onClick={() => modPublish.mutate({ id: m.id, published: !m.published })}>
+                      <GhostButton
+                        onClick={() => modPublish.mutate({ id: m.id, published: !m.published })}
+                      >
                         {m.published ? 'Dépublier' : 'Publier'}
                       </GhostButton>
                       <GhostButton onClick={() => setModuleModal(m)}>Renommer</GhostButton>
@@ -281,7 +295,7 @@ export function EcolesPage() {
                           </PrimaryButton>
                         </div>
                         {mCourses.length === 0 ? (
-                          <p className="text-sm text-brand-gray">Aucun cours.</p>
+                          <EmptyState icon="📄" title="Aucun cours" compact />
                         ) : (
                           <ul className="space-y-1">
                             {mCourses.map((c, ci) => (
@@ -290,19 +304,21 @@ export function EcolesPage() {
                                 className="flex flex-wrap items-center gap-2 rounded-lg bg-surface px-3 py-2 ring-1 ring-subtle"
                               >
                                 <div className="flex flex-col">
-                                  <Button variant="ghost" size="sm"
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
                                     aria-label="Monter"
                                     disabled={ci === 0}
                                     onClick={() => crsReorder.mutate(move(mCourses, ci, -1))}
-                                    
                                   >
                                     ▲
                                   </Button>
-                                  <Button variant="ghost" size="sm"
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
                                     aria-label="Descendre"
                                     disabled={ci === mCourses.length - 1}
                                     onClick={() => crsReorder.mutate(move(mCourses, ci, 1))}
-                                    
                                   >
                                     ▼
                                   </Button>
@@ -415,7 +431,8 @@ function SchoolModal({
   const [name, setName] = useState(school?.name ?? '');
   const [slug, setSlug] = useState(school?.slug ?? '');
   const save = useMutation({
-    mutationFn: () => (school ? updateSchool(school.id, { name, slug }) : createSchool({ name, slug })),
+    mutationFn: () =>
+      school ? updateSchool(school.id, { name, slug }) : createSchool({ name, slug }),
     onSuccess: () => {
       toast('success', 'École enregistrée.');
       onSaved();
@@ -467,7 +484,12 @@ function ModuleModal({
   const save = useMutation({
     mutationFn: () =>
       module
-        ? updateModule(module.id, { schoolId: module.schoolId, studyYear: module.studyYear, name, published })
+        ? updateModule(module.id, {
+            schoolId: module.schoolId,
+            studyYear: module.studyYear,
+            name,
+            published,
+          })
         : createModule({ schoolId, studyYear: year, name, published }),
     onSuccess: () => {
       toast('success', 'Module enregistré.');

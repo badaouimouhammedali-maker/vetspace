@@ -319,14 +319,16 @@ export function PlayPage() {
                 <h1 className="text-lg font-bold leading-relaxed text-brand-navy">
                   {current.question.statement}
                 </h1>
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => setSignalOpen(true)}
                   aria-label={t('signals.report')}
                   title={t('signals.report')}
-                  className="mt-1 shrink-0 rounded-md border border-subtle p-2 text-base text-gray-500 transition-colors duration-150 hover:border-danger hover:text-danger"
+                  className="mt-1 shrink-0 text-gray-500 hover:border-danger hover:text-danger"
                 >
                   🚩
-                </button>
+                </Button>
               </div>
               {current.question.statementImages.length > 0 ? (
                 <div className="mt-4 flex flex-wrap gap-3">
@@ -363,9 +365,12 @@ export function PlayPage() {
                       key={proposition.id}
                       className={`overflow-hidden rounded-md border transition-colors duration-150 ${rowClasses}`}
                     >
-                      <button
+                      {/* The selected/correction fill lives on the wrapper above, so this
+                          is a bare button that only carries the semantics. */}
+                      <PlainButton
                         onClick={() => toggleProposition(proposition.id)}
                         disabled={currentState !== 'UNANSWERED'}
+                        aria-pressed={isSelected}
                         className="flex w-full items-start gap-3 p-4 text-left"
                       >
                         <span
@@ -383,7 +388,7 @@ export function PlayPage() {
                             {correctionRow.isTrue ? t('play.vrai') : t('play.faux')}
                           </Badge>
                         ) : null}
-                      </button>
+                      </PlainButton>
                       {showCorrection && correctionRow?.explanationHtml ? (
                         <div className="border-t border-subtle px-4 py-3">
                           <SafeHtml

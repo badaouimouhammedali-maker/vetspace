@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { TextInput } from '../../components/forms';
-import { Modal, TableSkeleton } from '../../components/ui';
+import { EmptyState, Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { apiErrorMessage } from '../../lib/api';
 import {
@@ -11,7 +11,15 @@ import {
   updateUserStatus,
 } from '../../lib/adminEndpoints';
 import type { AdminUser } from '../../lib/schemas';
-import { AdminHeader, AdminToolbar, Card, GhostButton, Pager, PrimaryButton, StatusBadge } from './adminUi';
+import {
+  AdminHeader,
+  AdminToolbar,
+  Card,
+  GhostButton,
+  Pager,
+  PrimaryButton,
+  StatusBadge,
+} from './adminUi';
 
 export function AbonnesPage() {
   const qc = useQueryClient();
@@ -40,7 +48,10 @@ export function AbonnesPage() {
 
   return (
     <div>
-      <AdminHeader title="Abonnés" subtitle="Rechercher, consulter et gérer les comptes étudiants." />
+      <AdminHeader
+        title="Abonnés"
+        subtitle="Rechercher, consulter et gérer les comptes étudiants."
+      />
 
       <form
         onSubmit={(e: FormEvent) => {
@@ -65,7 +76,14 @@ export function AbonnesPage() {
         {users.isLoading ? (
           <TableSkeleton rows={5} />
         ) : (users.data?.content ?? []).length === 0 ? (
-          <p className="p-5 text-sm text-brand-gray">Aucun étudiant trouvé.</p>
+          <div className="p-5">
+            <EmptyState
+              icon="🔍"
+              title="Aucun étudiant trouvé"
+              caption="Essayez un autre terme de recherche."
+              compact
+            />
+          </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
@@ -144,7 +162,7 @@ function AuditModal({ user, onClose }: { user: AdminUser; onClose: () => void })
       {audit.isLoading ? (
         <TableSkeleton rows={5} />
       ) : (audit.data ?? []).length === 0 ? (
-        <p className="text-sm text-brand-gray">Aucun abonnement pour ce compte.</p>
+        <EmptyState icon="🎫" title="Aucun abonnement pour ce compte" compact />
       ) : (
         <ul className="space-y-2">
           {audit.data!.map((s) => (

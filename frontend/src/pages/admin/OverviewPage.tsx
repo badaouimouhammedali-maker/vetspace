@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchAdminOverview } from '../../lib/adminEndpoints';
-import { Skeleton } from '../../components/ui';
+import { EmptyState, Skeleton } from '../../components/ui';
 import { AdminHeader, Card } from './adminUi';
 
 const STAT_CARDS: { key: keyof StatMap; label: string; icon: string }[] = [
@@ -40,20 +40,18 @@ export function OverviewPage() {
                 <span className="text-2xl" aria-hidden>
                   {c.icon}
                 </span>
-                <span className="text-display text-brand-navy">
-                  {overview.data[c.key]}
-                </span>
+                <span className="text-display text-brand-navy">{overview.data[c.key]}</span>
                 <span className="text-xs font-semibold text-brand-gray">{c.label}</span>
               </Card>
             ))}
           </div>
 
-          <h2 className="mb-3 mt-8 text-lg font-bold text-brand-navy">
-            Dernières inscriptions
-          </h2>
+          <h2 className="mb-3 mt-8 text-lg font-bold text-brand-navy">Dernières inscriptions</h2>
           <Card className="overflow-x-auto p-0">
             {overview.data.latestRegistrations.length === 0 ? (
-              <p className="p-5 text-sm text-brand-gray">Aucune inscription pour le moment.</p>
+              <div className="p-5">
+                <EmptyState icon="👤" title="Aucune inscription pour le moment" compact />
+              </div>
             ) : (
               <table className="w-full text-sm">
                 <thead>

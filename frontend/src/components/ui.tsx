@@ -11,7 +11,14 @@ export { Button, LinkButton, type ButtonSize, type ButtonVariant } from './Butto
 export { Card, PageHeader, SectionHeader } from './Card';
 export { Badge, PrecisionChip, type BadgeTone } from './Badge';
 export { EmptyState } from './EmptyState';
-export { PlainButton, SegmentToggle, SelectableRow } from './Toggle';
+export {
+  Disclosure,
+  MenuRow,
+  PlainButton,
+  SegmentToggle,
+  SelectableRow,
+  type ToggleTone,
+} from './Toggle';
 export { Modal } from './Modal';
 export {
   CardGridSkeleton,

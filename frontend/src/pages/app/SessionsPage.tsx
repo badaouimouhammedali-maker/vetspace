@@ -8,6 +8,7 @@ import {
   EmojiRating,
   EmptyState,
   LinkButton,
+  MenuRow,
   Modal,
   PlainButton,
   formatSeconds,
@@ -218,25 +219,19 @@ export function SessionsPage({ type }: { type: SessionType }) {
         title={t('repeat.title')}
       >
         <div className="space-y-2">
-          <button
+          <MenuRow
             onClick={() => reset.mutate()}
             disabled={reset.isPending}
-            className="w-full rounded-lg border border-gray-200 px-4 py-3 text-left text-sm font-semibold text-brand-navy transition hover:border-brand-green"
-          >
-            {t('repeat.reset')}
-            <span className="mt-0.5 block text-xs font-normal text-brand-gray">
-              {t('repeat.resetHint')}
-            </span>
-          </button>
+            title={t('repeat.reset')}
+            hint={t('repeat.resetHint')}
+          />
           {repeatOptions.map((option) => (
-            <button
+            <MenuRow
               key={option.mode}
               onClick={() => repeat.mutate(option.mode)}
               disabled={repeat.isPending}
-              className="w-full rounded-lg border border-gray-200 px-4 py-3 text-left text-sm font-semibold text-brand-navy transition hover:border-brand-green"
-            >
-              {option.label}
-            </button>
+              title={option.label}
+            />
           ))}
         </div>
       </Modal>

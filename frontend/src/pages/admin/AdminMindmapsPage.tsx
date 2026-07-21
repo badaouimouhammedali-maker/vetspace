@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, type FormEvent } from 'react';
 import { Field, Select, TextInput } from '../../components/forms';
-import { Modal, TableSkeleton } from '../../components/ui';
+import { EmptyState, Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { apiErrorMessage } from '../../lib/api';
 import {
@@ -36,7 +36,8 @@ export function AdminMindmapsPage() {
     onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
   });
   const pub = useMutation({
-    mutationFn: ({ id, published }: { id: string; published: boolean }) => publishMindmap(id, published),
+    mutationFn: ({ id, published }: { id: string; published: boolean }) =>
+      publishMindmap(id, published),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'mindmaps'] }),
     onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur'),
   });
@@ -51,7 +52,12 @@ export function AdminMindmapsPage() {
         <TableSkeleton rows={5} />
       ) : (mindmaps.data ?? []).length === 0 ? (
         <Card>
-          <p className="text-sm text-brand-gray">Aucune MindMap.</p>
+          <EmptyState
+            icon="🧠"
+            title="Aucune MindMap"
+            caption="Ajoutez-en une pour la rendre disponible aux étudiants."
+            compact
+          />
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -206,7 +212,12 @@ function MindmapModal({
           </Select>
         </Field>
         <Field label="Titre" htmlFor="mm-title">
-          <TextInput id="mm-title" required value={title} onChange={(e) => setTitle(e.target.value)} />
+          <TextInput
+            id="mm-title"
+            required
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
         </Field>
         <Field label="Image" htmlFor="mm-file">
           <input
