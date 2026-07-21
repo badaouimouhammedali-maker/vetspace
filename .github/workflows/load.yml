@@ -1,0 +1,73 @@
+name: Load smoke
+
+# Manual only. A 60-second load run on every push would add minutes to the pipeline to
+# re-measure something that changes rarely, and shared CI runners are noisy enough that
+# small deltas would be read as regressions. Run it before a release, or when touching
+# the session/stats read paths.
+on:
+  workflow_dispatch:
+    inputs:
+      vus:
+        description: Concurrent users
+        default: '50'
+      duration:
+        description: Run length (k6 duration, e.g. 60s)
+        default: '60s'
+
+jobs:
+  load:
+    name: k6 — login + stats overview + session play
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start the seeded stack
+        run: docker compose -f scripts/e2e.compose.yml up -d --build
+
+      - name: Wait for the stack to be seeded
+        run: |
+          for _ in $(seq 1 60); do
+            curl -sf http://localhost:8080/actuator/health >/dev/null && break
+            sleep 3
+          done
+          curl -sf http://localhost:8080/actuator/health >/dev/null || {
+            echo "::error::backend never became healthy"; exit 1; }
+          # Health is UP once the port binds, but the seeder runs after that; starting k6
+          # here would measure an empty catalogue.
+          for _ in $(seq 1 45); do
+            n=$(curl -s http://localhost:8080/api/public/stats | grep -o '"questions":[0-9]*' | grep -o '[0-9]*' || echo 0)
+            [ "${n:-0}" -gt 0 ] && break
+            sleep 2
+          done
+          [ "$(curl -s http://localhost:8080/api/public/stats | grep -o '"questions":[0-9]*' | grep -o '[0-9]*')" -gt 0 ] || {
+            echo "::error::catalogue was never seeded"; exit 1; }
+
+      - name: Run k6
+        # On the stack's own network, not through a published port. Driving it via the
+        # host proxy cost ~0.007% spurious connection failures locally — enough to trip
+        # a rate==0 threshold with nothing wrong in the application.
+        run: |
+          NET=$(docker inspect vetspace-e2e-backend-1 \
+            -f '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}')
+          docker run --rm --network "$NET" \
+            -v "$PWD/load:/scripts" \
+            -e BASE_URL=http://backend:8080 \
+            -e VUS='${{ inputs.vus }}' \
+            -e DURATION='${{ inputs.duration }}' \
+            grafana/k6 run --summary-export=/scripts/summary.json /scripts/smoke.js
+
+      - name: Upload k6 summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-summary
+          path: load/summary.json
+          if-no-files-found: ignore
+
+      - name: Stack logs on failure
+        if: failure()
+        run: docker compose -f scripts/e2e.compose.yml logs --tail=200
+
+      - name: Tear down
+        if: always()
+        run: docker compose -f scripts/e2e.compose.yml down -v

@@ -9,6 +9,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.server.ResponseStatusException;
@@ -67,6 +68,22 @@ public class GlobalExceptionHandler {
         // Must not fall through to the generic handler: method-security denials surface here,
         // and turning them into 500s would both confuse clients and hide the real signal.
         return error(HttpStatus.FORBIDDEN, "Access denied");
+    }
+
+    /**
+     * A request to a path with no handler is a 404, not a server fault.
+     *
+     * <p>Without this it fell through to the generic handler: every typo'd URL and every
+     * probe for a route that does not exist answered 500 and logged a full stack trace
+     * as "Unhandled exception". That misreads as the server being broken — it sent us
+     * chasing a redeem endpoint that was fine and never called — and it buries real
+     * 500s in noise from scanners hitting /wp-login.php.
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleNoResource(NoResourceFoundException ex) {
+        // Logged at debug: a missing path is a client mistake, not an incident.
+        log.debug("No handler for {}", ex.getResourcePath());
+        return error(HttpStatus.NOT_FOUND, "Not found");
     }
 
     @ExceptionHandler(Exception.class)

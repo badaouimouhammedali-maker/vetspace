@@ -3,6 +3,7 @@ package com.vetspace.security;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.vetspace.domain.school.School;
@@ -88,6 +89,24 @@ class SecurityHardeningIntegrationTest {
             .andExpect(header().string("X-Frame-Options", "DENY"))
             .andExpect(header().string("Referrer-Policy", "strict-origin-when-cross-origin"))
             .andExpect(header().string("Cache-Control", Matchers.containsString("no-store")));
+    }
+
+    /**
+     * An unknown path must answer 404, not 500.
+     *
+     * <p>It used to fall through to the generic handler, so every typo'd URL returned
+     * "Internal Server Error" and logged a stack trace. That is actively misleading —
+     * a wrong path in a load script read as a broken redeem endpoint and cost real time
+     * — and it buries genuine 500s under scanner traffic.
+     */
+    @Test
+    void unknownPathIsNotFoundRatherThanServerError() throws Exception {
+        mockMvc.perform(get("/api/definitely/not/a/route")
+                .header("Authorization", "Bearer " + studentToken))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.error").exists())
+            .andExpect(jsonPath("$.message").exists())
+            .andExpect(jsonPath("$.timestamp").exists());
     }
 
     @Test
