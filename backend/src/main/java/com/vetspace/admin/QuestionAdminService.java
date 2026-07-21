@@ -58,7 +58,12 @@ public class QuestionAdminService {
     @Transactional
     public QuestionAdminDto create(QuestionRequest request) {
         requirePropositionRules(request.propositions());
-        Question question = questionRepository.save(buildQuestion(new Question(), request));
+        // saveAndFlush, not save: inside a transaction `save` on a new entity only calls
+        // persist(), and @CreationTimestamp/@UpdateTimestamp are generated at flush. The
+        // DTO built from the un-flushed entity carried createdAt/updatedAt = null, which
+        // the client rejects as a malformed response — so a question that WAS created
+        // reported "Erreur", inviting the admin to save it again and duplicate it.
+        Question question = questionRepository.saveAndFlush(buildQuestion(new Question(), request));
         List<Proposition> propositions = propositionRepository.saveAll(buildPropositions(question, request.propositions()));
         return toDto(question, propositions);
     }
@@ -68,7 +73,9 @@ public class QuestionAdminService {
         requirePropositionRules(request.propositions());
         Question question = require(id);
         buildQuestion(question, request);
-        question = questionRepository.save(question);
+        // Same reason as create(): without the flush, updatedAt still holds the value
+        // loaded from the database rather than the one this write just produced.
+        question = questionRepository.saveAndFlush(question);
         // Full replace: the request is the complete new proposition set. (Once sessions exist,
         // answered propositions are FK-protected and this delete will 409 — retire via publish instead.)
         propositionRepository.deleteByQuestionId(id);

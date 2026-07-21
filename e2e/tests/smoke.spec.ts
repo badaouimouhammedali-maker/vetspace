@@ -54,8 +54,12 @@ test('student journey: register → login → redeem → session → answer 3 �
 
   // --- Answer 3 questions ------------------------------------------------
   for (let i = 0; i < 3; i++) {
-    // Select the first proposition, then validate.
-    await page.getByRole('button', { name: /Proposition A/ }).first().click();
+    // Match the proposition row by its letter badge, not by its text. Matching
+    // /Proposition A/ only worked because the seeded propositions happen to be *named*
+    // "Proposition A…"; the moment any other test authored and published a question,
+    // this session could draw it and the selector found nothing. The accessible name of
+    // a row is "<letter> <text>", so anchoring on the letter is text-independent.
+    await page.getByRole('button', { name: /^A\s/ }).first().click();
     await page.getByRole('button', { name: 'VALIDER' }).click();
     // Correction shown (VRAI/FAUX badge appears).
     await expect(page.getByText(/VRAI|FAUX/).first()).toBeVisible();

@@ -3,6 +3,7 @@ package com.vetspace.content;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -169,6 +170,41 @@ class QuestionAdminIntegrationTest {
         JsonNode created = objectMapper.readTree(result.getResponse().getContentAsString(StandardCharsets.UTF_8));
         String explanation = created.get("propositions").get(0).get("explanationHtml").asText();
         assertThat(explanation).isEqualTo("<p>ok</p><span style=\"color: red\">warn</span>");
+    }
+
+    /**
+     * The create and update responses must carry real audit timestamps.
+     *
+     * <p>They did not: inside the transaction `save` only calls persist(), and
+     * @CreationTimestamp is generated at flush, so the DTO was built from an entity
+     * whose timestamps were still null. The client validates the response shape and
+     * rejected it — a question that HAD been created reported "Erreur", which invites
+     * the admin to press save again and duplicate it. A 201 has to describe the row
+     * that now exists.
+     */
+    @Test
+    void createAndUpdateReturnPopulatedAuditTimestamps() throws Exception {
+        MvcResult created = mockMvc.perform(post("/api/admin/questions")
+                .header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(questionBody(course.getId(), "Timestamped", true).toString()))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.createdAt").isNotEmpty())
+            .andExpect(jsonPath("$.updatedAt").isNotEmpty())
+            .andReturn();
+
+        JsonNode body = objectMapper.readTree(created.getResponse().getContentAsString(StandardCharsets.UTF_8));
+        assertThat(body.get("createdAt").isNull()).isFalse();
+        assertThat(Instant.parse(body.get("createdAt").asText())).isNotNull();
+
+        String id = body.get("id").asText();
+        mockMvc.perform(put("/api/admin/questions/" + id)
+                .header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(questionBody(course.getId(), "Timestamped v2", true).toString()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.createdAt").isNotEmpty())
+            .andExpect(jsonPath("$.updatedAt").isNotEmpty());
     }
 
     @Test
