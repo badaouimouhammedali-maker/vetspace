@@ -10,6 +10,23 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     css: false,
     restoreMocks: true,
+    coverage: {
+      provider: 'v8',
+      // Scoped to the code that is worth a gate: shared library, auth and the UI kit.
+      // Pages are deliberately excluded — they are covered end to end by Playwright,
+      // and a line-coverage number on a page mostly measures how much JSX it contains.
+      include: ['src/lib/**', 'src/auth/**', 'src/components/**'],
+      // Files with no test at all must still count, or the percentage measures only
+      // the files someone already chose to test — which always looks excellent.
+      all: true,
+      exclude: ['**/*.test.{ts,tsx}', 'src/test/**'],
+      reporter: ['text-summary', 'html', 'lcov'],
+      thresholds: {
+        // Deliberately a floor, not a target: it is set just under the current 63%
+        // so an untested addition trips it. Raise it as coverage climbs.
+        lines: 60,
+      },
+    },
   },
   server: {
     port: 3000,
