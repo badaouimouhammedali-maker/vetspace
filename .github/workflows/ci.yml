@@ -151,12 +151,21 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps chromium
-      - name: Run smoke test
+      - name: Run e2e journeys (student + admin)
         working-directory: e2e
         env:
           E2E_BASE_URL: http://localhost:8088
           E2E_SEED_CODE: E2E1-2345-6789-ABCD
         run: npm test
+      - name: Assert both journeys ran and passed
+        # `playwright test` exits 0 when it runs zero tests, so a spec that silently
+        # stopped being picked up would leave this job green with half its coverage
+        # gone. This makes the green tick mean "both journeys passed", and prints the
+        # per-journey verdict to the step summary — readable without the repository
+        # admin rights that job logs and artifacts require.
+        if: always()
+        working-directory: e2e
+        run: node assert-journeys.mjs
       - name: Stack logs on failure
         if: failure()
         run: docker compose -f scripts/e2e.compose.yml logs --tail=200

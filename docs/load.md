@@ -36,8 +36,14 @@ docker run --rm --network "$NET" -v "$PWD/load:/scripts" \
 
 ## Results
 
-Reference run — 2026-07-21, one backend container (8 CPUs available), one Postgres,
-50 VUs for 60s, k6 on the stack's Docker network.
+Reference run — 2026-07-21, **run locally**, one backend container (8 CPUs available),
+one Postgres, 50 VUs for 60s, k6 on the stack's Docker network.
+
+These are local numbers, not CI numbers: the workflow is `workflow_dispatch` and has not
+been dispatched yet. Expect a CI run to be *slower* — GitHub-hosted runners have fewer
+cores, which moves login most of all (see below) and will shift read latency somewhat
+too. Treat the table as the reference shape, and re-record from a CI run if you want
+numbers comparable across machines.
 
 | Metric | Value |
 |---|---|
