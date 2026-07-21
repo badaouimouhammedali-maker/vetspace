@@ -121,4 +121,37 @@ describe('PlayPage', () => {
     expect(window.__pwned).toBeUndefined();
     expect(document.body.innerHTML).not.toContain('window.__pwned');
   });
+
+  /**
+   * Opening a session that is ALREADY submitted — a refresh, or a click from the
+   * session list. There is no submit response in this render, so the score has to come
+   * off the play payload. It did not, and the student saw "—" over work that had been
+   * scored and stored.
+   */
+  it('shows the stored score when reopening a submitted session', async () => {
+    vi.mocked(endpoints.fetchPlay).mockResolvedValue({
+      ...session,
+      status: 'SUBMITTED' as const,
+      score: 33.33,
+    });
+    renderPlayer();
+
+    expect(await screen.findByText('Session terminée !')).toBeInTheDocument();
+    expect(screen.getByText('33.33%')).toBeInTheDocument();
+    expect(screen.queryByText('—')).not.toBeInTheDocument();
+  });
+
+  it('shows a dash only when the score genuinely is unknown', async () => {
+    // Defensive: a submitted session with no score at all (older row) should still
+    // render rather than crash — but it must not invent a number.
+    vi.mocked(endpoints.fetchPlay).mockResolvedValue({
+      ...session,
+      status: 'SUBMITTED' as const,
+      score: null,
+    });
+    renderPlayer();
+
+    expect(await screen.findByText('Session terminée !')).toBeInTheDocument();
+    expect(screen.getByText('—')).toBeInTheDocument();
+  });
 });

@@ -203,7 +203,11 @@ export function PlayPage() {
 
   // Écran de score
   if (finished) {
-    const score = result?.score ?? null;
+    // `result` only exists when the session was submitted during THIS page load. The
+    // end screen also renders on a refresh, or when a finished session is opened from
+    // the list — and then the score has to come from the play payload, or the student
+    // sees "—" over work that was scored and stored.
+    const score = result?.score ?? play.data.score ?? null;
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-canvas p-6">
         <img src="/brand/Logo.svg" alt="VetSpace" className="h-14" />

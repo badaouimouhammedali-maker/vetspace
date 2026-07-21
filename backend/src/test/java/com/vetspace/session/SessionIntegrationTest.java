@@ -40,6 +40,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -505,5 +507,73 @@ class SessionIntegrationTest {
         mockMvc.perform(get("/api/sessions/" + sessionId + "/play")
                 .header("Authorization", "Bearer " + studentToken))
             .andExpect(jsonPath("$.questions.length()").value(expected));
+    }
+
+    // ---------------------------------------------------------------
+    // What a submitted session leaves behind
+    // ---------------------------------------------------------------
+
+    /**
+     * A submitted session has to be readable after the fact.
+     *
+     * <p>The player renders its end screen from {@code /play} whenever the session is
+     * SUBMITTED, but the score used to live only on the submit <em>response</em>. So the
+     * screen showed the score once and then "—" forever after: on a refresh, or when the
+     * student reopened a finished session from the list, over work that had been scored
+     * and stored. This asserts the revisit path specifically — a test that only checked
+     * the submit response passed throughout the bug.
+     *
+     * <p>The weekly buckets are asserted in the same test because they share a cause:
+     * both are "did finishing a session actually record anything a student can see
+     * later". Answering writes {@code answeredAt}, which is what the weekly aggregate
+     * groups by.
+     */
+    @Test
+    void submittedSessionExposesItsScoreOnRevisitAndFillsTodaysWeeklyBucket() throws Exception {
+        String sessionId = createSession(3);
+
+        // One right, one wrong, one consulted -> a score that is neither 0 nor 100, so a
+        // hard-coded or defaulted value cannot pass by accident.
+        answerQuestion(sessionId, q1.getId(), truePropositionIds(q1), 5);
+        answerQuestion(sessionId, q2.getId(), List.of(), 5);
+        mockMvc.perform(post("/api/sessions/" + sessionId + "/questions/" + q3.getId() + "/consult")
+                .header("Authorization", "Bearer " + studentToken))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/sessions/" + sessionId + "/submit")
+                .header("Authorization", "Bearer " + studentToken))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.score").value(33.33));
+
+        // The revisit: a fresh GET, exactly what a refresh or a click from the session
+        // list does. No submit response in play here.
+        mockMvc.perform(get("/api/sessions/" + sessionId + "/play")
+                .header("Authorization", "Bearer " + studentToken))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("SUBMITTED"))
+            .andExpect(jsonPath("$.score").exists())
+            .andExpect(jsonPath("$.score").value(33.33));
+
+        // Today's weekly bucket reflects the work: 1 right, 1 wrong, 1 consulted.
+        String today = LocalDate.now(ZoneOffset.UTC).toString();
+        mockMvc.perform(get("/api/stats/weekly")
+                .header("Authorization", "Bearer " + studentToken))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(7))
+            .andExpect(jsonPath("$[6].date").value(today))
+            .andExpect(jsonPath("$[6].juste").value(1))
+            .andExpect(jsonPath("$[6].fausse").value(1))
+            .andExpect(jsonPath("$[6].consultees").value(1));
+    }
+
+    /** While a session is still ACTIVE there is no score yet, and none is invented. */
+    @Test
+    void activeSessionReportsNoScore() throws Exception {
+        String sessionId = createSession(3);
+        mockMvc.perform(get("/api/sessions/" + sessionId + "/play")
+                .header("Authorization", "Bearer " + studentToken))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("ACTIVE"))
+            .andExpect(jsonPath("$.score").doesNotExist());
     }
 }

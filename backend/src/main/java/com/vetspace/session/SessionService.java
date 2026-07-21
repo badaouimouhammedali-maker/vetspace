@@ -261,7 +261,7 @@ public class SessionService {
         }).toList();
 
         return new SessionPlayDto(session.getId(), session.getTitle(), session.getSessionType(), session.getStatus(),
-            session.getTotalSeconds(), questions);
+            session.getTotalSeconds(), session.getScore(), questions);
     }
 
     // ---------------------------------------------------------------

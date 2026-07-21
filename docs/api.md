@@ -415,6 +415,14 @@ text, position — nothing else), per-question `state`
 (`UNANSWERED|ANSWERED|CONSULTED`), `isCorrect` (own result, set after
 answering), `secondsSpent`, and my `selectedPropositionIds`.
 
+Also returns the session's `score`: `null` while `status` is `ACTIVE`,
+and the final value once `SUBMITTED`. The player renders its end screen
+from this payload whenever the session is submitted — on a refresh, or
+when a finished session is opened from the list — so the score has to be
+readable here and not only on the submit response. It carries no truth
+values or explanations, so it does not widen what an active session
+exposes.
+
 #### `PUT /api/sessions/{id}/questions/{qid}/answer`
 Body `{"selectedPropositionIds": [...], "secondsSpent": N}`. Upsert
 (re-answering replaces the previous selection). The server evaluates an

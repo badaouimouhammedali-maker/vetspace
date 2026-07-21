@@ -66,12 +66,22 @@ public final class SessionDtos {
     ) {
     }
 
+    /**
+     * @param score final score, set on submit and {@code null} while the session is
+     *              ACTIVE. It is here because the player renders its end screen from
+     *              this payload whenever the session is SUBMITTED — on a refresh, or
+     *              when the student opens a finished session from the list, there is no
+     *              submit response to read the score from, and the screen showed "—"
+     *              over work that had been scored and stored. Carrying no truth values
+     *              or explanations, it does not widen what an ACTIVE session exposes.
+     */
     public record SessionPlayDto(
         UUID id,
         String title,
         SessionType sessionType,
         SessionStatus status,
         int totalSeconds,
+        BigDecimal score,
         List<SessionQuestionPlayDto> questions
     ) {
     }

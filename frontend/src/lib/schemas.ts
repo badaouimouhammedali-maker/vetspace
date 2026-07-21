@@ -174,6 +174,10 @@ export const sessionPlaySchema = z.object({
   sessionType: sessionTypeSchema,
   status: z.enum(['ACTIVE', 'SUBMITTED']),
   totalSeconds: z.number(),
+  // Null while the session is ACTIVE; set once submitted. Nullish rather than required
+  // so an older backend that predates the field still parses — a stricter schema would
+  // break the whole player over a value only the end screen needs.
+  score: z.number().nullish(),
   questions: z.array(sessionQuestionPlaySchema),
 });
 export type SessionPlay = z.infer<typeof sessionPlaySchema>;
