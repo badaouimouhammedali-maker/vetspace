@@ -3,6 +3,14 @@
 Things you do when something has gone wrong, written to be followed under pressure.
 Each one states the symptom, the fix, and what to check afterwards.
 
+**What has and has not been exercised.** The API paths, response shapes, SQL columns and
+the Flyway version below were checked against this codebase. The Railway cron service and
+the R2 upload in §1.2 have **not** been run — there is no Railway project yet, so that
+section is written from the documented behaviour of those services, not from a run.
+Treat §1.2 and §2.3 as a first draft to walk through deliberately the first time, not as
+steps already proven here. §2.2 (restore into a scratch database) is the cheap way to
+find out, and is worth doing before you need it.
+
 Related: [deploy.md](deploy.md) for the environment matrix, [api.md](api.md) for
 endpoint contracts, [load.md](load.md) for performance baselines.
 
@@ -167,11 +175,23 @@ psql "$PROD_DATABASE_URL" -c \
 Postgres runs DDL transactionally, so the schema change itself is rolled back, but the
 history row stays behind marked failed, and Flyway refuses to continue past it.
 
+Repair removes only rows with `success = false`. It touches no data and no schema.
+
+The project depends on `flyway-core` as a library; there is **no `flyway-maven-plugin`**,
+so `./mvnw flyway:repair` would pull an unpinned plugin from Maven Central with none of
+this project's configuration — not what you want mid-incident. Use the CLI image,
+pinned to the same Flyway version the application runs (`flyway-core` 11.7.2; check with
+`./mvnw dependency:list -DincludeArtifactIds=flyway-core` if this drifts):
+
 ```bash
-# Removes only rows with success = false. Does not touch data or schema.
-cd backend && ./mvnw flyway:repair -Dflyway.url="$PROD_DATABASE_URL" \
-  -Dflyway.user="$PGUSER" -Dflyway.password="$PGPASSWORD"
+docker run --rm flyway/flyway:11.7.2 \
+  -url="jdbc:postgresql://<host>:<port>/<db>" \
+  -user="$PGUSER" -password="$PGPASSWORD" \
+  repair
 ```
+
+Running a repair with a Flyway version different from the one that wrote the history
+table is a good way to turn one problem into two — hence the pin.
 
 Then **fix the migration file** and redeploy. Repair clears the tombstone; it does not
 make a broken migration work. Redeploying the same file just fails again.

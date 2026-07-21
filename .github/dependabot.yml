@@ -1,5 +1,17 @@
 version: 2
 
+# NOTE — the `labels:` below are inert until the labels exist in the repository.
+# Dependabot applies only labels that already exist; it silently drops unknown ones, so
+# the first batch of PRs arrived with none. One-time fix:
+#
+#   gh label create dependencies --color 0366d6 --description "Dependency updates"
+#   gh label create backend      --color 5319e7
+#   gh label create frontend     --color 1d76db
+#   gh label create e2e          --color 0e8a16
+#   gh label create ci           --color fbca04
+#
+# Everything else here works without them.
+
 # Dependabot is where fixes are meant to arrive.
 #
 # The weekly OWASP scan reports what is vulnerable but never changes a version; these
