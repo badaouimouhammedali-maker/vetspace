@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { Field, Select, TextInput } from '../../components/forms';
-import { Modal, Skeleton } from '../../components/ui';
+import { Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { apiErrorMessage } from '../../lib/api';
 import {
@@ -45,9 +45,7 @@ export function SourcesPage() {
 
       <Card className="overflow-x-auto p-0">
         {sources.isLoading ? (
-          <div className="p-5">
-            <Skeleton className="h-20" />
-          </div>
+          <TableSkeleton rows={5} />
         ) : (sources.data ?? []).length === 0 ? (
           <p className="p-5 text-sm text-brand-gray">Aucune source d'examen.</p>
         ) : (

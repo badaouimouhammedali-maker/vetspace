@@ -9,23 +9,35 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import { Donut, EmptyState, Skeleton, formatSeconds } from '../../components/ui';
+import {
+  Card,
+  DashboardSkeleton,
+  Donut,
+  EmptyState,
+  LinkButton,
+  PageHeader,
+  SectionHeader,
+  Skeleton,
+  formatSeconds,
+} from '../../components/ui';
 import { t } from '../../i18n/fr';
 import { fetchOverview, fetchWeekly } from '../../lib/endpoints';
 
 function StatCard({ label, value, icon }: { label: string; value: number; icon: string }) {
   return (
-    <div className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
-      <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-green/10 text-2xl">
-        {icon}
-      </span>
-      <div>
-        <p className="text-2xl font-extrabold text-brand-navy">{value}</p>
-        <p className="text-sm font-medium text-brand-gray">{label}</p>
+    <Card padding="sm" className="h-full transition-shadow duration-150 hover:shadow-pop">
+      <div className="flex items-center gap-4">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-brand-green/10 text-xl">
+          {icon}
+        </span>
+        <div className="min-w-0">
+          {/* tabular-nums so a row of stat cards does not jitter as values change. */}
+          <p className="text-h1 tabular-nums text-brand-navy">{value}</p>
+          <p className="text-caption text-gray-500">{label}</p>
+        </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -50,16 +62,10 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-extrabold text-brand-navy dark:text-white">
-        {t('home.welcome')} {user?.username} 👋
-      </h1>
+      <PageHeader title={`${t('home.welcome')} ${user?.username ?? ''} 👋`} />
 
       {overview.isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
-        </div>
+        <DashboardSkeleton />
       ) : (
         <div className="grid gap-4 sm:grid-cols-3">
           <StatCard label={t('home.bankQuestions')} value={overview.data?.bank.questions ?? 0} icon="❓" />
@@ -68,10 +74,10 @@ export function DashboardPage() {
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid items-stretch gap-6 lg:grid-cols-2">
         {/* Dernière session */}
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-          <h2 className="mb-4 text-base font-extrabold text-brand-navy">{t('home.lastSession')}</h2>
+        <Card className="flex h-full flex-col">
+          <SectionHeader title={t('home.lastSession')} />
           {overview.isLoading ? (
             <Skeleton className="h-28" />
           ) : last ? (
@@ -87,34 +93,29 @@ export function DashboardPage() {
                   {t('sessions.score')} : {last.precisionPercent}%
                 </p>
               </div>
-              <Link
+              <LinkButton
                 to={`/app/session/${last.id}`}
                 aria-label={t('sessions.play')}
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-green text-xl text-white transition hover:bg-brand-green-hover"
+                className="h-12 w-12 shrink-0 rounded-full p-0 text-xl"
               >
                 ▶
-              </Link>
+              </LinkButton>
             </div>
           ) : (
             <EmptyState
-              message={t('home.noSessionYet')}
+              title={t('home.noSessionYet')}
               action={
-                <Link
-                  to="/app/sessions/entrainement"
-                  className="rounded-lg bg-brand-green px-4 py-2 text-sm font-bold text-white hover:bg-brand-green-hover"
-                >
+                <LinkButton to="/app/sessions/entrainement">
                   {t('home.createFirstSession')}
-                </Link>
+                </LinkButton>
               }
             />
           )}
-        </div>
+        </Card>
 
         {/* Abonnement */}
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-          <h2 className="mb-4 text-base font-extrabold text-brand-navy">
-            {t('home.subscriptionCard')}
-          </h2>
+        <Card className="flex h-full flex-col">
+          <SectionHeader title={t('home.subscriptionCard')} />
           {overview.isLoading ? (
             <Skeleton className="h-28" />
           ) : subscription ? (
@@ -126,34 +127,24 @@ export function DashboardPage() {
                   {new Date(subscription.endsAt).toLocaleDateString('fr-FR')}
                 </p>
               </div>
-              <Link
-                to="/app/abonnement"
-                className="self-start rounded-lg border-2 border-brand-green px-4 py-2 text-sm font-bold text-brand-green transition hover:bg-brand-green hover:text-white"
-              >
+              <LinkButton to="/app/abonnement" variant="secondary" className="self-start">
                 {t('home.seeDetails')}
-              </Link>
+              </LinkButton>
             </div>
           ) : (
             <EmptyState
-              message={t('home.noSubscription')}
+              title={t('home.noSubscription')}
               action={
-                <Link
-                  to="/app/abonnement"
-                  className="rounded-lg bg-brand-green px-4 py-2 text-sm font-bold text-white hover:bg-brand-green-hover"
-                >
-                  {t('home.seeDetails')}
-                </Link>
+                <LinkButton to="/app/abonnement">{t('home.seeDetails')}</LinkButton>
               }
             />
           )}
-        </div>
+        </Card>
       </div>
 
       {/* Performance hebdomadaire */}
-      <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-        <h2 className="mb-4 text-base font-extrabold text-brand-navy">
-          {t('home.weeklyPerformance')}
-        </h2>
+      <Card>
+        <SectionHeader title={t('home.weeklyPerformance')} />
         {weekly.isLoading ? (
           <Skeleton className="h-64" />
         ) : (
@@ -172,7 +163,7 @@ export function DashboardPage() {
             </ResponsiveContainer>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

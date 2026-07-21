@@ -230,7 +230,7 @@ export function SessionBuilderDialog({
           </fieldset>
         ) : null}
 
-        <div className="rounded-xl bg-gray-50 p-4">
+        <div className="rounded-xl bg-canvas p-4">
           <p className="text-sm font-bold text-brand-navy">
             {count.isFetching ? '…' : available} {t('builder.available')}
           </p>
@@ -254,7 +254,7 @@ export function SessionBuilderDialog({
           )}
         </div>
 
-        {error ? <p className="text-sm font-medium text-red-600">{error}</p> : null}
+        {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
 
         <form
           onSubmit={(e) => {

@@ -74,7 +74,7 @@ export function RichTextEditor({
             aria-label={`${t('notes.color')} ${color}`}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => applyColor(color)}
-            className="h-5 w-5 rounded-full ring-1 ring-gray-200"
+            className="h-5 w-5 rounded-full ring-1 ring-subtle"
             style={{ backgroundColor: color }}
           />
         ))}

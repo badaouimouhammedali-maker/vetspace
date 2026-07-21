@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { t } from '../i18n/fr';
+import { Card } from './Card';
 
 /**
  * Gabarit des écrans d'authentification, dans l'esprit de la référence :
@@ -14,10 +15,8 @@ export function AuthLayout({ children }: { children: ReactNode }) {
         <div className="absolute inset-0 opacity-10 [background:radial-gradient(circle_at_30%_20%,#0F766E_0,transparent_45%),radial-gradient(circle_at_75%_70%,#0F766E_0,transparent_40%)]" />
         <div className="relative z-10 flex flex-col items-center text-center">
           <img src="/brand/Logo white.svg" alt="VetSpace" className="mb-8 h-20" />
-          <h2 className="max-w-md text-2xl font-extrabold leading-snug text-white">
-            {t('auth.welcome')}
-          </h2>
-          <p className="mt-3 max-w-sm text-sm text-white/70">{t('auth.tagline')}</p>
+          <h2 className="max-w-md text-h1 leading-snug text-white">{t('auth.welcome')}</h2>
+          <p className="mt-3 max-w-sm text-body text-white/70">{t('auth.tagline')}</p>
         </div>
       </aside>
 
@@ -26,7 +25,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
           <Link to="/login" className="mb-8 flex justify-center">
             <img src="/brand/Logo.svg" alt="VetSpace" className="h-14" />
           </Link>
-          <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-gray-100">{children}</div>
+          <Card className="p-8">{children}</Card>
         </div>
       </main>
     </div>

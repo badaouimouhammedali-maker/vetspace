@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { TextInput } from '../../components/forms';
-import { Modal, Skeleton } from '../../components/ui';
+import { Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { apiErrorMessage } from '../../lib/api';
 import {
@@ -11,7 +11,7 @@ import {
   updateUserStatus,
 } from '../../lib/adminEndpoints';
 import type { AdminUser } from '../../lib/schemas';
-import { AdminHeader, Card, GhostButton, Pager, PrimaryButton, StatusBadge } from './adminUi';
+import { AdminHeader, AdminToolbar, Card, GhostButton, Pager, PrimaryButton, StatusBadge } from './adminUi';
 
 export function AbonnesPage() {
   const qc = useQueryClient();
@@ -43,26 +43,27 @@ export function AbonnesPage() {
       <AdminHeader title="Abonnés" subtitle="Rechercher, consulter et gérer les comptes étudiants." />
 
       <form
-        className="mb-4 flex gap-2"
         onSubmit={(e: FormEvent) => {
           e.preventDefault();
           setPage(0);
           setQuery(input.trim());
         }}
       >
-        <TextInput
-          placeholder="Nom, e-mail ou nom d'utilisateur…"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
+        <AdminToolbar
+          search={
+            <TextInput
+              placeholder="Nom, e-mail ou nom d'utilisateur…"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+            />
+          }
+          action={<PrimaryButton type="submit">Rechercher</PrimaryButton>}
         />
-        <PrimaryButton type="submit">Rechercher</PrimaryButton>
       </form>
 
       <Card className="overflow-x-auto p-0">
         {users.isLoading ? (
-          <div className="p-5">
-            <Skeleton className="h-24" />
-          </div>
+          <TableSkeleton rows={5} />
         ) : (users.data?.content ?? []).length === 0 ? (
           <p className="p-5 text-sm text-brand-gray">Aucun étudiant trouvé.</p>
         ) : (
@@ -141,13 +142,13 @@ function AuditModal({ user, onClose }: { user: AdminUser; onClose: () => void })
   return (
     <Modal open onClose={onClose} title={`Abonnements — ${user.fullName}`}>
       {audit.isLoading ? (
-        <Skeleton className="h-16" />
+        <TableSkeleton rows={5} />
       ) : (audit.data ?? []).length === 0 ? (
         <p className="text-sm text-brand-gray">Aucun abonnement pour ce compte.</p>
       ) : (
         <ul className="space-y-2">
           {audit.data!.map((s) => (
-            <li key={s.id} className="rounded-lg bg-gray-50 p-3 text-sm">
+            <li key={s.id} className="rounded-lg bg-canvas p-3 text-sm">
               <div className="font-semibold text-brand-navy">{s.packName}</div>
               <div className="text-xs text-brand-gray">
                 Du {new Date(s.startsAt).toLocaleDateString('fr-FR')} au{' '}

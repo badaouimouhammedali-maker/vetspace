@@ -53,10 +53,10 @@ export function VerifyEmailPage() {
 
   return (
     <AuthLayout>
-      <h1 className="text-2xl font-extrabold text-brand-navy">{t('verify.title')}</h1>
+      <h1 className="text-h1 text-brand-navy">{t('verify.title')}</h1>
 
       {status === 'verifying' ? (
-        <p className="mt-6 text-sm text-brand-gray">{t('verify.checking')}</p>
+        <p className="mt-6 text-body text-gray-500">{t('verify.checking')}</p>
       ) : null}
 
       {status === 'verified' ? (
@@ -74,7 +74,7 @@ export function VerifyEmailPage() {
       ) : null}
 
       {status === 'invalid' ? (
-        <p className="mt-6 rounded-lg bg-red-50 p-4 text-sm font-medium text-red-600">
+        <p className="mt-6 rounded-lg bg-danger/10 p-4 text-sm font-medium text-danger">
           {t('verify.invalid')}
         </p>
       ) : null}
@@ -99,7 +99,7 @@ export function VerifyEmailPage() {
                   onChange={(event) => setEmail(event.target.value)}
                 />
               </Field>
-              {error ? <p className="text-sm font-medium text-red-600">{error}</p> : null}
+              {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
               <SubmitButton loading={loading}>{t('verify.resend')}</SubmitButton>
             </form>
           )}

@@ -1,43 +1,98 @@
-import { useState, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from 'react';
+import {
+  useState,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type SelectHTMLAttributes,
+  type TextareaHTMLAttributes,
+} from 'react';
+import { Button } from './Button';
 
-const FIELD_CLASSES =
-  'w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 ' +
-  'placeholder-gray-400 outline-none transition focus:border-brand-green focus:ring-2 ' +
-  'focus:ring-brand-green/20 disabled:cursor-not-allowed disabled:bg-gray-100';
+/**
+ * One field skin for input, select and textarea.
+ *
+ * <p>No `focus:ring` here on purpose — the global `:focus-visible` rule in index.css
+ * owns the focus treatment, so it is identical on a field, a button and a link, and it
+ * shows for keyboard users only rather than on every click.
+ */
+const FIELD_BASE =
+  'w-full rounded-md border bg-surface px-3.5 py-2.5 text-body text-gray-900 ' +
+  'placeholder-gray-400 outline-none transition-colors duration-150 ' +
+  'disabled:cursor-not-allowed disabled:bg-gray-100';
+
+const FIELD_DEFAULT = 'border-gray-300 focus:border-brand-green';
+/** Invalid fields carry the danger colour, so the error is visible before it is read. */
+const FIELD_ERROR = 'border-danger focus:border-danger';
+
+function fieldClasses(invalid: boolean | undefined): string {
+  return `${FIELD_BASE} ${invalid ? FIELD_ERROR : FIELD_DEFAULT}`;
+}
 
 interface FieldProps {
   label: string;
   htmlFor: string;
   error?: string | undefined;
+  hint?: string | undefined;
   children: ReactNode;
 }
 
-export function Field({ label, htmlFor, error, children }: FieldProps) {
+export function Field({ label, htmlFor, error, hint, children }: FieldProps) {
   return (
     <div className="space-y-1.5">
-      <label htmlFor={htmlFor} className="block text-sm font-semibold text-brand-navy">
+      <label htmlFor={htmlFor} className="block text-caption font-semibold text-brand-navy">
         {label}
       </label>
       {children}
-      {error ? <p className="text-xs font-medium text-red-600">{error}</p> : null}
+      {/* Hint gives way to the error rather than stacking: two lines of guidance under
+          one field is noise at the moment the user most needs a single answer. */}
+      {error ? (
+        <p className="text-caption font-medium text-danger">{error}</p>
+      ) : hint ? (
+        <p className="text-caption text-gray-500">{hint}</p>
+      ) : null}
     </div>
   );
 }
 
-export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={FIELD_CLASSES} />;
+type WithInvalid<T> = T & { invalid?: boolean };
+
+export function TextInput({
+  invalid,
+  ...props
+}: WithInvalid<InputHTMLAttributes<HTMLInputElement>>) {
+  return <input {...props} aria-invalid={invalid || undefined} className={fieldClasses(invalid)} />;
 }
 
-/** Champ mot de passe avec bouton afficher/masquer. */
-export function PasswordInput(props: InputHTMLAttributes<HTMLInputElement>) {
+export function Textarea({
+  invalid,
+  ...props
+}: WithInvalid<TextareaHTMLAttributes<HTMLTextAreaElement>>) {
+  return (
+    <textarea {...props} aria-invalid={invalid || undefined} className={fieldClasses(invalid)} />
+  );
+}
+
+export function Select({ invalid, ...props }: WithInvalid<SelectHTMLAttributes<HTMLSelectElement>>) {
+  return <select {...props} aria-invalid={invalid || undefined} className={fieldClasses(invalid)} />;
+}
+
+/** Password field with a show/hide toggle. */
+export function PasswordInput({
+  invalid,
+  ...props
+}: WithInvalid<InputHTMLAttributes<HTMLInputElement>>) {
   const [visible, setVisible] = useState(false);
   return (
     <div className="relative">
-      <input {...props} type={visible ? 'text' : 'password'} className={`${FIELD_CLASSES} pr-16`} />
+      <input
+        {...props}
+        type={visible ? 'text' : 'password'}
+        aria-invalid={invalid || undefined}
+        className={`${fieldClasses(invalid)} pr-20`}
+      />
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
-        className="absolute inset-y-0 right-0 px-3 text-xs font-semibold text-brand-gray hover:text-brand-navy"
+        className="absolute inset-y-0 right-0 rounded-md px-3 text-caption font-semibold text-gray-500 transition-colors duration-150 hover:text-brand-navy"
         aria-label={visible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
       >
         {visible ? 'Masquer' : 'Afficher'}
@@ -46,24 +101,17 @@ export function PasswordInput(props: InputHTMLAttributes<HTMLInputElement>) {
   );
 }
 
-export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} className={FIELD_CLASSES} />;
-}
-
-interface SubmitButtonProps {
+/** Full-width submit, delegating every visual decision to Button. */
+export function SubmitButton({
+  children,
+  loading = false,
+}: {
   children: ReactNode;
   loading?: boolean;
-}
-
-export function SubmitButton({ children, loading = false }: SubmitButtonProps) {
+}) {
   return (
-    <button
-      type="submit"
-      disabled={loading}
-      className="w-full rounded-lg bg-brand-green px-4 py-2.5 text-sm font-bold text-white transition
-        hover:bg-brand-green-hover disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      {loading ? '…' : children}
-    </button>
+    <Button type="submit" loading={loading} className="w-full">
+      {children}
+    </Button>
   );
 }

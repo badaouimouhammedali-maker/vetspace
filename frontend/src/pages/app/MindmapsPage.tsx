@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { CoursePicker } from '../../components/CoursePicker';
-import { EmptyState, Skeleton } from '../../components/ui';
+import { Button, CardGridSkeleton, EmptyState } from '../../components/ui';
 import { t } from '../../i18n/fr';
 import { fetchMindmaps } from '../../lib/endpoints';
 
@@ -13,36 +13,36 @@ function Lightbox({ url, title, onClose }: { url: string; title: string; onClose
       onClick={onClose}
     >
       <div className="mb-3 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-        <button
+        <Button variant="secondary" size="sm"
           onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))}
           aria-label={t('mindmaps.zoomOut')}
-          className="rounded-lg bg-white/90 px-3 py-1.5 text-sm font-bold text-brand-navy"
+          
         >
           −
-        </button>
+        </Button>
         <span className="min-w-14 text-center text-sm font-semibold text-white">
           {Math.round(zoom * 100)}%
         </span>
-        <button
+        <Button variant="secondary" size="sm"
           onClick={() => setZoom((z) => Math.min(4, z + 0.25))}
           aria-label={t('mindmaps.zoomIn')}
-          className="rounded-lg bg-white/90 px-3 py-1.5 text-sm font-bold text-brand-navy"
+          
         >
           +
-        </button>
-        <button
+        </Button>
+        <Button variant="secondary" size="sm"
           onClick={() => setZoom(1)}
-          className="rounded-lg bg-white/90 px-3 py-1.5 text-sm font-semibold text-brand-navy"
+          
         >
           {t('mindmaps.resetZoom')}
-        </button>
-        <button
+        </Button>
+        <Button variant="secondary" size="sm"
           onClick={onClose}
           aria-label={t('play.close')}
-          className="rounded-lg bg-white/90 px-3 py-1.5 text-sm font-bold text-brand-navy"
+          
         >
           ×
-        </button>
+        </Button>
       </div>
       <div className="max-h-[80vh] max-w-full overflow-auto" onClick={(e) => e.stopPropagation()}>
         <img
@@ -68,30 +68,27 @@ export function MindmapsPage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-extrabold text-brand-navy dark:text-white">
+      <h1 className="text-h1 text-brand-navy dark:text-white">
         {t('mindmaps.title')}
       </h1>
 
-      <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
+      <div className="rounded-lg bg-surface p-4 shadow-card">
         <CoursePicker courseId={courseId} onCourse={setCourseId} />
       </div>
 
       {!courseId ? (
-        <EmptyState message={t('mindmaps.selectCourse')} />
+        <EmptyState title={t('mindmaps.selectCourse')} />
       ) : mindmaps.isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Skeleton className="h-48" />
-          <Skeleton className="h-48" />
-        </div>
+        <CardGridSkeleton count={3} />
       ) : (mindmaps.data?.length ?? 0) === 0 ? (
-        <EmptyState message={t('mindmaps.empty')} />
+        <EmptyState title={t('mindmaps.empty')} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {mindmaps.data?.map((mindmap) => (
             <button
               key={mindmap.id}
               onClick={() => setViewing({ url: mindmap.imageUrl, title: mindmap.title })}
-              className="group overflow-hidden rounded-2xl bg-white text-left shadow-sm ring-1 ring-gray-100 transition hover:ring-brand-green"
+              className="group overflow-hidden rounded-lg bg-surface text-left shadow-card transition hover:ring-brand-green"
             >
               <div className="aspect-video overflow-hidden bg-gray-100">
                 <img

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, type FormEvent } from 'react';
 import { Field, Select, TextInput } from '../../components/forms';
-import { Modal, Skeleton } from '../../components/ui';
+import { Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { apiErrorMessage } from '../../lib/api';
 import {
@@ -48,7 +48,7 @@ export function AdminMindmapsPage() {
       </AdminHeader>
 
       {mindmaps.isLoading ? (
-        <Skeleton className="h-40" />
+        <TableSkeleton rows={5} />
       ) : (mindmaps.data ?? []).length === 0 ? (
         <Card>
           <p className="text-sm text-brand-gray">Aucune MindMap.</p>
@@ -60,7 +60,7 @@ export function AdminMindmapsPage() {
               <img
                 src={m.imageUrl}
                 alt={m.title}
-                className="h-40 w-full rounded-lg object-cover ring-1 ring-gray-100"
+                className="h-40 w-full rounded-lg object-cover ring-1 ring-subtle"
               />
               <div className="flex items-start justify-between gap-2">
                 <span className="text-sm font-bold text-brand-navy">{m.title}</span>
@@ -224,7 +224,7 @@ function MindmapModal({
         </Field>
         {uploading ? <p className="text-xs text-brand-gray">Téléversement…</p> : null}
         {imageUrl ? (
-          <img src={imageUrl} alt="" className="h-32 rounded-lg object-cover ring-1 ring-gray-100" />
+          <img src={imageUrl} alt="" className="h-32 rounded-lg object-cover ring-1 ring-subtle" />
         ) : null}
         <label className="flex items-center gap-2 text-sm font-semibold text-brand-gray">
           <input

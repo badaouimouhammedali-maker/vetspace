@@ -1,5 +1,14 @@
 /* eslint-disable react-refresh/only-export-components -- fournisseur + hook/aides exportés ensemble, perte de HMR acceptée */
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 
 type ToastKind = 'success' | 'error' | 'info';
 
@@ -17,21 +26,30 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 
 let nextId = 1;
 
+const DISMISS_MS = 5000;
+
+/** Soft fill + strong text, matching Badge — a toast is a notification, not a banner ad. */
 const KIND_CLASSES: Record<ToastKind, string> = {
-  success: 'bg-brand-green text-white',
-  error: 'bg-red-600 text-white',
-  info: 'bg-brand-navy text-white',
+  success: 'bg-success/10 text-success border-success/20',
+  error: 'bg-danger/10 text-danger border-danger/20',
+  info: 'bg-brand-navy/5 text-brand-navy border-brand-navy/15',
+};
+
+const KIND_ICONS: Record<ToastKind, string> = {
+  success: '✓',
+  error: '!',
+  info: 'i',
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
+  const dismiss = useCallback((id: number) => {
+    setToasts((current) => current.filter((item) => item.id !== id));
+  }, []);
+
   const toast = useCallback((kind: ToastKind, message: string) => {
-    const id = nextId++;
-    setToasts((current) => [...current, { id, kind, message }]);
-    setTimeout(() => {
-      setToasts((current) => current.filter((t) => t.id !== id));
-    }, 5000);
+    setToasts((current) => [...current, { id: nextId++, kind, message }]);
   }, []);
 
   const value = useMemo(() => ({ toast }), [toast]);
@@ -39,18 +57,57 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="pointer-events-none fixed bottom-4 right-4 z-50 flex flex-col gap-2">
-        {toasts.map((t) => (
-          <div
-            key={t.id}
-            role="status"
-            className={`pointer-events-auto rounded-lg px-4 py-3 text-sm font-medium shadow-lg ${KIND_CLASSES[t.kind]}`}
-          >
-            {t.message}
-          </div>
+      <div
+        className="pointer-events-none fixed bottom-4 right-4 z-50 flex flex-col gap-2"
+        role="region"
+        aria-label="Notifications"
+      >
+        {toasts.map((item) => (
+          <ToastItem key={item.id} toast={item} onDismiss={dismiss} />
         ))}
       </div>
     </ToastContext.Provider>
+  );
+}
+
+/**
+ * One toast, owning its own dismissal timer.
+ *
+ * <p>The timer pauses on hover: a toast that vanishes while you are reading it — or
+ * reaching for the text in it — is worse than no toast.
+ */
+function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: number) => void }) {
+  const [paused, setPaused] = useState(false);
+  // Time already served, so hovering pauses rather than restarting the countdown.
+  const elapsed = useRef(0);
+  const startedAt = useRef(Date.now());
+
+  useEffect(() => {
+    if (paused) {
+      elapsed.current += Date.now() - startedAt.current;
+      return;
+    }
+    startedAt.current = Date.now();
+    const remaining = Math.max(0, DISMISS_MS - elapsed.current);
+    const timer = setTimeout(() => onDismiss(toast.id), remaining);
+    return () => clearTimeout(timer);
+  }, [paused, toast.id, onDismiss]);
+
+  return (
+    <div
+      role="status"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      className={`pointer-events-auto flex animate-toast-in items-start gap-2.5 rounded-md border px-4 py-3 text-body font-medium shadow-card ${KIND_CLASSES[toast.kind]}`}
+    >
+      <span
+        aria-hidden="true"
+        className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-current text-[10px] font-bold text-white"
+      >
+        {KIND_ICONS[toast.kind]}
+      </span>
+      <span>{toast.message}</span>
+    </div>
   );
 }
 

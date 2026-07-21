@@ -71,10 +71,10 @@ export function RegisterPage() {
 
   return (
     <AuthLayout>
-      <h1 className="text-2xl font-extrabold text-brand-navy">{t('register.title')}</h1>
-      <p className="mt-1 text-sm text-brand-gray">{t('register.subtitle')}</p>
+      <h1 className="text-h1 text-brand-navy">{t('register.title')}</h1>
+      <p className="mt-1.5 text-body text-gray-500">{t('register.subtitle')}</p>
 
-      <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
+      <form onSubmit={onSubmit} className="mt-6 space-y-5" noValidate>
         <div className="grid grid-cols-2 gap-3">
           <Field label={t('register.lastName')} htmlFor="lastName">
             <TextInput
@@ -179,7 +179,7 @@ export function RegisterPage() {
 
         <Recaptcha onToken={onCaptchaToken} />
 
-        {error ? <p className="text-sm font-medium text-red-600">{error}</p> : null}
+        {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
 
         <SubmitButton loading={loading}>{t('register.submit')}</SubmitButton>
       </form>

@@ -50,10 +50,10 @@ export class ErrorBoundary extends Component<Props, State> {
         role="alert"
         className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-6 text-center"
       >
-        <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm">
-          <p className="text-2xl font-extrabold text-brand-navy">{t('common.appName')}</p>
+        <div className="w-full max-w-md rounded-lg bg-surface p-8 shadow-card">
+          <p className="text-h1 text-brand-navy">{t('common.appName')}</p>
 
-          <h1 className="mt-6 text-lg font-bold text-brand-navy">{t('error.title')}</h1>
+          <h1 className="mt-6 text-h2 text-brand-navy">{t('error.title')}</h1>
           <p className="mt-2 text-sm text-brand-gray">{t('error.body')}</p>
 
           <button

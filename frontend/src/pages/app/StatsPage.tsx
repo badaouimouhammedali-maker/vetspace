@@ -10,7 +10,14 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { EmptyState, PrecisionChip, Skeleton, formatSeconds } from '../../components/ui';
+import {
+  EmptyState,
+  PrecisionChip,
+  SegmentToggle,
+  Skeleton,
+  TableSkeleton,
+  formatSeconds,
+} from '../../components/ui';
 import { t } from '../../i18n/fr';
 import { fetchCourseStats, fetchSessionStats } from '../../lib/endpoints';
 import type { SessionStats, SessionType } from '../../lib/schemas';
@@ -24,29 +31,29 @@ function CourseBreakdown({ sessionId }: { sessionId: string }) {
     return <Skeleton className="m-3 h-20" />;
   }
   return (
-    <div className="bg-gray-50 p-3">
+    <div className="bg-canvas p-3">
       <p className="mb-2 text-xs font-bold uppercase tracking-wide text-brand-gray">
         {t('stats.byCourse')}
       </p>
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-xs text-brand-gray">
+          <tr className="text-left text-caption text-gray-500">
             <th className="py-1">{t('stats.course')}</th>
-            <th className="py-1 text-center">{t('stats.juste')}</th>
-            <th className="py-1 text-center">{t('stats.fausse')}</th>
-            <th className="py-1 text-center">{t('stats.consulte')}</th>
-            <th className="py-1 text-center">{t('stats.time')}</th>
+            <th className="py-1 text-right">{t('stats.juste')}</th>
+            <th className="py-1 text-right">{t('stats.fausse')}</th>
+            <th className="py-1 text-right">{t('stats.consulte')}</th>
+            <th className="py-1 text-right">{t('stats.time')}</th>
             <th className="py-1 text-right">{t('stats.precision')}</th>
           </tr>
         </thead>
         <tbody>
           {(courses.data ?? []).map((course) => (
-            <tr key={course.courseId} className="border-t border-gray-200">
+            <tr key={course.courseId} className="border-t border-subtle">
               <td className="py-1.5 font-medium text-brand-navy">{course.courseName}</td>
-              <td className="py-1.5 text-center text-brand-green">{course.juste}</td>
-              <td className="py-1.5 text-center text-red-600">{course.fausse}</td>
-              <td className="py-1.5 text-center text-brand-gray">{course.consulte}</td>
-              <td className="py-1.5 text-center">{formatSeconds(course.totalSeconds)}</td>
+              <td className="py-1.5 text-right tabular-nums text-success">{course.juste}</td>
+              <td className="py-1.5 text-right tabular-nums text-danger">{course.fausse}</td>
+              <td className="py-1.5 text-right tabular-nums text-gray-500">{course.consulte}</td>
+              <td className="py-1.5 text-right tabular-nums">{formatSeconds(course.totalSeconds)}</td>
               <td className="py-1.5 text-right">
                 <PrecisionChip percent={course.precisionPercent} />
               </td>
@@ -61,17 +68,21 @@ function CourseBreakdown({ sessionId }: { sessionId: string }) {
 function StatsTable({ rows }: { rows: SessionStats[] }) {
   const [expanded, setExpanded] = useState<string | null>(null);
   return (
-    <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
-      <table className="w-full min-w-[720px] text-sm">
-        <thead>
-          <tr className="border-b border-gray-100 text-left text-xs font-bold uppercase tracking-wide text-brand-gray">
+    <div className="max-h-[70vh] overflow-auto rounded-lg bg-surface shadow-card">
+      <table className="w-full min-w-[720px] text-body">
+        {/*
+          Sticky header: these tables get long, and a scrolled-away header turns a row
+          of five numbers into a guessing game.
+        */}
+        <thead className="sticky top-0 z-10 bg-surface">
+          <tr className="border-b border-subtle text-left text-caption font-bold uppercase tracking-wide text-gray-500">
             <th className="px-4 py-3">{t('stats.session')}</th>
-            <th className="px-4 py-3">{t('stats.time')}</th>
-            <th className="px-4 py-3">{t('stats.avgPerQuestion')}</th>
-            <th className="px-4 py-3 text-center">{t('stats.total')}</th>
-            <th className="px-4 py-3 text-center">{t('stats.juste')}</th>
-            <th className="px-4 py-3 text-center">{t('stats.fausse')}</th>
-            <th className="px-4 py-3 text-center">{t('stats.consulte')}</th>
+            <th className="px-4 py-3 text-right">{t('stats.time')}</th>
+            <th className="px-4 py-3 text-right">{t('stats.avgPerQuestion')}</th>
+            <th className="px-4 py-3 text-right">{t('stats.total')}</th>
+            <th className="px-4 py-3 text-right">{t('stats.juste')}</th>
+            <th className="px-4 py-3 text-right">{t('stats.fausse')}</th>
+            <th className="px-4 py-3 text-right">{t('stats.consulte')}</th>
             <th className="px-4 py-3 text-right">{t('stats.precision')}</th>
           </tr>
         </thead>
@@ -82,7 +93,9 @@ function StatsTable({ rows }: { rows: SessionStats[] }) {
               <Fragment key={row.id}>
                 <tr
                   onClick={() => setExpanded(open ? null : row.id)}
-                  className="cursor-pointer border-b border-gray-50 hover:bg-gray-50"
+                  // Zebra striping on the odd rows; hover wins over the stripe so the
+                  // pointer target stays obvious.
+                  className="cursor-pointer border-b border-subtle odd:bg-gray-50/50 hover:bg-brand-green/5"
                 >
                   <td className="px-4 py-3 font-semibold text-brand-navy">
                     <span className="mr-1.5 inline-block text-brand-gray">{open ? '▾' : '▸'}</span>
@@ -91,12 +104,19 @@ function StatsTable({ rows }: { rows: SessionStats[] }) {
                       {new Date(row.startedAt).toLocaleDateString('fr-FR')}
                     </span>
                   </td>
-                  <td className="px-4 py-3">{formatSeconds(row.totalSeconds)}</td>
-                  <td className="px-4 py-3">{formatSeconds(Math.round(row.avgSecondsPerQuestion))}</td>
-                  <td className="px-4 py-3 text-center">{row.totalQuestions}</td>
-                  <td className="px-4 py-3 text-center font-semibold text-brand-green">{row.juste}</td>
-                  <td className="px-4 py-3 text-center font-semibold text-red-600">{row.fausse}</td>
-                  <td className="px-4 py-3 text-center text-brand-gray">{row.consulte}</td>
+                  {/* Numerics right-aligned with tabular-nums so digits line up in a column. */}
+                  <td className="px-4 py-3 text-right tabular-nums">{formatSeconds(row.totalSeconds)}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">
+                    {formatSeconds(Math.round(row.avgSecondsPerQuestion))}
+                  </td>
+                  <td className="px-4 py-3 text-right tabular-nums">{row.totalQuestions}</td>
+                  <td className="px-4 py-3 text-right font-semibold tabular-nums text-success">
+                    {row.juste}
+                  </td>
+                  <td className="px-4 py-3 text-right font-semibold tabular-nums text-danger">
+                    {row.fausse}
+                  </td>
+                  <td className="px-4 py-3 text-right tabular-nums text-gray-500">{row.consulte}</td>
                   <td className="px-4 py-3 text-right">
                     <PrecisionChip percent={row.precisionPercent} />
                   </td>
@@ -128,7 +148,7 @@ function StatsChart({ rows }: { rows: SessionStats[] }) {
       [t('stats.consulte')]: row.consulte,
     }));
   return (
-    <div className="h-80 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+    <div className="h-80 rounded-lg bg-surface p-6 shadow-card">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
@@ -156,37 +176,31 @@ export function StatsPage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-extrabold text-brand-navy dark:text-white">{t('stats.title')}</h1>
+      <h1 className="text-h1 text-brand-navy dark:text-white">{t('stats.title')}</h1>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <select
           value={type}
           onChange={(e) => setType(e.target.value as SessionType)}
           aria-label={t('stats.typeFilter')}
-          className="rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm font-semibold text-brand-navy outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
+          className="rounded-lg border border-gray-300 bg-surface px-3.5 py-2 text-sm font-semibold text-brand-navy outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
         >
           <option value="ENTRAINEMENT">{t('builder.typeEntrainement')}</option>
           <option value="EXAMEN">{t('builder.typeExamen')}</option>
         </select>
         <div className="inline-flex rounded-lg border border-gray-300 p-0.5">
           {(['table', 'chart'] as const).map((mode) => (
-            <button
-              key={mode}
-              onClick={() => setView(mode)}
-              className={`rounded-md px-3 py-1.5 text-sm font-semibold transition ${
-                view === mode ? 'bg-brand-green text-white' : 'text-brand-gray'
-              }`}
-            >
+            <SegmentToggle key={mode} selected={view === mode} onClick={() => setView(mode)}>
               {mode === 'table' ? t('stats.viewTable') : t('stats.viewChart')}
-            </button>
+            </SegmentToggle>
           ))}
         </div>
       </div>
 
       {stats.isLoading ? (
-        <Skeleton className="h-64" />
+        <TableSkeleton rows={5} columns={8} />
       ) : rows.length === 0 ? (
-        <EmptyState message={t('stats.empty')} />
+        <EmptyState title={t('stats.empty')} />
       ) : view === 'table' ? (
         <StatsTable rows={rows} />
       ) : (

@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, type FormEvent } from 'react';
 import { RichTextEditor } from '../../components/RichTextEditor';
 import { Field, Select, TextInput } from '../../components/forms';
-import { Modal, Skeleton } from '../../components/ui';
+import { Button, Modal, SegmentToggle, TableSkeleton } from '../../components/ui';
 import { SafeHtml } from '../../lib/sanitize';
 import { useToast } from '../../components/ToastProvider';
 import { apiErrorMessage } from '../../lib/api';
@@ -28,7 +28,15 @@ import {
   type QuestionAdmin,
 } from '../../lib/schemas';
 import { z } from 'zod';
-import { AdminHeader, Card, GhostButton, Pager, PrimaryButton, StatusBadge } from './adminUi';
+import {
+  AdminHeader,
+  AdminToolbar,
+  Card,
+  GhostButton,
+  Pager,
+  PrimaryButton,
+  StatusBadge,
+} from './adminUi';
 
 const DIFFICULTIES: { value: Difficulty; label: string }[] = [
   { value: 'EASY', label: 'Facile' },
@@ -134,8 +142,20 @@ function QuestionsTable({
 
   return (
     <>
-      <div className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        <Select
+      <AdminToolbar
+        search={
+          <TextInput
+          placeholder="Rechercher dans l'énoncé…"
+          value={q}
+          onChange={(e) => {
+            setQ(e.target.value);
+            resetPage();
+          }}
+        />
+        }
+        filters={
+          <>
+            <Select
           value={moduleId}
           onChange={(e) => {
             setModuleId(e.target.value);
@@ -204,21 +224,13 @@ function QuestionsTable({
           <option value="true">Publiées</option>
           <option value="false">Brouillons</option>
         </Select>
-        <TextInput
-          placeholder="Rechercher dans l'énoncé…"
-          value={q}
-          onChange={(e) => {
-            setQ(e.target.value);
-            resetPage();
-          }}
-        />
-      </div>
+          </>
+        }
+      />
 
       <Card className="overflow-x-auto p-0">
         {list.isLoading ? (
-          <div className="p-5">
-            <Skeleton className="h-24" />
-          </div>
+          <TableSkeleton rows={5} />
         ) : (list.data?.content ?? []).length === 0 ? (
           <p className="p-5 text-sm text-brand-gray">Aucune question.</p>
         ) : (
@@ -489,32 +501,28 @@ function QuestionEditor({
             {props.map((p, i) => (
               <Card key={i} className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-extrabold text-brand-navy">Proposition {p.letter}</span>
+                  <span className="text-sm font-bold text-brand-navy">Proposition {p.letter}</span>
                   <div className="flex items-center gap-2">
-                    <button
-                      type="button"
+                    <SegmentToggle
+                      tone="success"
+                      selected={p.isTrue}
                       onClick={() => setProp(i, { isTrue: true })}
-                      className={`rounded-lg px-3 py-1 text-xs font-bold ${
-                        p.isTrue ? 'bg-green-600 text-white' : 'bg-gray-100 text-brand-gray'
-                      }`}
                     >
                       VRAI
-                    </button>
-                    <button
-                      type="button"
+                    </SegmentToggle>
+                    <SegmentToggle
+                      tone="danger"
+                      selected={!p.isTrue}
                       onClick={() => setProp(i, { isTrue: false })}
-                      className={`rounded-lg px-3 py-1 text-xs font-bold ${
-                        !p.isTrue ? 'bg-red-600 text-white' : 'bg-gray-100 text-brand-gray'
-                      }`}
                     >
                       FAUX
-                    </button>
+                    </SegmentToggle>
                     {props.length > 2 ? (
                       <button
                         type="button"
                         onClick={() => removeProp(i)}
                         aria-label="Supprimer la proposition"
-                        className="text-red-500 hover:text-red-700"
+                        className="text-danger hover:text-danger"
                       >
                         ✕
                       </button>
@@ -578,7 +586,7 @@ function QuestionEditor({
             </p>
             <div className="mt-3 space-y-2">
               {statementImages.map((src) => (
-                <img key={src} src={src} alt="" className="max-h-48 rounded-lg ring-1 ring-gray-100" />
+                <img key={src} src={src} alt="" className="max-h-48 rounded-lg ring-1 ring-subtle" />
               ))}
             </div>
             <ul className="mt-4 space-y-2">
@@ -602,7 +610,7 @@ function QuestionEditor({
           </p>
           <Card className="space-y-2">
             {props.map((p) => (
-              <div key={p.letter} className="rounded-lg bg-gray-50 p-3">
+              <div key={p.letter} className="rounded-lg bg-canvas p-3">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-brand-navy">{p.letter}.</span>
                   <StatusBadge tone={p.isTrue ? 'green' : 'red'}>
@@ -646,15 +654,14 @@ function ImageAttacher({
       <div className="flex flex-wrap items-center gap-2">
         {images.map((src) => (
           <div key={src} className="relative">
-            <img src={src} alt="" className="h-16 w-16 rounded-lg object-cover ring-1 ring-gray-200" />
-            <button
+            <img src={src} alt="" className="h-16 w-16 rounded-lg object-cover ring-1 ring-subtle" />
+            <Button variant="danger" size="sm" className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center"
               type="button"
               onClick={() => onChange(images.filter((i) => i !== src))}
               aria-label="Retirer l'image"
-              className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs text-white"
             >
               ✕
-            </button>
+            </Button>
           </div>
         ))}
         <label className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 text-2xl text-brand-gray hover:border-brand-green">
@@ -732,11 +739,11 @@ function BulkImportModal({ onClose }: { onClose: () => void }) {
           placeholder='[{"courseId":"…","statement":"…","propositions":[…]}]'
           className="w-full rounded-lg border border-gray-300 p-2 font-mono text-xs text-brand-navy focus:border-brand-green focus:outline-none"
         />
-        {parseError ? <p className="text-sm font-semibold text-red-600">{parseError}</p> : null}
+        {parseError ? <p className="text-sm font-semibold text-danger">{parseError}</p> : null}
         {rowErrors.length > 0 ? (
-          <div className="max-h-40 overflow-y-auto rounded-lg border border-red-200 bg-red-50 p-3 text-sm">
-            <p className="mb-1 font-bold text-red-700">Erreurs par ligne :</p>
-            <ul className="space-y-1 text-red-700">
+          <div className="max-h-40 overflow-y-auto rounded-lg border border-danger bg-danger/10 p-3 text-sm">
+            <p className="mb-1 font-bold text-danger">Erreurs par ligne :</p>
+            <ul className="space-y-1 text-danger">
               {rowErrors.map((err, idx) => (
                 <li key={idx}>
                   Ligne {err.row + 1} — <span className="font-mono">{err.field}</span> : {err.message}

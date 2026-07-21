@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import { EmptyState, Skeleton } from '../../components/ui';
+import { EmptyState, ListSkeleton } from '../../components/ui';
 import { t, type TranslationKey } from '../../i18n/fr';
 import { fetchSignals } from '../../lib/endpoints';
 import type { SignalStatus } from '../../lib/schemas';
 
 const STATUS_STYLES: Record<SignalStatus, string> = {
-  OPEN: 'bg-orange-100 text-orange-700',
+  OPEN: 'bg-warning/10 text-warning',
   RESOLVED: 'bg-brand-green/15 text-brand-green',
-  REJECTED: 'bg-red-100 text-red-700',
+  REJECTED: 'bg-danger/10 text-danger',
 };
 
 export function SignalsPage() {
@@ -15,18 +15,18 @@ export function SignalsPage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-extrabold text-brand-navy dark:text-white">
+      <h1 className="text-h1 text-brand-navy dark:text-white">
         {t('signals.title')}
       </h1>
 
       {signals.isLoading ? (
-        <Skeleton className="h-40" />
+        <ListSkeleton rows={4} />
       ) : (signals.data?.length ?? 0) === 0 ? (
-        <EmptyState message={t('signals.empty')} />
+        <EmptyState title={t('signals.empty')} />
       ) : (
         <div className="space-y-3">
           {signals.data?.map((signal) => (
-            <div key={signal.id} className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+            <div key={signal.id} className="rounded-lg bg-surface p-5 shadow-card">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <p className="min-w-0 flex-1 font-semibold text-brand-navy">
                   {signal.questionStatement}

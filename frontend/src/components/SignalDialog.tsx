@@ -53,7 +53,7 @@ export function SignalDialog({
           aria-label={t('signals.message')}
           className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
         />
-        {error ? <p className="text-sm font-medium text-red-600">{error}</p> : null}
+        {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
         <button
           type="submit"
           disabled={send.isPending}

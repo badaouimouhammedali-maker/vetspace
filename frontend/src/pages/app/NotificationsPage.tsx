@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
-import { EmptyState, Skeleton } from '../../components/ui';
+import { Button, EmptyState, ListSkeleton } from '../../components/ui';
 import { t, type TranslationKey } from '../../i18n/fr';
 import {
   deleteNotification,
@@ -55,32 +55,32 @@ export function NotificationsPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-extrabold text-brand-navy dark:text-white">
+        <h1 className="text-h1 text-brand-navy dark:text-white">
           {t('notifs.title')}
         </h1>
         {(notifications.data?.length ?? 0) > 0 ? (
-          <button
+          <Button variant="ghost" size="sm"
             onClick={() => markAll.mutate()}
-            className="text-sm font-semibold text-brand-green hover:underline"
+            
           >
             {t('notifs.markAllRead')}
-          </button>
+          </Button>
         ) : null}
       </div>
 
       {notifications.isLoading ? (
-        <Skeleton className="h-40" />
+        <ListSkeleton rows={4} />
       ) : (notifications.data?.length ?? 0) === 0 ? (
-        <EmptyState message={t('notifs.empty')} />
+        <EmptyState title={t('notifs.empty')} />
       ) : (
         <div className="space-y-2">
           {notifications.data?.map((notification) => (
             <div
               key={notification.id}
               onClick={() => !notification.read && markRead.mutate(notification.id)}
-              className={`flex items-start gap-3 rounded-2xl p-4 shadow-sm ring-1 transition ${
+              className={`flex items-start gap-3 rounded-lg p-4 shadow-subtle ring-1 transition ${
                 notification.read
-                  ? 'bg-white ring-gray-100'
+                  ? 'bg-surface ring-subtle'
                   : 'bg-brand-green/5 ring-brand-green/30'
               }`}
             >
@@ -106,7 +106,7 @@ export function NotificationsPage() {
                   remove.mutate(notification.id);
                 }}
                 aria-label={t('notifs.delete')}
-                className="shrink-0 rounded-lg p-1.5 text-sm text-brand-gray hover:text-red-500"
+                className="shrink-0 rounded-lg p-1.5 text-sm text-brand-gray hover:text-danger"
               >
                 🗑️
               </button>

@@ -1,7 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Donut, EmojiRating, EmptyState, Modal, Skeleton, formatSeconds } from '../../components/ui';
+import {
+  Button,
+  Card,
+  CardGridSkeleton,
+  Donut,
+  EmojiRating,
+  EmptyState,
+  LinkButton,
+  Modal,
+  PlainButton,
+  formatSeconds,
+} from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { t } from '../../i18n/fr';
 import { apiErrorMessage } from '../../lib/api';
@@ -36,11 +46,11 @@ function SessionCard({
   const started = session.answeredCount > 0 || session.status === 'SUBMITTED';
 
   return (
-    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+    <Card padding="sm" className="flex h-full flex-col">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate font-bold text-brand-navy">{session.title}</p>
-          <p className="mt-0.5 text-xs text-brand-gray">
+          <p className="truncate font-semibold text-brand-navy">{session.title}</p>
+          <p className="mt-0.5 text-caption text-gray-500">
             {new Date(session.startedAt).toLocaleDateString('fr-FR', {
               day: '2-digit',
               month: 'long',
@@ -48,61 +58,67 @@ function SessionCard({
             })}
           </p>
         </div>
-        <button
+        <PlainButton
           onClick={() => patch.mutate({ favorite: !session.favorite })}
           aria-label="Favori"
-          className={`text-xl transition ${session.favorite ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-400'}`}
+          aria-pressed={session.favorite}
+          className={`text-xl transition-transform duration-150 hover:scale-110 active:scale-95 ${
+            session.favorite ? 'text-star' : 'text-gray-300 hover:text-star'
+          }`}
         >
           ★
-        </button>
+        </PlainButton>
       </div>
 
       <div className="mt-4 flex items-center gap-4">
         <Donut percent={progress} size={72} />
-        <div className="flex-1 text-sm text-brand-gray">
-          <p>
+        <div className="flex-1 space-y-0.5 text-caption text-gray-500">
+          <p className="tabular-nums">
             {session.answeredCount}/{session.questionCount} {t('sessions.questions')}
           </p>
-          <p>⏱ {formatSeconds(session.totalSeconds)}</p>
+          <p className="tabular-nums">⏱ {formatSeconds(session.totalSeconds)}</p>
           {session.score != null ? (
-            <p className="font-semibold text-brand-navy">
+            <p className="font-semibold tabular-nums text-brand-navy">
               {t('sessions.score')} : {session.score}%
             </p>
           ) : null}
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between">
+      <div className="mt-auto flex items-center justify-between pt-4">
         <EmojiRating
           value={session.rating}
           onChange={(rating) => patch.mutate({ rating })}
         />
         <div className="flex items-center gap-1.5">
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => onRepeat(session)}
             aria-label={t('sessions.repeat')}
             title={t('sessions.repeat')}
-            className="rounded-lg border border-gray-200 p-2 text-sm text-brand-gray transition hover:border-brand-green hover:text-brand-green"
           >
             🔁
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => onDelete(session)}
             aria-label={t('sessions.delete')}
             title={t('sessions.delete')}
-            className="rounded-lg border border-gray-200 p-2 text-sm text-brand-gray transition hover:border-red-500 hover:text-red-500"
+            className="text-gray-500 hover:bg-danger/10 hover:text-danger"
           >
             🗑️
-          </button>
-          <Link
+          </Button>
+          <LinkButton
             to={`/app/session/${session.id}`}
-            className="rounded-lg bg-brand-green px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-green-hover"
+            size="sm"
           >
             {started && session.status === 'ACTIVE' ? t('sessions.resume') : t('sessions.play')}
-          </Link>
+          </LinkButton>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -155,35 +171,29 @@ export function SessionsPage({ type }: { type: SessionType }) {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-extrabold text-brand-navy dark:text-white">{title}</h1>
-        <button
+        <h1 className="text-h1 text-brand-navy dark:text-white">{title}</h1>
+        <Button variant="primary" size="md"
           onClick={() => setBuilderOpen(true)}
-          className="rounded-lg bg-brand-green px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-green-hover"
         >
           {t('sessions.create')}
-        </button>
+        </Button>
       </div>
 
       {sessions.isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <Skeleton className="h-52" />
-          <Skeleton className="h-52" />
-          <Skeleton className="h-52" />
-        </div>
+        <CardGridSkeleton count={3} />
       ) : filtered.length === 0 ? (
         <EmptyState
-          message={t('sessions.empty')}
+          title={t('sessions.empty')}
           action={
-            <button
+            <Button variant="primary" size="md"
               onClick={() => setBuilderOpen(true)}
-              className="rounded-lg bg-brand-green px-4 py-2 text-sm font-bold text-white hover:bg-brand-green-hover"
             >
               {t('sessions.create')}
-            </button>
+            </Button>
           }
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((session) => (
             <SessionCard
               key={session.id}
@@ -239,19 +249,17 @@ export function SessionsPage({ type }: { type: SessionType }) {
       >
         <p className="text-sm text-brand-gray">{t('sessions.deleteConfirm')}</p>
         <div className="mt-5 flex justify-end gap-2">
-          <button
+          <Button variant="secondary" size="md"
             onClick={() => setDeleteTarget(null)}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-brand-gray"
           >
             {t('common.cancel')}
-          </button>
-          <button
+          </Button>
+          <Button variant="danger" size="md"
             onClick={() => remove.mutate()}
             disabled={remove.isPending}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700"
           >
             {t('common.confirm')}
-          </button>
+          </Button>
         </div>
       </Modal>
     </div>

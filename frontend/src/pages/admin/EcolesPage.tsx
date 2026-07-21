@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState, type FormEvent } from 'react';
 import { Field, Select, TextInput } from '../../components/forms';
-import { Modal, Skeleton } from '../../components/ui';
+import { Button, Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { apiErrorMessage } from '../../lib/api';
 import {
@@ -146,7 +146,7 @@ export function EcolesPage() {
       <Card className="mb-6">
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-gray">Écoles</h2>
         {schools.isLoading ? (
-          <Skeleton className="h-8" />
+          <TableSkeleton rows={5} />
         ) : (schools.data ?? []).length === 0 ? (
           <p className="text-sm text-brand-gray">Aucune école. Créez-en une pour commencer.</p>
         ) : (
@@ -212,7 +212,7 @@ export function EcolesPage() {
           </div>
 
           {modules.isLoading || courses.isLoading ? (
-            <Skeleton className="h-20" />
+            <TableSkeleton rows={5} />
           ) : visibleModules.length === 0 ? (
             <p className="text-sm text-brand-gray">Aucun module pour cette année.</p>
           ) : (
@@ -224,22 +224,22 @@ export function EcolesPage() {
                   <li key={m.id} className="rounded-xl border border-gray-100">
                     <div className="flex items-center gap-2 p-3">
                       <div className="flex flex-col">
-                        <button
+                        <Button variant="ghost" size="sm"
                           aria-label="Monter"
                           disabled={mi === 0}
                           onClick={() => modReorder.mutate(move(visibleModules, mi, -1))}
-                          className="text-xs text-brand-gray disabled:opacity-30"
+                          
                         >
                           ▲
-                        </button>
-                        <button
+                        </Button>
+                        <Button variant="ghost" size="sm"
                           aria-label="Descendre"
                           disabled={mi === visibleModules.length - 1}
                           onClick={() => modReorder.mutate(move(visibleModules, mi, 1))}
-                          className="text-xs text-brand-gray disabled:opacity-30"
+                          
                         >
                           ▼
-                        </button>
+                        </Button>
                       </div>
                       <button
                         onClick={() => setExpanded(isOpen ? null : m.id)}
@@ -272,7 +272,7 @@ export function EcolesPage() {
                     </div>
 
                     {isOpen ? (
-                      <div className="border-t border-gray-100 bg-gray-50/50 p-3">
+                      <div className="border-t border-gray-100 bg-canvas/50 p-3">
                         <div className="mb-2 flex justify-end">
                           <PrimaryButton
                             onClick={() => setCourseModal({ course: 'new', moduleId: m.id })}
@@ -287,25 +287,25 @@ export function EcolesPage() {
                             {mCourses.map((c, ci) => (
                               <li
                                 key={c.id}
-                                className="flex flex-wrap items-center gap-2 rounded-lg bg-white px-3 py-2 ring-1 ring-gray-100"
+                                className="flex flex-wrap items-center gap-2 rounded-lg bg-surface px-3 py-2 ring-1 ring-subtle"
                               >
                                 <div className="flex flex-col">
-                                  <button
+                                  <Button variant="ghost" size="sm"
                                     aria-label="Monter"
                                     disabled={ci === 0}
                                     onClick={() => crsReorder.mutate(move(mCourses, ci, -1))}
-                                    className="text-xs text-brand-gray disabled:opacity-30"
+                                    
                                   >
                                     ▲
-                                  </button>
-                                  <button
+                                  </Button>
+                                  <Button variant="ghost" size="sm"
                                     aria-label="Descendre"
                                     disabled={ci === mCourses.length - 1}
                                     onClick={() => crsReorder.mutate(move(mCourses, ci, 1))}
-                                    className="text-xs text-brand-gray disabled:opacity-30"
+                                    
                                   >
                                     ▼
-                                  </button>
+                                  </Button>
                                 </div>
                                 <span className="flex-1 text-sm font-semibold text-brand-navy">
                                   {c.name}

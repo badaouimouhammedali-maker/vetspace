@@ -1,7 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { EmojiRating, Modal, Skeleton, formatSeconds } from '../../components/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  EmojiRating,
+  Modal,
+  PlainButton,
+  SelectableRow,
+  Skeleton,
+  formatSeconds,
+} from '../../components/ui';
 import { SignalDialog } from '../../components/SignalDialog';
 import { useToast } from '../../components/ToastProvider';
 import { t } from '../../i18n/fr';
@@ -175,14 +185,14 @@ export function PlayPage() {
 
   if (play.isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center bg-canvas">
         <Skeleton className="h-64 w-full max-w-2xl" />
       </div>
     );
   }
   if (play.isError || !play.data) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-canvas">
         <p className="text-brand-gray">{t('play.notFound')}</p>
         <Link to="/app" className="font-semibold text-brand-green hover:underline">
           {t('common.back')}
@@ -195,21 +205,21 @@ export function PlayPage() {
   if (finished) {
     const score = result?.score ?? null;
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-gray-50 p-6">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-canvas p-6">
         <img src="/brand/Logo.svg" alt="VetSpace" className="h-14" />
-        <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-gray-100">
-          <h1 className="text-2xl font-extrabold text-brand-navy">{t('play.scoreTitle')}</h1>
-          <p className="mt-6 text-sm font-medium text-brand-gray">{t('play.yourScore')}</p>
-          <p className="text-5xl font-extrabold text-brand-green">
+        <Card className="w-full max-w-md text-center">
+          <h1 className="text-h1 text-brand-navy">{t('play.scoreTitle')}</h1>
+          <p className="mt-6 text-caption font-medium text-brand-gray">{t('play.yourScore')}</p>
+          <p className="text-[44px] font-bold leading-tight tabular-nums text-brand-green">
             {score != null ? `${score}%` : '—'}
           </p>
           <div className="mt-8">
-            <p className="mb-2 text-sm font-medium text-brand-gray">{t('play.ratePrompt')}</p>
+            <p className="mb-2 text-caption font-medium text-brand-gray">{t('play.ratePrompt')}</p>
             <div className="flex justify-center">
               <EmojiRating value={result?.rating ?? null} onChange={(r) => rate.mutate(r)} />
             </div>
           </div>
-          <button
+          <Button variant="primary" size="md" className="mt-8 w-full"
             onClick={() =>
               navigate(
                 play.data.sessionType === 'EXAMEN'
@@ -217,11 +227,10 @@ export function PlayPage() {
                   : '/app/sessions/entrainement',
               )
             }
-            className="mt-8 w-full rounded-lg bg-brand-green px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-green-hover"
           >
             {t('play.backToSessions')}
-          </button>
-        </div>
+          </Button>
+        </Card>
       </div>
     );
   }
@@ -246,9 +255,9 @@ export function PlayPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-canvas">
       {/* Rail gauche : questions + chronomètres */}
-      <aside className="flex w-44 shrink-0 flex-col border-r border-gray-200 bg-white lg:w-56">
+      <aside className="flex w-44 shrink-0 flex-col border-r border-gray-200 bg-surface lg:w-56">
         <Link to="/app" className="flex justify-center border-b border-gray-100 py-4">
           <img src="/brand/Logo.svg" alt="VetSpace" className="h-9" />
         </Link>
@@ -260,28 +269,27 @@ export function PlayPage() {
                 st.isCorrect ? (
                   <span className="font-bold text-brand-green">✓</span>
                 ) : (
-                  <span className="font-bold text-red-500">✗</span>
+                  <span className="font-bold text-danger">✗</span>
                 )
               ) : st.state === 'CONSULTED' ? (
                 <span className="font-bold text-gray-400">👁</span>
               ) : null;
             return (
-              <button
+              <SelectableRow
                 key={q.question.id}
+                selected={i === index}
                 onClick={() => setIndex(i)}
-                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                  i === index
-                    ? 'bg-brand-green text-white'
-                    : 'text-brand-gray hover:bg-gray-50'
-                }`}
+                className="justify-between"
               >
-                {t('play.question')} {i + 1}
+                <span>
+                  {t('play.question')} {i + 1}
+                </span>
                 {mark}
-              </button>
+              </SelectableRow>
             );
           })}
         </nav>
-        <div className="sticky bottom-0 space-y-1 border-t border-gray-100 bg-white p-4 text-xs font-semibold text-brand-navy">
+        <div className="sticky bottom-0 space-y-1 border-t border-gray-100 bg-surface p-4 text-xs font-semibold text-brand-navy">
           <p>
             {t('play.sessionTimer')} : ⏱ {formatSeconds(sessionSeconds)}
           </p>
@@ -315,7 +323,7 @@ export function PlayPage() {
                   onClick={() => setSignalOpen(true)}
                   aria-label={t('signals.report')}
                   title={t('signals.report')}
-                  className="mt-1 shrink-0 rounded-lg border border-gray-200 p-2 text-base text-brand-gray transition hover:border-red-500 hover:text-red-500"
+                  className="mt-1 shrink-0 rounded-md border border-subtle p-2 text-base text-gray-500 transition-colors duration-150 hover:border-danger hover:text-danger"
                 >
                   🚩
                 </button>
@@ -323,12 +331,12 @@ export function PlayPage() {
               {current.question.statementImages.length > 0 ? (
                 <div className="mt-4 flex flex-wrap gap-3">
                   {current.question.statementImages.map((src) => (
-                    <button key={src} onClick={() => setLightbox(src)} className="group relative">
+                    <PlainButton key={src} onClick={() => setLightbox(src)} className="group relative">
                       <img src={src} alt="" className="h-32 rounded-lg object-cover" />
                       <span className="absolute inset-0 flex items-center justify-center rounded-lg bg-brand-navy/50 text-xs font-bold text-white opacity-0 transition group-hover:opacity-100">
                         {t('play.enlargeImage')}
                       </span>
-                    </button>
+                    </PlainButton>
                   ))}
                 </div>
               ) : null}
@@ -340,15 +348,21 @@ export function PlayPage() {
                     (p) => p.id === proposition.id,
                   );
                   const isSelected = selectedIds.includes(proposition.id);
+                  // Correction reads as a soft status band with a 4px left border, not
+                  // as coloured text — the verdict should be legible from the shape of
+                  // the row before anyone reads the word.
                   const rowClasses = showCorrection
                     ? correctionRow?.isTrue
-                      ? 'border-brand-green bg-brand-green/5'
-                      : 'border-red-300 bg-red-50'
+                      ? 'border-subtle border-l-4 border-l-success bg-success/10'
+                      : 'border-subtle border-l-4 border-l-danger bg-danger/10'
                     : isSelected
                       ? 'border-brand-green bg-brand-green/10'
-                      : 'border-gray-200 bg-white hover:border-brand-green/50';
+                      : 'border-subtle bg-surface hover:bg-gray-50';
                   return (
-                    <div key={proposition.id} className={`rounded-xl border-2 transition ${rowClasses}`}>
+                    <div
+                      key={proposition.id}
+                      className={`overflow-hidden rounded-md border transition-colors duration-150 ${rowClasses}`}
+                    >
                       <button
                         onClick={() => toggleProposition(proposition.id)}
                         disabled={currentState !== 'UNANSWERED'}
@@ -361,25 +375,25 @@ export function PlayPage() {
                         >
                           {proposition.letter}
                         </span>
-                        <span className="flex-1 pt-0.5 text-sm text-gray-800">{proposition.text}</span>
+                        <span className="flex-1 pt-0.5 text-body text-gray-800">
+                          {proposition.text}
+                        </span>
                         {showCorrection && correctionRow ? (
-                          <span
-                            className={`text-sm font-extrabold ${correctionRow.isTrue ? 'text-brand-green' : 'text-red-600'}`}
-                          >
+                          <Badge tone={correctionRow.isTrue ? 'success' : 'danger'}>
                             {correctionRow.isTrue ? t('play.vrai') : t('play.faux')}
-                          </span>
+                          </Badge>
                         ) : null}
                       </button>
                       {showCorrection && correctionRow?.explanationHtml ? (
-                        <div className="border-t border-gray-100 px-4 py-3">
+                        <div className="border-t border-subtle px-4 py-3">
                           <SafeHtml
                             html={correctionRow.explanationHtml}
                             className="prose-sm text-sm text-gray-700 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
                           />
                           {correctionRow.explanationImages.map((src) => (
-                            <button key={src} onClick={() => setLightbox(src)} className="mt-2">
+                            <PlainButton key={src} onClick={() => setLightbox(src)} className="mt-2">
                               <img src={src} alt="" className="h-24 rounded-lg object-cover" />
-                            </button>
+                            </PlainButton>
                           ))}
                         </div>
                       ) : null}
@@ -391,46 +405,43 @@ export function PlayPage() {
               {/* Actions */}
               {currentState === 'UNANSWERED' ? (
                 <div className="mt-6 flex flex-col items-center gap-3">
-                  <button
+                  <Button variant="primary" size="md" className="tracking-wide"
                     onClick={() => answer.mutate()}
                     disabled={answer.isPending}
-                    className="rounded-lg bg-brand-green px-10 py-3 text-sm font-extrabold tracking-wide text-white transition hover:bg-brand-green-hover disabled:opacity-60"
                   >
                     {t('play.valider')}
-                  </button>
-                  <button
+                  </Button>
+                  <Button variant="ghost" size="sm" className="underline"
                     onClick={() => consult.mutate(current.question.id)}
                     disabled={consult.isPending}
-                    className="text-xs font-semibold text-brand-gray underline hover:text-brand-navy"
+                    
                   >
                     {t('play.consulter')}
-                  </button>
+                  </Button>
                 </div>
               ) : null}
 
               {/* Navigation */}
               <div className="mt-8 flex items-center justify-between">
-                <button
+                <Button variant="secondary" size="md"
                   onClick={() => setIndex((i) => Math.max(0, i - 1))}
                   disabled={index === 0}
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-brand-gray transition hover:border-brand-navy hover:text-brand-navy disabled:opacity-40"
                 >
                   ← {t('play.previous')}
-                </button>
+                </Button>
                 {index === questions.length - 1 ? (
-                  <button
+                  <Button variant="secondary" size="md"
                     onClick={() => setConfirmSubmit(true)}
-                    className="rounded-lg bg-brand-navy px-6 py-2 text-sm font-bold text-white transition hover:bg-brand-navy/90"
+                    
                   >
                     {t('play.submit')}
-                  </button>
+                  </Button>
                 ) : (
-                  <button
+                  <Button variant="secondary" size="md"
                     onClick={() => setIndex((i) => Math.min(questions.length - 1, i + 1))}
-                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-brand-gray transition hover:border-brand-navy hover:text-brand-navy"
                   >
                     {t('play.next')} →
-                  </button>
+                  </Button>
                 )}
               </div>
             </>
@@ -452,12 +463,13 @@ export function PlayPage() {
           onClick={() => setLightbox(null)}
         >
           <img src={lightbox} alt="" className="max-h-full max-w-full rounded-xl" />
-          <button
-            className="absolute right-6 top-6 text-3xl font-bold text-white"
+          <PlainButton
+            onClick={() => setLightbox(null)}
+            className="absolute right-6 top-6 text-display text-white"
             aria-label={t('play.close')}
           >
             ×
-          </button>
+          </PlainButton>
         </div>
       ) : null}
 
@@ -465,19 +477,17 @@ export function PlayPage() {
       <Modal open={confirmSubmit} onClose={() => setConfirmSubmit(false)} title={t('play.submit')}>
         <p className="text-sm text-brand-gray">{t('play.submitConfirm')}</p>
         <div className="mt-5 flex justify-end gap-2">
-          <button
+          <Button variant="secondary" size="md"
             onClick={() => setConfirmSubmit(false)}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-brand-gray"
           >
             {t('common.cancel')}
-          </button>
-          <button
+          </Button>
+          <Button variant="primary" size="md"
             onClick={() => submit.mutate()}
             disabled={submit.isPending}
-            className="rounded-lg bg-brand-green px-4 py-2 text-sm font-bold text-white hover:bg-brand-green-hover"
           >
             {t('common.confirm')}
-          </button>
+          </Button>
         </div>
       </Modal>
     </div>

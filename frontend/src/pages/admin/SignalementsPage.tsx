@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { Select } from '../../components/forms';
-import { Modal, Skeleton } from '../../components/ui';
+import { Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { apiErrorMessage } from '../../lib/api';
 import { fetchAdminSignals, rejectSignal, resolveSignal } from '../../lib/adminEndpoints';
@@ -51,7 +51,7 @@ export function SignalementsPage() {
       </div>
 
       {signals.isLoading ? (
-        <Skeleton className="h-40" />
+        <TableSkeleton rows={5} />
       ) : (signals.data?.content ?? []).length === 0 ? (
         <Card>
           <p className="text-sm text-brand-gray">Aucun signalement.</p>
@@ -67,7 +67,7 @@ export function SignalementsPage() {
                 </span>
               </div>
               <p className="mb-1 text-xs font-semibold uppercase text-brand-gray">Question</p>
-              <p className="mb-3 rounded-lg bg-gray-50 p-3 text-sm text-brand-navy">
+              <p className="mb-3 rounded-lg bg-canvas p-3 text-sm text-brand-navy">
                 {s.questionStatement}
               </p>
               <p className="mb-1 text-xs font-semibold uppercase text-brand-gray">
@@ -75,7 +75,7 @@ export function SignalementsPage() {
               </p>
               <p className="mb-3 text-sm text-brand-gray">{s.message}</p>
               {s.adminReply ? (
-                <p className="mb-3 rounded-lg border-l-4 border-brand-green bg-green-50 p-3 text-sm text-brand-navy">
+                <p className="mb-3 rounded-lg border-l-4 border-brand-green bg-success/10 p-3 text-sm text-brand-navy">
                   <strong>Réponse :</strong> {s.adminReply}
                 </p>
               ) : null}

@@ -1,6 +1,25 @@
 /* eslint-disable react-refresh/only-export-components -- composants UI + aides exportés ensemble, perte de HMR acceptée */
-import { useEffect, type ReactNode } from 'react';
-import { t } from '../i18n/fr';
+
+/**
+ * The UI kit's front door.
+ *
+ * <p>Components live in siblings (Button, Card, Badge, …) and are re-exported here, so
+ * every existing `from '../../components/ui'` import keeps working and there is still
+ * one obvious place to look for "what can I build with".
+ */
+export { Button, LinkButton, type ButtonSize, type ButtonVariant } from './Button';
+export { Card, PageHeader, SectionHeader } from './Card';
+export { Badge, PrecisionChip, type BadgeTone } from './Badge';
+export { EmptyState } from './EmptyState';
+export { PlainButton, SegmentToggle, SelectableRow } from './Toggle';
+export { Modal } from './Modal';
+export {
+  CardGridSkeleton,
+  DashboardSkeleton,
+  ListSkeleton,
+  Skeleton,
+  TableSkeleton,
+} from './Skeletons';
 
 /** Anneau de progression SVG (donut) avec pourcentage au centre. */
 export function Donut({
@@ -54,78 +73,6 @@ export function Donut({
   );
 }
 
-/** Boîte de dialogue modale accessible au clavier (Échap pour fermer). */
-export function Modal({
-  open,
-  onClose,
-  title,
-  children,
-  wide = false,
-}: {
-  open: boolean;
-  onClose: () => void;
-  title: string;
-  children: ReactNode;
-  wide?: boolean;
-}) {
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
-
-  if (!open) {
-    return null;
-  }
-  return (
-    <div
-      className="fixed inset-0 z-40 flex items-center justify-center bg-brand-navy/40 p-4"
-      onClick={onClose}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        className={`max-h-[90vh] w-full ${wide ? 'max-w-2xl' : 'max-w-md'} overflow-y-auto rounded-2xl bg-white p-6 shadow-xl`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-extrabold text-brand-navy">{title}</h2>
-          <button
-            onClick={onClose}
-            aria-label={t('play.close')}
-            className="rounded-full px-2 text-xl font-bold text-brand-gray hover:text-brand-navy"
-          >
-            ×
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-export function EmptyState({ message, action }: { message: string; action?: ReactNode }) {
-  return (
-    <div className="flex flex-col items-center gap-4 rounded-2xl border-2 border-dashed border-gray-200 bg-white p-12 text-center">
-      <span className="text-4xl">🐾</span>
-      <p className="text-sm font-medium text-brand-gray">{message}</p>
-      {action}
-    </div>
-  );
-}
-
-export function Skeleton({ className = '' }: { className?: string }) {
-  return <div className={`animate-pulse rounded-lg bg-gray-200 ${className}`} />;
-}
-
 const EMOJIS = ['😞', '😕', '😐', '🙂', '🤩'] as const;
 
 /** Notation 1–5 par émoji. */
@@ -149,7 +96,7 @@ export function EmojiRating({
               onChange(rating);
             }}
             aria-label={`Note ${rating}/5`}
-            className={`rounded text-lg transition ${
+            className={`rounded text-lg transition-transform duration-150 ${
               value === rating ? 'scale-125' : 'opacity-40 hover:opacity-100'
             }`}
           >
@@ -158,21 +105,6 @@ export function EmojiRating({
         );
       })}
     </div>
-  );
-}
-
-/** Chip de précision coloré : vert ≥70, orange 40–69, rouge <40. */
-export function PrecisionChip({ percent }: { percent: number }) {
-  const color =
-    percent >= 70
-      ? 'bg-brand-green/15 text-brand-green'
-      : percent >= 40
-        ? 'bg-orange-100 text-orange-700'
-        : 'bg-red-100 text-red-700';
-  return (
-    <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-bold ${color}`}>
-      {Math.round(percent)}%
-    </span>
   );
 }
 

@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react';
+import { Button, Card as KitCard, PageHeader } from '../../components/ui';
 
-/** Page title row with optional action buttons on the right. */
+/**
+ * Admin page title row. Delegates to the kit's PageHeader so admin and student pages
+ * open identically — this used to be a second, slightly different implementation.
+ */
 export function AdminHeader({
   title,
   subtitle,
@@ -11,20 +15,42 @@ export function AdminHeader({
   children?: ReactNode;
 }) {
   return (
-    <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-      <div>
-        <h1 className="text-2xl font-extrabold text-brand-navy">{title}</h1>
-        {subtitle ? <p className="mt-1 text-sm text-brand-gray">{subtitle}</p> : null}
-      </div>
-      {children ? <div className="flex flex-wrap items-center gap-2">{children}</div> : null}
-    </div>
+    <PageHeader
+      title={title}
+      {...(subtitle ? { caption: subtitle } : {})}
+      {...(children ? { action: <div className="flex flex-wrap items-center gap-2">{children}</div> } : {})}
+    />
   );
 }
 
+/** Kept as a name so admin pages need no edit; the kit's Card does the work. */
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100 ${className}`}>
+    <KitCard padding="sm" className={className}>
       {children}
+    </KitCard>
+  );
+}
+
+/**
+ * One toolbar shape for every admin table: search on the left, filters in the middle,
+ * the primary action pinned right. Each table having its own arrangement is why they
+ * never felt like the same console.
+ */
+export function AdminToolbar({
+  search,
+  filters,
+  action,
+}: {
+  search?: ReactNode;
+  filters?: ReactNode;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+      {search ? <div className="sm:w-72">{search}</div> : null}
+      {filters ? <div className="flex flex-wrap items-center gap-2">{filters}</div> : null}
+      {action ? <div className="sm:ml-auto">{action}</div> : null}
     </div>
   );
 }
@@ -41,14 +67,12 @@ export function PrimaryButton({
   disabled?: boolean;
 }) {
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      className="rounded-lg bg-brand-green px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-green-hover disabled:opacity-50"
-    >
+    <Button variant="primary" size="md"
+   type={type}
+   onClick={onClick}
+   disabled={disabled}>
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -63,7 +87,7 @@ export function GhostButton({
 }) {
   const cls =
     tone === 'red'
-      ? 'border-red-200 text-red-600 hover:bg-red-50'
+      ? 'border-danger text-danger hover:bg-danger/10'
       : 'border-gray-300 text-brand-gray hover:bg-gray-50';
   return (
     <button
@@ -84,9 +108,9 @@ export function StatusBadge({
   children: ReactNode;
 }) {
   const tones: Record<string, string> = {
-    green: 'bg-green-100 text-green-800',
+    green: 'bg-success/10 text-success',
     gray: 'bg-gray-100 text-gray-700',
-    red: 'bg-red-100 text-red-700',
+    red: 'bg-danger/10 text-danger',
     amber: 'bg-amber-100 text-amber-800',
     navy: 'bg-blue-100 text-blue-800',
   };
@@ -111,23 +135,21 @@ export function Pager({
   }
   return (
     <div className="mt-4 flex items-center justify-center gap-3 text-sm">
-      <button
+      <Button variant="secondary" size="sm"
         onClick={() => onPage(page - 1)}
         disabled={page <= 0}
-        className="rounded-lg border border-gray-300 px-3 py-1.5 font-semibold text-brand-gray disabled:opacity-40"
       >
         ← Précédent
-      </button>
+      </Button>
       <span className="text-brand-gray">
         Page {page + 1} / {totalPages}
       </span>
-      <button
+      <Button variant="secondary" size="sm"
         onClick={() => onPage(page + 1)}
         disabled={page >= totalPages - 1}
-        className="rounded-lg border border-gray-300 px-3 py-1.5 font-semibold text-brand-gray disabled:opacity-40"
       >
         Suivant →
-      </button>
+      </Button>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../../auth/AuthContext';
-import { EmptyState, Skeleton } from '../../components/ui';
+import { Button, CardGridSkeleton, EmptyState } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { t } from '../../i18n/fr';
 import { apiErrorMessage, apiErrorStatus } from '../../lib/api';
@@ -47,14 +47,14 @@ export function AbonnementPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-extrabold text-brand-navy dark:text-white">
+      <h1 className="text-h1 text-brand-navy dark:text-white">
         {t('app.subscription')}
       </h1>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Activation d'un code */}
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-          <h2 className="mb-4 text-base font-extrabold text-brand-navy">{t('abo.redeemTitle')}</h2>
+        <div className="rounded-lg bg-surface p-6 shadow-card">
+          <h2 className="mb-4 text-base font-bold text-brand-navy">{t('abo.redeemTitle')}</h2>
           <form onSubmit={onSubmit} className="flex gap-2">
             <input
               value={code}
@@ -64,15 +64,13 @@ export function AbonnementPage() {
               aria-label={t('abo.redeemTitle')}
               className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 font-mono text-sm uppercase tracking-widest outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
             />
-            <button
-              type="submit"
-              disabled={redeem.isPending}
-              className="shrink-0 rounded-lg bg-brand-green px-5 py-2.5 text-sm font-extrabold text-white transition hover:bg-brand-green-hover disabled:opacity-60"
-            >
+            <Button variant="primary" size="md" className="shrink-0"
+       type="submit"
+       disabled={redeem.isPending}>
               {t('abo.redeemSubmit')}
-            </button>
+            </Button>
           </form>
-          {error ? <p className="mt-3 text-sm font-medium text-red-600">{error}</p> : null}
+          {error ? <p className="mt-3 text-sm font-medium text-danger">{error}</p> : null}
           {success ? (
             <p className="mt-3 rounded-lg bg-brand-green/10 p-3 text-sm font-medium text-brand-green">
               {success}
@@ -81,8 +79,8 @@ export function AbonnementPage() {
         </div>
 
         {/* Historique */}
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-          <h2 className="mb-4 text-base font-extrabold text-brand-navy">{t('abo.historyTitle')}</h2>
+        <div className="rounded-lg bg-surface p-6 shadow-card">
+          <h2 className="mb-4 text-base font-bold text-brand-navy">{t('abo.historyTitle')}</h2>
           {(user?.activeSubscriptions.length ?? 0) === 0 ? (
             <p className="text-sm text-brand-gray">{t('abo.historyEmpty')}</p>
           ) : (
@@ -106,22 +104,21 @@ export function AbonnementPage() {
 
       {/* Carrousel de packs */}
       <div>
-        <h2 className="mb-3 text-base font-extrabold text-brand-navy dark:text-white">
+        <h2 className="mb-3 text-base font-bold text-brand-navy dark:text-white">
           {t('abo.packsTitle')}
         </h2>
         {packs.isLoading ? (
           <div className="flex gap-4">
-            <Skeleton className="h-56 w-72" />
-            <Skeleton className="h-56 w-72" />
+            <CardGridSkeleton count={2} />
           </div>
         ) : (packs.data?.length ?? 0) === 0 ? (
-          <EmptyState message={t('abo.historyEmpty')} />
+          <EmptyState title={t('abo.historyEmpty')} />
         ) : (
           <div className="flex snap-x gap-4 overflow-x-auto pb-2">
             {packs.data?.map((pack) => (
               <div
                 key={pack.id}
-                className="w-72 shrink-0 snap-start rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100"
+                className="w-72 shrink-0 snap-start rounded-lg bg-surface p-6 shadow-card"
               >
                 <p className="text-sm font-bold text-brand-navy">{pack.name}</p>
                 <p className="mt-1 text-xs text-brand-gray">
@@ -130,14 +127,14 @@ export function AbonnementPage() {
                     : t('abo.allYears')}{' '}
                   · {pack.academicYear}
                 </p>
-                <p className="mt-4 text-3xl font-extrabold text-brand-green">
+                <p className="mt-4 text-display text-brand-green">
                   {pack.priceDa.toLocaleString('fr-FR')} <span className="text-base">DA</span>
                 </p>
                 <p className="mt-1 text-xs text-brand-gray">
                   {t('home.expiresOn')} {new Date(pack.expiresAt).toLocaleDateString('fr-FR')}
                 </p>
                 <div className="mt-4 border-t border-gray-100 pt-3">
-                  <p className="text-xs font-extrabold tracking-wide text-brand-navy">
+                  <p className="text-xs font-bold tracking-wide text-brand-navy">
                     {t('abo.buyTitle')}
                   </p>
                   <p className="mt-1 text-xs leading-relaxed text-brand-gray">

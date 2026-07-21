@@ -38,15 +38,15 @@ export function ResetPasswordPage() {
 
   return (
     <AuthLayout>
-      <h1 className="text-2xl font-extrabold text-brand-navy">{t('reset.title')}</h1>
-      <p className="mt-1 text-sm text-brand-gray">{t('reset.subtitle')}</p>
+      <h1 className="text-h1 text-brand-navy">{t('reset.title')}</h1>
+      <p className="mt-1.5 text-body text-gray-500">{t('reset.subtitle')}</p>
 
       {!token ? (
-        <p className="mt-6 rounded-lg bg-red-50 p-4 text-sm font-medium text-red-600">
+        <p className="mt-6 rounded-lg bg-danger/10 p-4 text-sm font-medium text-danger">
           {t('reset.missingToken')}
         </p>
       ) : (
-        <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
+        <form onSubmit={onSubmit} className="mt-6 space-y-5" noValidate>
           <Field label={t('reset.password')} htmlFor="password">
             <PasswordInput
               id="password"
@@ -67,7 +67,7 @@ export function ResetPasswordPage() {
               onChange={(e) => setPasswordConfirm(e.target.value)}
             />
           </Field>
-          {error ? <p className="text-sm font-medium text-red-600">{error}</p> : null}
+          {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
           <SubmitButton loading={loading}>{t('reset.submit')}</SubmitButton>
         </form>
       )}

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { CoursePicker } from '../../components/CoursePicker';
 import { Field, SubmitButton, TextInput } from '../../components/forms';
 import { RichTextEditor } from '../../components/RichTextEditor';
-import { EmptyState, Modal, Skeleton } from '../../components/ui';
+import { Button, EmptyState, ListSkeleton, Modal } from '../../components/ui';
 import { t } from '../../i18n/fr';
 import { SafeHtml } from '../../lib/sanitize';
 import { createNote, deleteNote, fetchNotes, updateNote, type NoteInput } from '../../lib/endpoints';
@@ -60,55 +60,49 @@ export function NotesPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-extrabold text-brand-navy dark:text-white">
+        <h1 className="text-h1 text-brand-navy dark:text-white">
           {t('notes.title')}
         </h1>
-        <button
-          onClick={openCreate}
-          className="rounded-lg bg-brand-green px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-green-hover"
-        >
+        <Button variant="primary" size="md"
+     onClick={openCreate}>
           {t('notes.create')}
-        </button>
+        </Button>
       </div>
 
       {notes.isLoading ? (
         <div className="grid gap-4 md:grid-cols-2">
-          <Skeleton className="h-40" />
-          <Skeleton className="h-40" />
+          <ListSkeleton rows={4} />
         </div>
       ) : (notes.data?.length ?? 0) === 0 ? (
         <EmptyState
-          message={t('notes.empty')}
+          title={t('notes.empty')}
           action={
-            <button
-              onClick={openCreate}
-              className="rounded-lg bg-brand-green px-4 py-2 text-sm font-bold text-white hover:bg-brand-green-hover"
-            >
+            <Button variant="primary" size="md"
+       onClick={openCreate}>
               {t('notes.create')}
-            </button>
+            </Button>
           }
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {notes.data?.map((note) => (
-            <div key={note.id} className="flex flex-col rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+            <div key={note.id} className="flex flex-col rounded-lg bg-surface p-5 shadow-card">
               <div className="flex items-start justify-between gap-2">
                 <h2 className="font-bold text-brand-navy">{note.title}</h2>
                 <div className="flex shrink-0 gap-1.5">
-                  <button
+                  <Button variant="secondary" size="md"
                     onClick={() => openEdit(note)}
                     aria-label={t('notes.edit')}
-                    className="rounded-lg border border-gray-200 p-1.5 text-sm text-brand-gray hover:border-brand-green hover:text-brand-green"
                   >
                     ✎
-                  </button>
-                  <button
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-gray-500 hover:bg-danger/10 hover:text-danger"
                     onClick={() => setDeleteTarget(note)}
                     aria-label={t('sessions.delete')}
-                    className="rounded-lg border border-gray-200 p-1.5 text-sm text-brand-gray hover:border-red-500 hover:text-red-500"
+                    
                   >
                     🗑️
-                  </button>
+                  </Button>
                 </div>
               </div>
               <SafeHtml
@@ -170,19 +164,17 @@ export function NotesPage() {
       >
         <p className="text-sm text-brand-gray">{t('notes.deleteConfirm')}</p>
         <div className="mt-5 flex justify-end gap-2">
-          <button
+          <Button variant="secondary" size="md"
             onClick={() => setDeleteTarget(null)}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-brand-gray"
           >
             {t('common.cancel')}
-          </button>
-          <button
+          </Button>
+          <Button variant="danger" size="md"
             onClick={() => remove.mutate()}
             disabled={remove.isPending}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700"
           >
             {t('common.confirm')}
-          </button>
+          </Button>
         </div>
       </Modal>
     </div>

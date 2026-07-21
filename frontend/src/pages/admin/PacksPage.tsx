@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { Field, Select, TextInput } from '../../components/forms';
-import { Modal, Skeleton } from '../../components/ui';
+import { Modal, TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { apiErrorMessage } from '../../lib/api';
 import {
@@ -48,7 +48,7 @@ export function PacksPage() {
       <Card className="mb-8 overflow-x-auto p-0">
         {packs.isLoading ? (
           <div className="p-5">
-            <Skeleton className="h-24" />
+            <TableSkeleton rows={5} />
           </div>
         ) : (packs.data ?? []).length === 0 ? (
           <p className="p-5 text-sm text-brand-gray">Aucun pack.</p>
@@ -158,7 +158,7 @@ function CodesSection({ packs }: { packs: AdminPack[] }) {
 
   return (
     <div>
-      <h2 className="mb-3 text-lg font-extrabold text-brand-navy">Codes d'activation</h2>
+      <h2 className="mb-3 text-lg font-bold text-brand-navy">Codes d'activation</h2>
       <div className="mb-3 flex flex-wrap gap-3">
         <Select
           value={packId}
@@ -184,9 +184,7 @@ function CodesSection({ packs }: { packs: AdminPack[] }) {
       </div>
       <Card className="overflow-x-auto p-0">
         {codes.isLoading ? (
-          <div className="p-5">
-            <Skeleton className="h-20" />
-          </div>
+          <TableSkeleton rows={5} />
         ) : rows.length === 0 ? (
           <p className="p-5 text-sm text-brand-gray">Aucun code.</p>
         ) : (
@@ -394,11 +392,11 @@ function GenerateModal({ pack, onClose }: { pack: AdminPack; onClose: () => void
     <Modal open onClose={onClose} title={`Générer des codes — ${pack.name}`}>
       {result ? (
         <div className="space-y-4">
-          <div className="rounded-lg border-2 border-red-300 bg-red-50 p-3 text-sm text-red-700">
+          <div className="rounded-lg border-2 border-danger bg-danger/10 p-3 text-sm text-danger">
             ⚠️ Ces codes ne s'affichent <strong>qu'une seule fois</strong>. Téléchargez-les
             maintenant — ils ne pourront plus être récupérés en clair.
           </div>
-          <div className="max-h-48 overflow-y-auto rounded-lg bg-gray-900 p-3 font-mono text-xs text-green-300">
+          <div className="max-h-48 overflow-y-auto rounded-lg bg-gray-900 p-3 font-mono text-xs text-success">
             {result.codes.map((c) => (
               <div key={c}>{c}</div>
             ))}

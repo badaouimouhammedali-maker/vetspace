@@ -130,6 +130,16 @@ export const fr = {
   'nav.support': 'Support',
   'nav.profile': 'Profile',
   'nav.comingSoon': 'Cette page arrive bientôt.',
+  // Regroupements de la barre latérale
+  'nav.sectionMain': 'Tableau de bord',
+  'nav.sectionStudy': 'Réviser',
+  'nav.sectionOrganise': 'Organiser',
+  'nav.sectionAccount': 'Compte',
+  // Regroupements de la console admin
+  'nav.admin.sectionOverview': 'Vue d’ensemble',
+  'nav.admin.sectionContent': 'Contenu',
+  'nav.admin.sectionCommerce': 'Ventes',
+  'nav.admin.sectionModeration': 'Modération',
 
   // Tableau de bord
   'home.welcome': 'Bienvenue',

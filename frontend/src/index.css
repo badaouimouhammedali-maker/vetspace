@@ -10,6 +10,67 @@
   --color-tertiary: 107 114 128; /* #6B7280 */
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  @apply bg-gray-50 font-sans text-gray-900 antialiased;
+  @apply bg-canvas font-sans text-body text-gray-900 antialiased;
+}
+
+/* One focus treatment for the whole app, on :focus-visible only — so it shows for
+   keyboard users and not on every mouse click. Global rather than per-component:
+   a component that forgets it becomes a keyboard trap. */
+*:focus-visible {
+  outline: 2px solid rgb(var(--color-primary));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Some elements still paint a UA ring on plain :focus. */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+::selection {
+  background: rgb(var(--color-primary) / 0.18);
+  color: rgb(var(--color-secondary));
+}
+
+/* Scrollbar inside the navy sidebar. A default light scrollbar on a dark panel is one
+   of the more obvious "unfinished" tells in an otherwise tidy shell. */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.16);
+  border-radius: 9999px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 0.28);
+}
+
+/* Respect the OS "reduce motion" setting by zeroing every transition and animation,
+   rather than auditing them one by one. Near-zero rather than 0 so `transitionend`
+   still fires and nothing waiting on it hangs. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { Field, Select, TextInput } from '../../components/forms';
-import { Skeleton } from '../../components/ui';
+import { TableSkeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { apiErrorMessage } from '../../lib/api';
 import {
@@ -123,7 +123,7 @@ export function AdminNotificationsPage() {
         <div>
           <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-gray">Historique</h2>
           {history.isLoading ? (
-            <Skeleton className="h-40" />
+            <TableSkeleton rows={5} />
           ) : (history.data ?? []).length === 0 ? (
             <Card>
               <p className="text-sm text-brand-gray">Aucune notification envoyée.</p>

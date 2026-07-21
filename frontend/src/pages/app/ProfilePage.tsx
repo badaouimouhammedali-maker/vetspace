@@ -3,7 +3,7 @@ import { useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { Field, PasswordInput, Select, SubmitButton, TextInput } from '../../components/forms';
-import { Modal, Skeleton } from '../../components/ui';
+import { Button, Modal, Skeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { t } from '../../i18n/fr';
 import { apiErrorStatus } from '../../lib/api';
@@ -132,15 +132,15 @@ export function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
-      <h1 className="text-2xl font-extrabold text-brand-navy dark:text-white">
+      <h1 className="text-h1 text-brand-navy dark:text-white">
         {t('profile.title')}
       </h1>
 
       {/* Photo */}
-      <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-        <h2 className="mb-4 text-base font-extrabold text-brand-navy">{t('profile.photo')}</h2>
+      <section className="rounded-lg bg-surface p-6 shadow-card">
+        <h2 className="mb-4 text-base font-bold text-brand-navy">{t('profile.photo')}</h2>
         <div className="flex items-center gap-4">
-          <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-brand-green text-2xl font-bold text-white">
+          <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-brand-green text-h1 text-white">
             {user?.photoUrl ? (
               <img src={user.photoUrl} alt="" className="h-full w-full object-cover" />
             ) : (
@@ -154,19 +154,18 @@ export function ProfilePage() {
             onChange={onPhotoChange}
             className="hidden"
           />
-          <button
+          <Button variant="primary" size="md"
             onClick={() => fileRef.current?.click()}
             disabled={photo.isPending}
-            className="rounded-lg border-2 border-brand-green px-4 py-2 text-sm font-bold text-brand-green transition hover:bg-brand-green hover:text-white disabled:opacity-60"
           >
             {t('profile.changePhoto')}
-          </button>
+          </Button>
         </div>
       </section>
 
       {/* Infos personnelles */}
-      <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-        <h2 className="mb-4 text-base font-extrabold text-brand-navy">{t('profile.info')}</h2>
+      <section className="rounded-lg bg-surface p-6 shadow-card">
+        <h2 className="mb-4 text-base font-bold text-brand-navy">{t('profile.info')}</h2>
         <form
           onSubmit={(e: FormEvent) => {
             e.preventDefault();
@@ -220,8 +219,8 @@ export function ProfilePage() {
       </section>
 
       {/* Thème */}
-      <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-        <h2 className="mb-4 text-base font-extrabold text-brand-navy">{t('profile.theme')}</h2>
+      <section className="rounded-lg bg-surface p-6 shadow-card">
+        <h2 className="mb-4 text-base font-bold text-brand-navy">{t('profile.theme')}</h2>
         <div className="flex flex-wrap items-end gap-5">
           {(
             [
@@ -240,50 +239,45 @@ export function ProfilePage() {
               />
             </label>
           ))}
-          <button
+          <Button variant="primary" size="md"
             onClick={() => saveTheme.mutate(theme)}
             disabled={saveTheme.isPending}
-            className="rounded-lg bg-brand-green px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-green-hover"
           >
             {t('common.save')}
-          </button>
-          <button
-            onClick={resetTheme}
-            className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-semibold text-brand-gray hover:border-brand-navy"
-          >
+          </Button>
+          <Button variant="secondary" size="md"
+      onClick={resetTheme}>
             {t('profile.themeReset')}
-          </button>
+          </Button>
         </div>
       </section>
 
       {/* Mot de passe */}
-      <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-        <h2 className="mb-4 text-base font-extrabold text-brand-navy">{t('profile.password')}</h2>
-        <button
+      <section className="rounded-lg bg-surface p-6 shadow-card">
+        <h2 className="mb-4 text-base font-bold text-brand-navy">{t('profile.password')}</h2>
+        <Button variant="secondary" size="md"
           onClick={() => {
             setPwError(null);
             setPwOpen(true);
           }}
-          className="rounded-lg border-2 border-brand-navy px-4 py-2 text-sm font-bold text-brand-navy transition hover:bg-brand-navy hover:text-white"
         >
           {t('profile.changePassword')}
-        </button>
+        </Button>
       </section>
 
       {/* Zone de danger */}
-      <section className="rounded-2xl border-2 border-red-200 bg-red-50 p-6">
-        <h2 className="mb-2 text-base font-extrabold text-red-700">{t('profile.dangerZone')}</h2>
-        <p className="mb-4 text-sm text-red-700/80">{t('profile.deleteWarning')}</p>
-        <button
+      <section className="rounded-lg border-2 border-danger bg-danger/10 p-6">
+        <h2 className="mb-2 text-base font-bold text-danger">{t('profile.dangerZone')}</h2>
+        <p className="mb-4 text-sm text-danger/80">{t('profile.deleteWarning')}</p>
+        <Button variant="danger" size="md"
           onClick={() => {
             setDelError(null);
             setDelPassword('');
             setDelStep(1);
           }}
-          className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-red-700"
         >
           {t('profile.deleteAccount')}
-        </button>
+        </Button>
       </section>
 
       {/* Dialogue mot de passe */}
@@ -321,18 +315,16 @@ export function ProfilePage() {
       <Modal open={delStep === 1} onClose={() => setDelStep(0)} title={t('profile.deleteAccount')}>
         <p className="text-sm text-brand-gray">{t('profile.deleteConfirm1')}</p>
         <div className="mt-5 flex justify-end gap-2">
-          <button
+          <Button variant="secondary" size="md"
             onClick={() => setDelStep(0)}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-brand-gray"
           >
             {t('common.cancel')}
-          </button>
-          <button
+          </Button>
+          <Button variant="danger" size="md"
             onClick={() => setDelStep(2)}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700"
           >
             {t('common.confirm')}
-          </button>
+          </Button>
         </div>
       </Modal>
 
@@ -355,13 +347,11 @@ export function ProfilePage() {
               onChange={(e) => setDelPassword(e.target.value)}
             />
           </Field>
-          <button
-            type="submit"
-            disabled={removeAccount.isPending}
-            className="w-full rounded-lg bg-red-600 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-red-700 disabled:opacity-60"
-          >
+          <Button variant="danger" size="md" className="w-full"
+      type="submit"
+      disabled={removeAccount.isPending}>
             {t('profile.deleteFinal')}
-          </button>
+          </Button>
         </form>
       </Modal>
     </div>

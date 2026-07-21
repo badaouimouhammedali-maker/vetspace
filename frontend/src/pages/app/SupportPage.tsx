@@ -32,11 +32,11 @@ export function SupportPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
-      <h1 className="text-2xl font-extrabold text-brand-navy dark:text-white">
+      <h1 className="text-h1 text-brand-navy dark:text-white">
         {t('support.title')}
       </h1>
 
-      <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+      <div className="rounded-lg bg-surface p-6 shadow-card">
         {sent ? (
           <p className="rounded-lg bg-brand-green/10 p-4 text-sm font-medium text-brand-green">
             {t('support.sent')}
@@ -66,14 +66,14 @@ export function SupportPage() {
                 className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
               />
             </Field>
-            {error ? <p className="text-sm font-medium text-red-600">{error}</p> : null}
+            {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
             <SubmitButton loading={send.isPending}>{t('support.submit')}</SubmitButton>
           </form>
         )}
       </div>
 
-      <div className="rounded-2xl bg-brand-navy/5 p-5">
-        <p className="text-sm font-extrabold text-brand-navy">{t('support.contactTitle')}</p>
+      <div className="rounded-lg bg-brand-navy/5 p-5">
+        <p className="text-sm font-bold text-brand-navy">{t('support.contactTitle')}</p>
         <p className="mt-1 text-sm text-brand-gray">{t('support.contactInfo')}</p>
       </div>
     </div>

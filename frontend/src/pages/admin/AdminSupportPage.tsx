@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Skeleton } from '../../components/ui';
+import { TableSkeleton } from '../../components/ui';
 import { fetchSupportInbox } from '../../lib/adminEndpoints';
 import { AdminHeader, Card, Pager } from './adminUi';
 
@@ -19,7 +19,7 @@ export function AdminSupportPage() {
       />
 
       {inbox.isLoading ? (
-        <Skeleton className="h-40" />
+        <TableSkeleton rows={5} />
       ) : (inbox.data?.content ?? []).length === 0 ? (
         <Card>
           <p className="text-sm text-brand-gray">Aucun message.</p>

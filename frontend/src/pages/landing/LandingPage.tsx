@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { Button } from '../../components/ui';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
@@ -14,7 +15,7 @@ const NAV = [
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-white font-sans text-brand-navy">
+    <div className="min-h-screen bg-surface font-sans text-brand-navy">
       <Helmet>
         <html lang="fr" />
         <title>VetSpace — La plateforme de QCM des étudiants vétérinaires</title>
@@ -52,7 +53,7 @@ export function LandingPage() {
 function Header() {
   const [open, setOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-40 bg-brand-navy text-white shadow-sm">
+    <header className="sticky top-0 z-40 bg-brand-navy text-white shadow-subtle">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 lg:px-8">
         <a href="#accueil" className="flex items-center gap-2">
           <img src="/brand/Logo white.svg" alt="VetSpace" className="h-9" />
@@ -73,13 +74,13 @@ function Header() {
             S'inscrire
           </Link>
         </nav>
-        <button
-          className="rounded-lg p-2 text-2xl md:hidden"
+        <Button variant="ghost" size="sm" className="md:hidden md:hidden"
+          
           aria-label="Ouvrir le menu"
           onClick={() => setOpen((o) => !o)}
         >
           ☰
-        </button>
+        </Button>
       </div>
       {open ? (
         <nav className="space-y-1 border-t border-white/10 px-4 pb-4 md:hidden">
@@ -88,14 +89,14 @@ function Header() {
               key={n.href}
               href={n.href}
               onClick={() => setOpen(false)}
-              className="block rounded-lg px-3 py-2 text-sm font-semibold text-white/80 hover:bg-white/10"
+              className="block rounded-lg px-3 py-2 text-sm font-semibold text-white/80 hover:bg-surface/10"
             >
               {n.label}
             </a>
           ))}
           <Link
             to="/login"
-            className="block rounded-lg px-3 py-2 text-sm font-semibold text-white/80 hover:bg-white/10"
+            className="block rounded-lg px-3 py-2 text-sm font-semibold text-white/80 hover:bg-surface/10"
           >
             Connexion
           </Link>
@@ -142,7 +143,7 @@ function Counter({ target, label }: { target: number; label: string }) {
   const value = useCountUp(target);
   return (
     <div className="text-center">
-      <div className="text-3xl font-extrabold text-white sm:text-4xl">
+      <div className="text-display text-white sm:text-4xl">
         {value.toLocaleString('fr-FR')}
         <span className="text-brand-green">+</span>
       </div>
@@ -160,10 +161,10 @@ function Hero() {
       className="scroll-mt-16 bg-gradient-to-br from-brand-navy to-[#0c2542] px-4 pb-16 pt-16 text-white lg:px-8 lg:pt-24"
     >
       <div className="mx-auto max-w-4xl text-center">
-        <span className="inline-block rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white/80">
+        <span className="inline-block rounded-full bg-surface/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white/80">
           La plateforme de QCM des étudiants vétérinaires
         </span>
-        <h1 className="mt-6 text-4xl font-extrabold leading-tight sm:text-5xl lg:text-6xl">
+        <h1 className="mt-6 text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
           Réussissez vos examens vétérinaires,{' '}
           <span className="text-brand-green">une question à la fois.</span>
         </h1>
@@ -180,13 +181,13 @@ function Hero() {
           </Link>
           <Link
             to="/login"
-            className="w-full rounded-xl border border-white/30 px-6 py-3 text-center font-bold text-white transition hover:bg-white/10 sm:w-auto"
+            className="w-full rounded-xl border border-white/30 px-6 py-3 text-center font-bold text-white transition hover:bg-surface/10 sm:w-auto"
           >
             Se connecter
           </Link>
         </div>
       </div>
-      <div className="mx-auto mt-14 grid max-w-3xl grid-cols-3 gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-6 sm:gap-8">
+      <div className="mx-auto mt-14 grid max-w-3xl grid-cols-3 gap-4 rounded-lg border border-white/10 bg-surface/5 px-4 py-6 sm:gap-8">
         <Counter target={s.questions} label="Questions" />
         <Counter target={s.examens} label="Examens" />
         <Counter target={s.mindmaps} label="MindMaps" />
@@ -244,7 +245,7 @@ function Features() {
               }`}
             >
               <div className="flex-1">
-                <h3 className="text-2xl font-extrabold text-brand-navy">{f.title}</h3>
+                <h3 className="text-h1 text-brand-navy">{f.title}</h3>
                 <p className="mt-3 text-brand-gray">{f.body}</p>
               </div>
               <div className="w-full flex-1">
@@ -252,7 +253,7 @@ function Features() {
                   src={f.image}
                   alt={f.alt}
                   loading="lazy"
-                  className="w-full rounded-2xl shadow-lg ring-1 ring-gray-100"
+                  className="w-full rounded-lg shadow-pop"
                 />
               </div>
             </div>
@@ -278,23 +279,23 @@ const SPECS: { icon: string; title: string; body: string; accent?: boolean }[] =
 
 function Specs() {
   return (
-    <section id="specifications" className="scroll-mt-16 bg-gray-50 px-4 py-20 lg:px-8">
+    <section id="specifications" className="scroll-mt-16 bg-canvas px-4 py-20 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <SectionHeading eyebrow="Spécifications" title="Une plateforme complète et fiable" />
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {SPECS.map((c) => (
             <div
               key={c.title}
-              className={`rounded-2xl p-6 ring-1 ${
+              className={`rounded-lg p-6 ring-1 ${
                 c.accent
                   ? 'bg-brand-green text-white ring-brand-green'
-                  : 'bg-white text-brand-navy ring-gray-100'
+                  : 'bg-surface text-brand-navy ring-subtle'
               }`}
             >
               <div className="text-3xl" aria-hidden>
                 {c.icon}
               </div>
-              <h3 className="mt-3 flex items-center gap-2 text-lg font-extrabold">
+              <h3 className="mt-3 flex items-center gap-2 text-lg font-bold">
                 <span className={c.accent ? 'text-white' : 'text-brand-green'}>✓</span>
                 {c.title}
               </h3>
@@ -346,20 +347,20 @@ function Pricing() {
           <div className="mt-12 space-y-12">
             {[...grouped.entries()].map(([schoolId, list]) => (
               <div key={schoolId}>
-                <h3 className="mb-5 text-lg font-extrabold text-brand-navy">{schoolName(schoolId)}</h3>
+                <h3 className="mb-5 text-lg font-bold text-brand-navy">{schoolName(schoolId)}</h3>
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {list.map((p) => (
                     <div
                       key={p.id}
-                      className="flex flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow-sm"
+                      className="flex flex-col rounded-lg border border-gray-100 bg-surface p-6 shadow-subtle"
                     >
-                      <h4 className="text-base font-extrabold text-brand-navy">{p.name}</h4>
+                      <h4 className="text-base font-bold text-brand-navy">{p.name}</h4>
                       <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-brand-gray">
                         {p.studyYear == null ? 'Toutes les années' : `Année ${p.studyYear}`} ·{' '}
                         {p.academicYear}
                       </p>
                       <div className="mt-4 flex items-baseline gap-1">
-                        <span className="text-3xl font-extrabold text-brand-green">
+                        <span className="text-display text-brand-green">
                           {p.priceDa.toLocaleString('fr-FR')}
                         </span>
                         <span className="font-semibold text-brand-gray">DA</span>
@@ -421,14 +422,14 @@ const FAQ: { q: string; a: string }[] = [
 function Faq() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   return (
-    <section className="bg-gray-50 px-4 py-20 lg:px-8">
+    <section className="bg-canvas px-4 py-20 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <SectionHeading eyebrow="FAQ" title="Questions fréquentes" />
         <div className="mt-10 space-y-3">
           {FAQ.map((item, i) => {
             const isOpen = openIndex === i;
             return (
-              <div key={item.q} className="overflow-hidden rounded-xl border border-gray-100 bg-white">
+              <div key={item.q} className="overflow-hidden rounded-xl border border-gray-100 bg-surface">
                 <button
                   onClick={() => setOpenIndex(isOpen ? null : i)}
                   aria-expanded={isOpen}
@@ -515,7 +516,7 @@ function SectionHeading({
   return (
     <div className="mx-auto max-w-2xl text-center">
       <span className="text-xs font-bold uppercase tracking-widest text-brand-green">{eyebrow}</span>
-      <h2 className="mt-2 text-3xl font-extrabold text-brand-navy sm:text-4xl">{title}</h2>
+      <h2 className="mt-2 text-display text-brand-navy sm:text-4xl">{title}</h2>
       {subtitle ? <p className="mt-3 text-brand-gray">{subtitle}</p> : null}
     </div>
   );

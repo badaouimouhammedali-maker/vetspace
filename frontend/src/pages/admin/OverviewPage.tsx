@@ -29,7 +29,7 @@ export function OverviewPage() {
       {overview.isLoading ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {STAT_CARDS.map((c) => (
-            <Skeleton key={c.key} className="h-24 rounded-2xl" />
+            <Skeleton key={c.key} className="h-24 rounded-lg" />
           ))}
         </div>
       ) : overview.data ? (
@@ -40,7 +40,7 @@ export function OverviewPage() {
                 <span className="text-2xl" aria-hidden>
                   {c.icon}
                 </span>
-                <span className="text-3xl font-extrabold text-brand-navy">
+                <span className="text-display text-brand-navy">
                   {overview.data[c.key]}
                 </span>
                 <span className="text-xs font-semibold text-brand-gray">{c.label}</span>
@@ -48,7 +48,7 @@ export function OverviewPage() {
             ))}
           </div>
 
-          <h2 className="mb-3 mt-8 text-lg font-extrabold text-brand-navy">
+          <h2 className="mb-3 mt-8 text-lg font-bold text-brand-navy">
             Dernières inscriptions
           </h2>
           <Card className="overflow-x-auto p-0">
@@ -83,7 +83,7 @@ export function OverviewPage() {
           </Card>
         </>
       ) : (
-        <p className="text-sm text-red-600">Impossible de charger les données.</p>
+        <p className="text-sm text-danger">Impossible de charger les données.</p>
       )}
     </div>
   );

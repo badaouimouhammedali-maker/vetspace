@@ -18,10 +18,10 @@ export function NotFoundPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-6 text-center">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm">
-        <p className="text-2xl font-extrabold text-brand-navy">{t('common.appName')}</p>
+      <div className="w-full max-w-md rounded-lg bg-surface p-8 shadow-subtle">
+        <p className="text-h1 text-brand-navy">{t('common.appName')}</p>
 
-        <p className="mt-6 text-5xl font-extrabold text-brand-green">404</p>
+        <p className="mt-6 text-5xl font-bold text-brand-green">404</p>
         <h1 className="mt-4 text-lg font-bold text-brand-navy">{t('notFound.title')}</h1>
         <p className="mt-2 text-sm text-brand-gray">{t('notFound.body')}</p>
 
