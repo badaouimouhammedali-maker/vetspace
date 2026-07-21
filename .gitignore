@@ -1,6 +1,5 @@
 # Java / Maven
 target/
-backend/.mvn/apache-maven/
 
 # Node
 node_modules/
