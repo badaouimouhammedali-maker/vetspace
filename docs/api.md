@@ -21,6 +21,10 @@ unhandled exception) has the same shape and never includes a stack trace:
 }
 ```
 
+A request to a path with no handler returns `404` in this same shape — not `500`.
+(Unauthenticated callers still get `401` first: authentication is checked before
+routing, so an unknown path does not reveal whether it exists.)
+
 ## Endpoints
 
 ### Health
