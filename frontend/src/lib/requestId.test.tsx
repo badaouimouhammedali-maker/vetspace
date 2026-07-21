@@ -28,7 +28,7 @@ function axiosErrorWith({
     data: body,
     headers,
     config: { headers: new AxiosHeaders() },
-  } as AxiosError['response'];
+  } as NonNullable<AxiosError['response']>;
   return error;
 }
 
