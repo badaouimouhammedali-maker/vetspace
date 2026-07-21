@@ -33,6 +33,28 @@ A request to a path with no handler returns `404` in this same shape — not `50
 (Unauthenticated callers still get `401` first: authentication is checked before
 routing, so an unknown path does not reveal whether it exists.)
 
+### Malformed requests
+
+A `5xx` from this API means the server failed. A request the client got wrong is
+answered with the status that says so, in the shape above:
+
+| What the client did | Status |
+|---|---|
+| Body is not valid JSON, or is absent where one is required | `400` |
+| Body fails Bean Validation | `400` (message names the field) |
+| Path variable or query param will not convert (bad UUID, unknown enum) | `400` (names the *parameter*, never the value) |
+| Required query parameter missing | `400` |
+| Required multipart part missing | `400` |
+| Right path, wrong verb | `405` + `Allow` header |
+| Content type the endpoint cannot read | `415` |
+| Body over the size limit | `413` |
+| Path has no handler | `404` |
+
+None of these echo the parse failure back. Jackson's own message quotes the offending
+input, which on a login body is somebody's password. They are logged at `debug` with no
+stack trace — a client typo is not an application error, and treating it as one buries
+real `500`s under scanner traffic.
+
 ## Endpoints
 
 ### Health
