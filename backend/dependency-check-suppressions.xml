@@ -2,7 +2,72 @@
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
     <!--
       Justified suppressions for the `security` profile's OWASP dependency-check scan.
-      Each entry MUST cite why the finding does not apply. Empty by default: no
-      HIGH/CRITICAL requiring suppression at the time of the hardening pass.
+      Each entry MUST cite why the finding does not apply.
+
+      Schema note: every <suppress> needs at least one matcher element (cve, cpe,
+      vulnerabilityName, cwe, or cvssBelow). A block with only a <packageUrl> scope and
+      no matcher is XSD-invalid, and dependency-check rejects the ENTIRE file — silently
+      dropping every suppression, not just the bad one. Keep each block valid.
+
+      Suppressions are claims that the scanner is wrong; re-check them when a dependency
+      moves. Every entry is pinned to an exact version so an upgrade forces a re-review.
     -->
+
+    <suppress>
+        <notes><![CDATA[
+          False positive: wrong artifact.
+
+          dependency-check matches org.eclipse.angus:angus-activation to the CPE
+          cpe:2.3:a:eclipse:angus_mail, at LOW confidence. They are different libraries
+          sharing a project name: angus-activation is the Jakarta Activation Framework
+          (MIME type handling, DataHandler), whereas CVE-2025-7962 is SMTP header
+          injection in Jakarta Mail / angus-mail via \r and \n in message content.
+
+          angus-mail is not on this classpath, and angus-activation has no SMTP code
+          path to inject into. NVD's cited fix (2.0.4) does not exist either — the line
+          ends at 2.0.3 (2.1.0-M1 unreleased) — so there is nothing to upgrade to.
+
+          Scoped to the angus-activation package at its exact version.
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.eclipse\.angus/angus-activation@2\.0\.3$</packageUrl>
+        <cve>CVE-2025-7962</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+          DOMPurify, bundled inside the swagger-ui webjar (swagger-ui 5.32.2, DOMPurify
+          3.3.2). XSS/mXSS CVEs in the sanitiser swagger-ui uses to render OpenAPI
+          descriptions in the browser. NVD has not scored these; dependency-check treats
+          unscored findings as failing at any threshold, which is what tripped the
+          -Psecurity build after the CVSS >= 7 version fixes.
+
+          Suppressed rather than upgraded because it does not reach a user:
+            - swagger-ui is disabled by default (springdoc.swagger-ui.enabled=false and
+              api-docs.enabled=false in application.yml) and ENABLED ONLY in the dev
+              profile; application-prod.yml sets both false explicitly. The UI is never
+              served in production, so its bundled DOMPurify never executes there.
+            - it is a dev authoring tool, not a student-facing surface.
+            - springdoc 2.8.17 is already the latest on the Spring Boot 3.5 line;
+              chasing a patched swagger-ui webjar for a prod-disabled component is
+              disproportionate.
+
+          Scoped to DOMPurify 3.3.2: a swagger-ui upgrade changes this version and the
+          match stops applying, forcing re-review. If swagger-ui is ever served in
+          production, delete this and upgrade instead.
+        ]]></notes>
+        <packageUrl regex="true">^pkg:javascript/DOMPurify@3\.3\.2$</packageUrl>
+        <cve>CVE-2026-41238</cve>
+        <cve>CVE-2026-41239</cve>
+        <cve>CVE-2026-41240</cve>
+        <cve>CVE-2026-49458</cve>
+        <cve>CVE-2026-49459</cve>
+        <cve>CVE-2026-49978</cve>
+        <cve>CVE-2026-65898</cve>
+        <cve>CVE-2026-65899</cve>
+        <cve>CVE-2026-65900</cve>
+        <cve>CVE-2026-65901</cve>
+        <cve>CVE-2026-65902</cve>
+        <cve>CVE-2026-65903</cve>
+        <cve>CVE-2026-66010</cve>
+    </suppress>
 </suppressions>

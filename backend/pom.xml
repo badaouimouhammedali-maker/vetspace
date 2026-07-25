@@ -23,6 +23,38 @@
         <jjwt.version>0.12.6</jjwt.version>
         <aws.version>2.48.3</aws.version>
         <bucket4j.version>8.0.1</bucket4j.version>
+        <!--
+          Security overrides of Spring Boot's managed versions.
+
+          Spring Boot 3.5.16 is the latest 3.5.x release, so a parent bump cannot fix
+          these — each one has to be pinned forward explicitly. Drop an override once
+          the managed version overtakes it; leaving a stale pin behind is how a project
+          ends up silently downgrading a dependency later.
+
+          tomcat-embed-core: 10.1.55 carried four CVSS 9.1 criticals
+            (CVE-2026-53434 / 55276 / 59083 / 59084) plus CVE-2026-53404 at 7.3, fixed
+            in 10.1.56. Pinned to 10.1.57, the newest on the 10.1 line — Spring Boot 3.5
+            targets Servlet 6.0, so the 11.0.x line is not a drop-in.
+          log4j-api: 2.24.3 -> 2.26.1 (CVE-2026-34478/34479/34480/34481, 7.5, fixed in
+            2.25.4). Only the API facade is on the classpath — logging goes through
+            Logback and log4j-core is absent — but an unexploitable CVE is still one
+            that has to be re-argued at every audit, and the bump is free.
+          httpcore5: 5.3.6 -> 5.4.3. CVE-2026-54399 and CVE-2026-54428 (7.5) are
+            uncontrolled-resource-consumption DoS in the HTTP/1.1 parser and the HTTP/2
+            HPACK decoder, affecting 5.4.2 and earlier.
+        -->
+        <tomcat.version>10.1.57</tomcat.version>
+        <log4j2.version>2.26.1</log4j2.version>
+        <httpcore5.version>5.4.3</httpcore5.version>
+        <!--
+          netty: 4.1.135 -> 4.1.136 (CVE-2026-44891 / 55831 / 55833, all 7.5, fixed in
+          4.1.136). Pulled in transitively by the AWS SDK's netty-nio-client (the R2/S3
+          async HTTP client), not used directly. Staying on the 4.1 line the SDK targets
+          rather than jumping to 4.2. Surfaced only on the second scan — the first run's
+          NVD import aborted rows on over-length URLs and undercounted.
+        -->
+        <netty.version>4.1.136.Final</netty.version>
+
         <!-- Optional NVD API key for the `security` profile's dependency-check scan; pass -Dnvd.api.key=... -->
         <nvd.api.key></nvd.api.key>
     </properties>
@@ -213,6 +245,16 @@
                         <version>10.0.4</version>
                         <configuration>
                             <failBuildOnCVSS>7</failBuildOnCVSS>
+                            <!--
+                              OSS Index is Sonatype's online vuln source, separate from
+                              the NVD feed this scan is built around. It requires Sonatype
+                              account credentials; without valid ones it returns 401 and,
+                              because it is on by default, fails the whole scan on a
+                              service we do not use. NVD (with the API key) is the source
+                              of truth here, so this analyzer is turned off rather than
+                              left to break the build on someone else's stale credentials.
+                            -->
+                            <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
                             <!-- HTML to read, JSON so the weekly workflow can turn findings
                                  into an issue body instead of just a red square. -->
                             <formats>
