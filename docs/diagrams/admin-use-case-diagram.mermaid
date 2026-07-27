@@ -1,0 +1,51 @@
+flowchart LR
+    ADMIN(["👤 Admin"])
+    TEACHER(["👤 Teacher"])
+
+    subgraph OVERVIEW["📊 Vue d'ensemble"]
+        UC0(["Consulter le tableau de bord<br/>(étudiants, questions, sessions,<br/>abonnements actifs, signalements)"])
+    end
+
+    subgraph TAXO["🏫 Structure du contenu"]
+        UC1(["Gérer les écoles"])
+        UC2(["Gérer les modules<br/>(par école × année, ordre, publication)"])
+        UC3(["Gérer les cours<br/>(ordre, publication, aperçu gratuit)"])
+        UC4(["Gérer les sources d'examen<br/>(année, type Entrainement/Examen)"])
+    end
+
+    subgraph QCM["❓ Banque de questions"]
+        UC5(["Créer/éditer une question QCM<br/>(énoncé + propositions A–E,<br/>VRAI/FAUX par proposition)"])
+        UC6(["Rédiger les explications riches<br/>(couleurs, listes — sanitisées serveur)"])
+        UC7(["Joindre des images<br/>(upload → R2, types vérifiés)"])
+        UC8(["Import JSON en masse<br/>(tout-ou-rien, erreurs par ligne)"])
+        UC9(["Publier / dépublier"])
+        UC10(["Gérer les MindMaps<br/>(schémas par cours)"])
+    end
+
+    subgraph MONEY["💳 Monétisation"]
+        UC11(["Gérer les packs<br/>(école × année, prix DA, expiration)"])
+        UC12(["Générer des codes d'activation<br/>(N codes, usages max)"])
+        UC13(["Télécharger le CSV<br/>(affiché UNE seule fois)"])
+        UC14(["Révoquer un code / un lot<br/>(cas CSV perdu)"])
+        UC15(["Auditer les abonnements<br/>(par email étudiant)"])
+    end
+
+    subgraph USERS["👥 Étudiants & modération"]
+        UC16(["Rechercher les étudiants"])
+        UC17(["Désactiver / réactiver un compte<br/>(jamais soi-même)"])
+        UC18(["Traiter les signalements<br/>(résoudre / rejeter + réponse)"])
+        UC19(["Diffuser des notifications<br/>(ciblage école / année)"])
+        UC20(["Lire les messages de support"])
+    end
+
+    ADMIN --> UC0 & UC1 & UC2 & UC3 & UC4 & UC5 & UC8 & UC10 & UC11 & UC12 & UC13 & UC14 & UC15 & UC16 & UC17 & UC18 & UC19 & UC20
+    TEACHER --> UC2 & UC3 & UC4 & UC5 & UC8 & UC10
+    UC5 -.->|inclut| UC6
+    UC5 -.->|inclut| UC7
+    UC5 -.->|précède| UC9
+    UC12 -.->|inclut| UC13
+
+    style ADMIN fill:#12355B,color:#fff
+    style TEACHER fill:#6B7280,color:#fff
+    style MONEY fill:#0F766E22
+    style QCM fill:#12355B11

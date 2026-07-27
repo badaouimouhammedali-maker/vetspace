@@ -1,0 +1,54 @@
+sequenceDiagram
+    autonumber
+    actor S as Étudiant
+    actor A as Admin
+    participant UI as Admin Console
+    participant API as Spring Boot API
+    participant DB as PostgreSQL
+
+    rect rgb(250, 245, 235)
+        Note over S,DB: Signalement d'une question (erreur dans un corrigé...)
+        S->>API: POST /api/signals {questionId, message}<br/>(max 10/jour)
+        API->>DB: INSERT signal (OPEN)
+        A->>UI: /admin/signalements → file d'attente
+        UI->>API: GET signals OPEN + aperçu de la question
+        A->>UI: Corrige la question si besoin (cf. séquence authoring)
+        A->>UI: "Résoudre" + réponse ("Corrigé, merci !")
+        UI->>API: PATCH signal → RESOLVED + admin_reply
+        S->>API: GET /api/signals (ses signalements)
+        API-->>S: Statut + réponse de l'admin
+    end
+
+    rect rgb(240, 245, 250)
+        Note over A,DB: Diffusion d'une notification (nouveau contenu...)
+        A->>UI: /admin/notifications → "Composer"
+        A->>UI: Type (UPDATE/QUESTIONS/INFO), titre, corps,<br/>ciblage optionnel école + année
+        UI->>API: POST notification broadcast
+        API->>DB: INSERT notification
+        Note over S: La cloche affiche le badge non-lu (polling 60s)<br/>Seuls les étudiants ciblés la voient
+    end
+
+    rect rgb(250, 240, 240)
+        Note over A,DB: Gestion d'un compte étudiant
+        A->>UI: /admin/abonnes → recherche par nom/email
+        UI->>API: GET /api/admin/users?query=...
+        alt Compte problématique (partage de compte, abus)
+            A->>UI: "Désactiver" (dialogue de confirmation)
+            UI->>API: PATCH /api/admin/users/{id}/status
+            API->>API: Refuse si id == admin lui-même
+            API->>DB: status = DISABLED + refresh tokens révoqués
+            Note over S: Connexion refusée immédiatement
+        else Réactivation
+            A->>UI: "Réactiver"
+            UI->>API: PATCH status → ACTIVE
+        end
+    end
+
+    rect rgb(245, 245, 245)
+        Note over A,DB: Support & pilotage quotidien
+        A->>UI: /admin/support → messages entrants
+        Note over A: Répond par email (reply-to = email étudiant)
+        A->>UI: /admin (vue d'ensemble)
+        UI->>API: GET /api/admin/overview
+        API-->>UI: Compteurs: étudiants, questions, sessions du jour,<br/>abonnements actifs, signalements ouverts
+    end

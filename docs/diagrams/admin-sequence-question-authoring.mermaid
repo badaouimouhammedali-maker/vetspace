@@ -1,0 +1,58 @@
+sequenceDiagram
+    autonumber
+    actor A as Admin
+    participant UI as Admin Console (React)
+    participant API as Spring Boot API
+    participant SAN as HtmlSanitizer (jsoup)
+    participant R2 as Cloudflare R2
+    participant DB as PostgreSQL
+
+    Note over A,DB: Prérequis — la taxonomie existe (école → module → cours)
+
+    A->>UI: /admin/questions → "Nouvelle question"
+    A->>UI: Saisit l'énoncé, choisit cours + source d'examen + difficulté
+
+    opt Image dans l'énoncé ou une explication
+        A->>UI: Upload image (schéma, radio...)
+        UI->>API: POST /api/admin/media (multipart)
+        API->>API: Vérifie taille ≤5MB + magic bytes (jpeg/png/webp)
+        API->>R2: PUT media/{uuid}.png
+        R2-->>API: OK
+        API-->>UI: URL publique (pub-....r2.dev/...)
+    end
+
+    A->>UI: Ajoute propositions A–E, coche VRAI/FAUX par proposition
+    A->>UI: Rédige l'explication riche par proposition (couleurs, listes)
+    UI->>UI: Validation client (2–5 propositions, ≥1 vraie, ≥1 fausse)
+
+    A->>UI: Enregistrer
+    UI->>API: POST /api/admin/questions (JSON complet)
+    API->>API: @PreAuthorize ADMIN|TEACHER + Bean Validation
+    API->>SAN: sanitize(explanation_html) pour chaque proposition
+    SAN-->>API: HTML nettoyé (scripts/onerror strippés,<br/>img hors domaine média supprimées)
+    API->>DB: INSERT question + propositions (transaction)
+    DB-->>API: ids
+    API-->>UI: 201 + DTO admin
+    UI-->>A: Aperçu "vue étudiant" (rendu sanitisé)
+
+    A->>UI: Publier
+    UI->>API: PATCH /api/admin/questions/{id}/publish
+    API->>DB: published = true
+    API-->>UI: 200
+    Note over A,DB: La question entre dans le pool des sessions étudiantes
+
+    rect rgb(240, 245, 250)
+        Note over A,DB: Variante — import en masse
+        A->>UI: /admin/questions → "Import JSON"
+        A->>UI: Colle un tableau JSON de questions
+        UI->>API: POST /api/admin/questions/import
+        API->>API: Validation TOUT-OU-RIEN
+        alt Toutes valides
+            API->>SAN: sanitize chaque explication
+            API->>DB: INSERT en lot
+            API-->>UI: 201 {imported: N}
+        else Une ou plusieurs invalides
+            API-->>UI: 400 [{row, field, message}...]
+            UI-->>A: Erreurs affichées ligne par ligne, rien n'est importé
+        end
+    end

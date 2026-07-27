@@ -1,0 +1,57 @@
+sequenceDiagram
+    autonumber
+    actor A as Admin
+    participant UI as Admin Console
+    participant API as Spring Boot API
+    participant DB as PostgreSQL
+    actor S as Étudiant
+
+    rect rgb(235, 245, 243)
+        Note over A,DB: 1 — Créer le pack (une fois par école × année × année universitaire)
+        A->>UI: /admin/packs → "Nouveau pack"
+        A->>UI: École, année d'étude, prix DA, date d'expiration<br/>(= fin de l'année universitaire)
+        UI->>API: POST /api/admin/packs
+        API->>DB: INSERT pack
+        API-->>UI: 201
+    end
+
+    rect rgb(235, 245, 243)
+        Note over A,DB: 2 — Générer les codes (inventaire à vendre)
+        A->>UI: /admin/codes → "Générer" (pack, count=200, maxUses=1)
+        UI->>API: POST /api/admin/codes
+        API->>API: 200 codes crypto-aléatoires XXXX-XXXX-XXXX-XXXX<br/>(alphabet sans 0/O/1/I)
+        API->>DB: INSERT hash SHA-256 uniquement<br/>(jamais le texte en clair, jamais loggé)
+        API-->>UI: Codes en clair + token CSV — UNE SEULE FOIS
+        UI-->>A: Bloc copiable + avertissement rouge
+        A->>UI: "Télécharger CSV"
+        UI->>API: GET /api/admin/codes/csv/{token} (TTL 15 min)
+        API-->>A: fichier codes.csv → à garder en lieu sûr
+        Note over A: Vente hors-ligne : points de vente, CCP, BaridiMob
+    end
+
+    rect rgb(240, 240, 248)
+        Note over S,DB: 3 — L'étudiant active son abonnement
+        S->>API: POST /api/codes/redeem {code}<br/>(rate limit 5/h par utilisateur et par IP)
+        API->>DB: Recherche par hash + vérifs<br/>(non révoqué, pack actif, usages restants)
+        API->>DB: UPDATE atomique used_count<br/>(sûr sous requêtes parallèles)
+        API->>DB: INSERT subscription (ends_at = expiration du pack)
+        API-->>S: Abonnement actif jusqu'au JJ/MM/AAAA
+        Note over S: Les sessions et mindmaps de son année se déverrouillent
+    end
+
+    rect rgb(250, 240, 240)
+        Note over A,DB: 4 — Scénarios de récupération
+        alt CSV perdu avant distribution
+            A->>UI: /admin/codes → lot → "Révoquer le lot"
+            UI->>API: POST /api/admin/codes/batches/{id}/revoke
+            API->>DB: revoke tous les codes NON utilisés du lot
+            A->>UI: Regénérer un nouveau lot
+        else Code compromis / fuité
+            A->>UI: Code individuel → "Révoquer"
+            UI->>API: POST /api/admin/codes/{id}/revoke
+        else Vérifier un achat contesté
+            A->>UI: /admin → abonnements, recherche par email
+            UI->>API: GET /api/admin/subscriptions?email=...
+            API-->>UI: Historique complet (code utilisé, dates)
+        end
+    end
