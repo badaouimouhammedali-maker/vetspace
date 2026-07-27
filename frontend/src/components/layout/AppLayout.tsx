@@ -4,6 +4,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { t, type TranslationKey } from '../../i18n/fr';
 import { fetchUnreadCount } from '../../lib/endpoints';
+import type { Role } from '../../lib/schemas';
 import {
   Avatar,
   DropdownItem,
@@ -56,6 +57,28 @@ const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
+/**
+ * The way into the admin console, for the accounts that have one.
+ *
+ * <p>A section of its own rather than a row appended to "Compte": Sidebar draws a rule
+ * above every section after the first, so this arrives visually separated from the
+ * student navigation — which is what it is. Crossing into a different area of the app
+ * should not look like one more page of the same one.
+ *
+ * <p>This is convenience, never enforcement. AdminRoute decides who may enter /admin and
+ * the API authorises every call independently; hiding the link stops a student wondering
+ * what it is, and stops nobody who types the URL.
+ */
+const STAFF_SECTION: NavSection = {
+  label: 'nav.sectionStaff',
+  items: [{ to: '/admin', label: 'nav.adminConsole', icon: '🛠️' }],
+};
+
+/** Roles AdminRoute admits — kept identical to the guard, deliberately. */
+function isStaff(role: Role | undefined): boolean {
+  return role === 'ADMIN' || role === 'TEACHER';
+}
+
 export function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -80,6 +103,9 @@ export function AppLayout() {
 
   const initials = `${user?.firstName?.[0] ?? ''}${user?.lastName?.[0] ?? ''}`.toUpperCase();
 
+  const staff = isStaff(user?.role);
+  const sections = staff ? [...NAV_SECTIONS, STAFF_SECTION] : NAV_SECTIONS;
+
   /** Pinned to the bottom of the sidebar: who is signed in, always in view. */
   const userBlock = (
     <NavLink
@@ -101,7 +127,7 @@ export function AppLayout() {
     <div className="min-h-screen bg-canvas dark:bg-gray-900">
       {/* Barre latérale fixe (desktop) */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 bg-brand-navy lg:block">
-        <Sidebar sections={NAV_SECTIONS} homeTo="/app" footer={userBlock} />
+        <Sidebar sections={sections} homeTo="/app" footer={userBlock} />
       </aside>
 
       {/* Tiroir mobile */}
@@ -113,7 +139,7 @@ export function AppLayout() {
             onClick={(e) => e.stopPropagation()}
           >
             <Sidebar
-              sections={NAV_SECTIONS}
+              sections={sections}
               homeTo="/app"
               footer={userBlock}
               onNavigate={() => setDrawerOpen(false)}
@@ -166,6 +192,14 @@ export function AppLayout() {
                     <DropdownItem to="/app/profil" onClick={() => menu.setOpen(false)}>
                       {t('nav.profile')}
                     </DropdownItem>
+                    {/* Mirrors the sidebar entry. The avatar menu is where people look
+                        for "switch context", and on mobile the sidebar is behind a
+                        drawer — one place to find it is not enough. */}
+                    {staff ? (
+                      <DropdownItem to="/admin" onClick={() => menu.setOpen(false)}>
+                        {t('nav.adminConsole')}
+                      </DropdownItem>
+                    ) : null}
                     <DropdownItem onClick={onLogout} danger>
                       {t('app.logout')}
                     </DropdownItem>

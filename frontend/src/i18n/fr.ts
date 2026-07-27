@@ -138,6 +138,9 @@ export const fr = {
   'nav.sectionStudy': 'Réviser',
   'nav.sectionOrganise': 'Organiser',
   'nav.sectionAccount': 'Compte',
+  // Passerelle vers la console admin, affichée aux seuls ADMIN/TEACHER.
+  'nav.sectionStaff': 'Encadrement',
+  'nav.adminConsole': 'Administration',
   // Regroupements de la console admin
   'nav.admin.sectionOverview': 'Vue d’ensemble',
   'nav.admin.sectionContent': 'Contenu',
