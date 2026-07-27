@@ -35,10 +35,13 @@ values.
 | `FRONTEND_URL` | ⚙️ | `https://vetspace.vercel.app` | Base for password-reset links in emails. |
 | `CORS_ALLOWED_ORIGINS` | ⚙️ | `https://vetspace.vercel.app` | Exact SPA origin(s), comma-separated. No wildcard, no trailing slash. |
 | `MAIL_MODE` | ⚙️ | `smtp` | `log` prints instead of sending — **must be `smtp` in prod**. |
-| `MAIL_HOST` / `MAIL_PORT` | ⚙️ | `smtp.resend.com` / `587` | SMTP server. |
-| `MAIL_USERNAME` | ⚙️ | provider user | SMTP auth user. |
-| `MAIL_PASSWORD` | 🔒 | provider key | SMTP auth password. |
+| `MAIL_HOST` / `MAIL_PORT` | ⚙️ | `smtp.resend.com` / `587` | SMTP server. **Use the provider's STARTTLS port (almost always 587).** Port 465 expects TLS from the first byte, so a STARTTLS client and a 465 server each wait for the other — before send timeouts existed this hung registration forever; now it fails after `MAIL_TIMEOUT_MS`. The prod profile refuses to boot when this is unset (it would silently fall back to `localhost`). |
+| `MAIL_USERNAME` | ⚙️ | provider user | SMTP auth user (Resend: `resend`; SendGrid: `apikey`). The prod profile refuses to boot when SMTP auth is on and this is empty. |
+| `MAIL_PASSWORD` | 🔒 | provider key | SMTP auth password / API key. |
 | `MAIL_FROM` | ⚙️ | `noreply@vetspace.dz` | From address; must be a domain you verified with the provider. |
+| `MAIL_SMTP_AUTH` | ⚙️ | *(leave unset)* | Defaults to `true` in prod, `false` locally (mailpit). Only set it for an unauthenticated relay. |
+| `MAIL_STARTTLS` | ⚙️ | *(leave unset)* | Defaults to `true` in prod, `false` locally. |
+| `MAIL_TIMEOUT_MS` | ⚙️ | *(leave unset)* | SMTP connect/read/write timeout, default `5000`. Bounds how long a dead mail server can delay a registration response (the account is already committed either way; the response then carries `verificationEmailSent: false`). |
 | `MEDIA_ENDPOINT` | ⚙️ | `https://<account-id>.r2.cloudflarestorage.com` | S3 API endpoint for uploads. |
 | `MEDIA_BUCKET` | ⚙️ | `vetspace-media` | Bucket name. |
 | `MEDIA_ACCESS_KEY` | 🔒 | R2 token id | Object-storage credential. |

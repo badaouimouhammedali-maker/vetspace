@@ -55,6 +55,16 @@ Nothing has been released publicly yet, so everything to date sits under
 
 ### Fixed
 
+- Registration and resend hung indefinitely in production when the SMTP server
+  accepted the connection but never answered (typically STARTTLS against port 465, or a
+  firewalled host): JavaMail's default timeouts are infinite. SMTP connect/read/write
+  timeouts now default to 5 s (`MAIL_TIMEOUT_MS`), so a dead mail server turns into the
+  `verificationEmailSent: false` + « renvoyer » path within seconds instead of a stuck
+  spinner. The prod validator also now refuses to boot with `MAIL_HOST` unset (it
+  silently fell back to `localhost` inside the container) or with SMTP auth and
+  credentials configured incoherently; auth/STARTTLS became env-overridable
+  (`MAIL_SMTP_AUTH`, `MAIL_STARTTLS`) with mailpit-friendly local defaults and
+  provider-friendly prod defaults.
 - An SMTP failure destroyed the registration it was supposed to confirm. `register()`
   was `@Transactional` with the verification send inside it, so a mail server outage
   rolled the account back and answered 500 — no account, no email, nothing to retry.

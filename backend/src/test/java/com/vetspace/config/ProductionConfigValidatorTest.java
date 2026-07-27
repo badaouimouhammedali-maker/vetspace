@@ -24,8 +24,19 @@ class ProductionConfigValidatorTest {
     private ProductionConfigValidator validator(String secret, String mailMode, String origins,
                                                 String adminPassword, boolean rateLimitsEnabled,
                                                 boolean autoVerifyEmails) {
-        return new ProductionConfigValidator(secret, mailMode, origins, adminPassword,
-            rateLimitsEnabled, autoVerifyEmails);
+        // Coherent SMTP host and credentials so only the case under test can fail.
+        return new ProductionConfigValidator(secret, mailMode, "smtp.resend.com", "resend", true,
+            origins, adminPassword, rateLimitsEnabled, autoVerifyEmails);
+    }
+
+    private ProductionConfigValidator validatorWithMailAuth(String username, boolean smtpAuth) {
+        return new ProductionConfigValidator(GOOD_SECRET, "smtp", "smtp.resend.com", username,
+            smtpAuth, GOOD_ORIGINS, "", true, false);
+    }
+
+    private ProductionConfigValidator validatorWithMailHost(String mailHost) {
+        return new ProductionConfigValidator(GOOD_SECRET, "smtp", mailHost, "resend", true,
+            GOOD_ORIGINS, "", true, false);
     }
 
     private ProductionConfigValidator valid() {
@@ -107,6 +118,46 @@ class ProductionConfigValidatorTest {
             validator(GOOD_SECRET, "smtp", GOOD_ORIGINS, "", false, false).validate())
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("RATE_LIMITS_ENABLED=false");
+    }
+
+    @Test
+    void rejectsAnUnsetOrLocalhostMailHost() {
+        // Unset falls back to application.yml's localhost — inside the container that is
+        // the container itself, and there is no SMTP server there.
+        for (String bad : new String[] {"", "  ", "localhost", "127.0.0.1"}) {
+            assertThatThrownBy(() -> validatorWithMailHost(bad).validate())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("MAIL_HOST");
+        }
+        assertThatCode(() -> validatorWithMailHost("smtp.resend.com").validate())
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void rejectsCredentialsThatWouldNeverBeSent() {
+        // The incident this pins: MAIL_USERNAME/MAIL_PASSWORD set on the platform, but the
+        // yml's mailpit-friendly default of auth=false meant they were never transmitted.
+        // The provider stalled the session and registration hung with no visible cause.
+        assertThatThrownBy(() -> validatorWithMailAuth("resend", false).validate())
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("MAIL_SMTP_AUTH");
+    }
+
+    @Test
+    void rejectsAuthWithoutCredentials() {
+        assertThatThrownBy(() -> validatorWithMailAuth("", true).validate())
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("MAIL_USERNAME is empty");
+    }
+
+    @Test
+    void acceptsTheTwoCoherentMailConfigurations() {
+        // Credentials + auth (any real provider)...
+        assertThatCode(() -> validatorWithMailAuth("resend", true).validate())
+            .doesNotThrowAnyException();
+        // ...and neither (an unauthenticated relay).
+        assertThatCode(() -> validatorWithMailAuth("", false).validate())
+            .doesNotThrowAnyException();
     }
 
     @Test

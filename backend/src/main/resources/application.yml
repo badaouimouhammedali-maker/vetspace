@@ -41,9 +41,20 @@ spring:
     properties:
       mail:
         smtp:
-          auth: false
+          # Defaults suit local mailpit only. Every real provider (Resend, SendGrid,
+          # Brevo, ...) needs BOTH flipped on — with auth off, MAIL_USERNAME/PASSWORD
+          # are silently never sent. ProductionConfigValidator enforces this in prod.
+          auth: ${MAIL_SMTP_AUTH:false}
           starttls:
-            enable: false
+            enable: ${MAIL_STARTTLS:false}
+          # JavaMail's default timeouts are INFINITE. Without these, an SMTP server
+          # that accepts the TCP connection but never answers hangs the registration
+          # request (and the resend endpoint) forever — the browser just spins. With
+          # them, the send fails within seconds, the failure branch reports
+          # verificationEmailSent=false, and the user gets the "renvoyer" path.
+          connectiontimeout: ${MAIL_TIMEOUT_MS:5000}
+          timeout: ${MAIL_TIMEOUT_MS:5000}
+          writetimeout: ${MAIL_TIMEOUT_MS:5000}
 
 server:
   port: ${SERVER_PORT:8080}

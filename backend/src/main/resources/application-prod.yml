@@ -20,9 +20,12 @@ spring:
     properties:
       mail:
         smtp:
-          auth: true
+          # Real-provider defaults (any of them on port 587). Overridable for the rare
+          # unauthenticated relay; ProductionConfigValidator checks the combination
+          # stays coherent with MAIL_USERNAME either way.
+          auth: ${MAIL_SMTP_AUTH:true}
           starttls:
-            enable: true
+            enable: ${MAIL_STARTTLS:true}
 
 server:
   # PaaS platforms (Railway, Render, Fly) inject the port to bind.

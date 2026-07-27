@@ -50,6 +50,10 @@ class ProductionConfigValidatorContextTest {
         args.put("server.port", "0");
         args.put("app.jwt.secret", GOOD_SECRET);
         args.put("app.mail.mode", "smtp");
+        // The prod profile turns SMTP auth on, and the validator demands a real host and
+        // credentials to go with it.
+        args.put("spring.mail.host", "smtp.resend.com");
+        args.put("spring.mail.username", "resend");
         args.put("app.cors.allowed-origins", "https://vetspace.vercel.app");
         for (String override : overrides) {
             int eq = override.indexOf('=');
@@ -95,6 +99,16 @@ class ProductionConfigValidatorContextTest {
             .hasRootCauseInstanceOf(IllegalStateException.class)
             .rootCause()
             .hasMessageContaining("MAIL_MODE=log");
+    }
+
+    @Test
+    void refusesToStartWithSmtpAuthButNoCredentials() {
+        // Proves application-prod.yml's auth=true default actually reaches the validator:
+        // wiping the username alone must abort the boot.
+        assertThatThrownBy(() -> boot("spring.mail.username="))
+            .hasRootCauseInstanceOf(IllegalStateException.class)
+            .rootCause()
+            .hasMessageContaining("MAIL_USERNAME is empty");
     }
 
     @Test
