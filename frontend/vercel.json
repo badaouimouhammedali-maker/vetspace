@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://REPLACE-ME.up.railway.app/api/:path*"
+      "destination": "https://vetspace-production.up.railway.app/api/:path*"
     },
     {
       "source": "/((?!assets/|api/).*)",
