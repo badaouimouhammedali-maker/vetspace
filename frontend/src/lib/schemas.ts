@@ -39,7 +39,20 @@ export const registerResponseSchema = z.object({
   username: z.string(),
   role: z.string(),
   status: z.string(),
+  // False when the account was created but the verification email could not be
+  // handed to the mail server — the UI then points the user at "renvoyer"
+  // instead of at an inbox that will stay empty.
+  //
+  // Optional rather than required: the frontend (Vercel) and the API (Railway)
+  // deploy independently, so a build of this bundle can briefly talk to an API
+  // that predates the field. A required field would fail the parse and break
+  // registration outright during that window; absent is read as "nothing to
+  // warn about", which is the old, correct behaviour. Hence the `=== false`
+  // test at the call site rather than a falsy check.
+  verificationEmailSent: z.boolean().optional(),
 });
+
+export type RegisterResponse = z.infer<typeof registerResponseSchema>;
 
 export const schoolSchema = z.object({
   id: z.string().uuid(),

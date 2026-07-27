@@ -93,8 +93,24 @@ Request body:
 
 Response: `201 Created`
 ```json
-{ "id": "<uuid>", "email": "jane@example.com", "username": "jdoe", "role": "STUDENT", "status": "ACTIVE" }
+{
+  "id": "<uuid>",
+  "email": "jane@example.com",
+  "username": "jdoe",
+  "role": "STUDENT",
+  "status": "ACTIVE",
+  "verificationEmailSent": true
+}
 ```
+- `verificationEmailSent` reports whether the verification email was
+  actually handed to the mail server. The account is committed **before**
+  the send is attempted, so a mail outage never costs a registration: the
+  response is still `201`, with `verificationEmailSent: false`, and the
+  client should tell the user the message could not be sent and point them
+  at `POST /api/auth/resend-verification`. The token row is issued and
+  persisted either way, so a resend works immediately.
+- It is also `true` when `AUTO_VERIFY_EMAILS=true` (dev/e2e): there is no
+  message to send and nothing for the user to do.
 
 #### `POST /api/auth/login`
 Body: `{ "email": "...", "password": "..." }`

@@ -15,6 +15,7 @@ import {
   meSchema,
   registerResponseSchema,
   type Me,
+  type RegisterResponse,
 } from '../lib/schemas';
 
 export interface RegisterInput {
@@ -33,7 +34,11 @@ interface AuthContextValue {
   user: Me | null | undefined;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  register: (input: RegisterInput) => Promise<void>;
+  /**
+   * Renvoie la réponse du serveur : `verificationEmailSent` indique si l'e-mail de
+   * vérification est réellement parti. Le compte est créé dans tous les cas.
+   */
+  register: (input: RegisterInput) => Promise<RegisterResponse>;
   refreshUser: () => Promise<void>;
 }
 
@@ -101,9 +106,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const register = useCallback(async (input: RegisterInput) => {
-    await apiPost('/api/auth/register', input, registerResponseSchema);
-  }, []);
+  const register = useCallback(
+    (input: RegisterInput) => apiPost('/api/auth/register', input, registerResponseSchema),
+    [],
+  );
 
   const value = useMemo(
     () => ({ user, login, logout, register, refreshUser: loadMe }),

@@ -50,7 +50,7 @@ export function RegisterPage() {
     }
     setLoading(true);
     try {
-      await register({
+      const created = await register({
         lastName,
         firstName,
         username,
@@ -60,8 +60,18 @@ export function RegisterPage() {
         studyYear: Number(studyYear),
         recaptchaToken,
       });
-      toast('success', t('register.success'));
-      navigate('/login');
+      if (created.verificationEmailSent === false) {
+        // Le compte est créé : le serveur le commit avant même de composer l'e-mail.
+        // On envoie donc l'utilisateur là où se trouve le bouton « renvoyer », adresse
+        // pré-remplie, plutôt que vers une connexion qui refusera un compte non vérifié.
+        // `=== false` et non `!…` : un backend antérieur au champ n'envoie rien, et
+        // l'absence ne doit pas déclencher un avertissement à tort.
+        toast('error', t('register.emailNotSent'));
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+      } else {
+        toast('success', t('register.success'));
+        navigate('/login');
+      }
     } catch (err) {
       setError(apiErrorMessage(err) ?? t('common.error'));
     } finally {

@@ -9,8 +9,11 @@ import com.vetspace.repository.UserRepository;
 import com.vetspace.security.TokenHasher;
 import java.time.Duration;
 import java.time.Instant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -28,6 +31,8 @@ import org.springframework.web.server.ResponseStatusException;
  */
 @Service
 public class EmailVerificationService {
+
+    private static final Logger log = LoggerFactory.getLogger(EmailVerificationService.class);
 
     static final Duration TOKEN_TTL = Duration.ofHours(24);
     private static final int TOKEN_BYTE_LENGTH = 32;
@@ -61,13 +66,25 @@ public class EmailVerificationService {
         return autoVerify;
     }
 
-    /** Called right after registration. No-op when auto-verify is on. */
-    @Transactional
-    public void sendVerification(User user) {
+    /**
+     * Issues a token and tries to email it. Returns whether the message went out.
+     *
+     * <p>Deliberately NOT {@code @Transactional}, and deliberately called by
+     * {@link AuthService#register} only after the account is committed. A mail server
+     * being down is an operational problem; it must never cost a student their
+     * registration. The token row is saved on its own (Spring Data's {@code save} carries
+     * its own transaction), so it is durable before SMTP is ever dialled — which is what
+     * makes "renvoyer" work afterwards.
+     *
+     * <p>Returns {@code true} under auto-verify: nothing needed sending and the account
+     * is already verified, so reporting a failure would push the student towards a resend
+     * button with nothing to resend.
+     */
+    public boolean trySendVerification(User user) {
         if (autoVerify) {
-            return;
+            return true;
         }
-        issueAndSend(user);
+        return trySend(user, issueToken(user));
     }
 
     /**
@@ -84,7 +101,12 @@ public class EmailVerificationService {
                 rateLimiter.check(RATE_SCOPE, user.getId(), RESEND_LIMIT_PER_HOUR, Duration.ofHours(1));
                 // One live token at a time, so an old link cannot be used after a resend.
                 tokenRepository.deleteByUserId(user.getId());
-                issueAndSend(user);
+                // trySend swallows a mail failure, so the delete+insert above still
+                // commits and the caller still gets the same opaque 200. Rolling back
+                // here would leave the account with no token at all — strictly worse
+                // than a token whose email did not arrive, since the student can simply
+                // ask again.
+                trySend(user, issueToken(user));
             });
     }
 
@@ -105,18 +127,37 @@ public class EmailVerificationService {
         tokenRepository.save(token);
     }
 
-    private void issueAndSend(User user) {
+    /** Stores a fresh single-use token and returns the link that carries its raw value. */
+    private String issueToken(User user) {
         String rawToken = TokenHasher.randomUrlSafeToken(TOKEN_BYTE_LENGTH);
         tokenRepository.save(EmailVerificationToken.builder()
             .user(user)
             .tokenHash(TokenHasher.sha256Hex(rawToken))
             .expiresAt(Instant.now().plus(TOKEN_TTL))
             .build());
+        return frontendUrl + "/verify-email?token=" + rawToken;
+    }
 
-        String link = frontendUrl + "/verify-email?token=" + rawToken;
-        // The raw token appears only in the email body — never in a log.
-        mailSender.send(user.getEmail(), "Confirmez votre adresse e-mail VetSpace",
-            "Bienvenue sur VetSpace ! Confirmez votre adresse en cliquant sur ce lien "
-                + "(valable 24 heures) : " + link);
+    /**
+     * Sends the verification mail, reporting failure rather than throwing.
+     *
+     * <p>The try block wraps the send and nothing else, so a bug in our own token code
+     * still surfaces as a 500 — only the mail server's availability is treated as
+     * survivable.
+     */
+    private boolean trySend(User user, String link) {
+        try {
+            // The raw token appears only in the email body — never in a log.
+            mailSender.send(user.getEmail(), "Confirmez votre adresse e-mail VetSpace",
+                "Bienvenue sur VetSpace ! Confirmez votre adresse en cliquant sur ce lien "
+                    + "(valable 24 heures) : " + link);
+            return true;
+        } catch (MailException ex) {
+            // userId, not the address: the log must not become a list of who registered.
+            // The request id is on the line already — RequestIdFilter puts it in the MDC
+            // and logging.pattern prints it — so a student's "Référence" leads here.
+            log.error("Verification email could not be sent for user {}", user.getId(), ex);
+            return false;
+        }
     }
 }

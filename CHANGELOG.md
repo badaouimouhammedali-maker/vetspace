@@ -55,6 +55,13 @@ Nothing has been released publicly yet, so everything to date sits under
 
 ### Fixed
 
+- An SMTP failure destroyed the registration it was supposed to confirm. `register()`
+  was `@Transactional` with the verification send inside it, so a mail server outage
+  rolled the account back and answered 500 — no account, no email, nothing to retry.
+  The account now commits before the send is attempted, the failure is logged and
+  reported as `verificationEmailSent: false` on the `201`, and the UI says so and sends
+  the student to "renvoyer". Password reset gets the same treatment (without the flag,
+  which would have made the response a user-enumeration oracle).
 - Creating a question returned 201 but the UI reported an error: the response carried
   null audit timestamps, because `save` inside a transaction does not flush and
   `@CreationTimestamp` is generated at flush. An admin would retry and duplicate the

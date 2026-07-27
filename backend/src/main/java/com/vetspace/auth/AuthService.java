@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -28,11 +29,13 @@ public class AuthService {
     private final RecaptchaVerifier recaptchaVerifier;
     private final LoginAttemptService loginAttemptService;
     private final EmailVerificationService emailVerificationService;
+    private final TransactionTemplate transactionTemplate;
 
     public AuthService(UserRepository userRepository, SchoolRepository schoolRepository, PasswordEncoder passwordEncoder,
                         JwtService jwtService, RefreshTokenService refreshTokenService, RecaptchaVerifier recaptchaVerifier,
                         LoginAttemptService loginAttemptService,
-                        EmailVerificationService emailVerificationService) {
+                        EmailVerificationService emailVerificationService,
+                        TransactionTemplate transactionTemplate) {
         this.userRepository = userRepository;
         this.schoolRepository = schoolRepository;
         this.passwordEncoder = passwordEncoder;
@@ -41,13 +44,42 @@ public class AuthService {
         this.recaptchaVerifier = recaptchaVerifier;
         this.loginAttemptService = loginAttemptService;
         this.emailVerificationService = emailVerificationService;
+        this.transactionTemplate = transactionTemplate;
     }
 
-    @Transactional
+    /**
+     * Creates the account, then tries to email the verification link.
+     *
+     * <p>Note what is NOT annotated: this method. It used to be {@code @Transactional}
+     * with the mail send inside, so an SMTP outage rolled the whole registration back and
+     * answered 500 — the student ended up with no account, no email and no way forward,
+     * for a failure that had nothing to do with them.
+     *
+     * <p>Now the persistence runs in its own transaction via {@link TransactionTemplate}
+     * and commits before a single byte goes near the mail server. The account survives a
+     * mail outage, and because the send happens inside the request rather than in an
+     * {@code AFTER_COMMIT} listener, its outcome is still known in time to be reported in
+     * the response — which is what lets the UI offer "renvoyer" instead of sending
+     * someone to an inbox that will stay empty. An {@code AFTER_COMMIT} listener would
+     * fire after this method returns, so the flag could only ever have been a guess.
+     *
+     * <p>The reCAPTCHA call also moves out of the transaction: it is a network round trip
+     * to Google, and it was holding a database connection open for its duration.
+     */
     public RegisterResponse register(RegisterRequest request) {
         if (!recaptchaVerifier.verify(request.recaptchaToken())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "reCAPTCHA verification failed");
         }
+
+        User user = transactionTemplate.execute(status -> persistNewUser(request));
+
+        boolean emailSent = emailVerificationService.trySendVerification(user);
+        return new RegisterResponse(user.getId(), user.getEmail(), user.getUsername(), user.getRole(),
+            user.getStatus(), emailSent);
+    }
+
+    /** The part that must be atomic: uniqueness checks and the insert. */
+    private User persistNewUser(RegisterRequest request) {
         if (userRepository.findByEmailIgnoreCase(request.email()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
         }
@@ -57,7 +89,7 @@ public class AuthService {
         School school = schoolRepository.findById(request.schoolId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown school"));
 
-        User user = User.builder()
+        return userRepository.save(User.builder()
             .email(request.email())
             .username(request.username())
             .passwordHash(passwordEncoder.encode(request.password()))
@@ -70,10 +102,7 @@ public class AuthService {
             .emailVerified(emailVerificationService.isAutoVerifyEnabled())
             .school(school)
             .studyYear(request.studyYear())
-            .build();
-        user = userRepository.save(user);
-        emailVerificationService.sendVerification(user);
-        return new RegisterResponse(user.getId(), user.getEmail(), user.getUsername(), user.getRole(), user.getStatus());
+            .build());
     }
 
     /**

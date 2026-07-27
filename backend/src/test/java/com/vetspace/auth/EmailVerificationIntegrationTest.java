@@ -3,6 +3,8 @@ package com.vetspace.auth;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.vetspace.auth.dto.RegisterRequest;
+import com.vetspace.auth.dto.RegisterResponse;
 import com.vetspace.domain.school.School;
 import com.vetspace.domain.user.EmailVerificationToken;
 import com.vetspace.domain.user.Role;
@@ -27,6 +29,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.mail.MailSendException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -61,9 +64,14 @@ class EmailVerificationIntegrationTest {
     static class RecordingMailSender implements AppMailSender {
         final List<String> bodies = new CopyOnWriteArrayList<>();
         final List<String> recipients = new CopyOnWriteArrayList<>();
+        /** Flip on to simulate an SMTP outage — the exact shape JavaMailSender throws. */
+        volatile boolean failing = false;
 
         @Override
         public void send(String to, String subject, String body) {
+            if (failing) {
+                throw new MailSendException("simulated SMTP outage");
+            }
             recipients.add(to);
             bodies.add(body);
         }
@@ -111,6 +119,9 @@ class EmailVerificationIntegrationTest {
     void setUp() {
         mailSender.bodies.clear();
         mailSender.recipients.clear();
+        // The sender is a singleton bean shared by every test in the class, so an
+        // outage simulated by one test would otherwise leak into the next.
+        mailSender.failing = false;
         rateLimiter.resetForTests();
 
         School school = schoolRepository.save(School.builder()
@@ -146,7 +157,7 @@ class EmailVerificationIntegrationTest {
 
     @Test
     void theEmailedTokenVerifiesTheAccountAndUnlocksLogin() {
-        verificationService.sendVerification(user);
+        verificationService.trySendVerification(user);
         assertThat(mailSender.recipients).containsExactly(user.getEmail());
 
         verificationService.verify(lastTokenFromEmail());
@@ -158,7 +169,7 @@ class EmailVerificationIntegrationTest {
 
     @Test
     void onlyTheHashIsStoredNeverTheRawToken() {
-        verificationService.sendVerification(user);
+        verificationService.trySendVerification(user);
         String rawToken = lastTokenFromEmail();
 
         List<EmailVerificationToken> stored = tokenRepository.findAll();
@@ -170,7 +181,7 @@ class EmailVerificationIntegrationTest {
 
     @Test
     void aTokenIsSingleUse() {
-        verificationService.sendVerification(user);
+        verificationService.trySendVerification(user);
         String rawToken = lastTokenFromEmail();
         verificationService.verify(rawToken);
 
@@ -181,7 +192,7 @@ class EmailVerificationIntegrationTest {
 
     @Test
     void anExpiredTokenIsRejected() {
-        verificationService.sendVerification(user);
+        verificationService.trySendVerification(user);
         String rawToken = lastTokenFromEmail();
 
         EmailVerificationToken token =
@@ -214,7 +225,7 @@ class EmailVerificationIntegrationTest {
 
     @Test
     void resendInvalidatesThePreviousLink() {
-        verificationService.sendVerification(user);
+        verificationService.trySendVerification(user);
         String firstToken = lastTokenFromEmail();
 
         verificationService.resend(user.getEmail());
@@ -237,5 +248,83 @@ class EmailVerificationIntegrationTest {
         verificationService.resend(user.getEmail());
 
         assertThat(mailSender.bodies).isEmpty();
+    }
+
+    // ---------------------------------------------------------------
+    // A mail outage must not cost anybody their account
+    // ---------------------------------------------------------------
+
+    /**
+     * The bug: {@code register} was {@code @Transactional} with the send inside it, so
+     * any SMTP failure rolled the registration back and answered 500. The student was
+     * left with no account, no email, and nothing to retry — for an outage that was not
+     * theirs. Registration must outlive the mail server.
+     */
+    @Test
+    void registrationSurvivesAMailOutageAndSaysSoInTheResponse() {
+        School school = user.getSchool();
+        String email = "outage-" + UUID.randomUUID() + "@vetspace.dz";
+        mailSender.failing = true;
+
+        RegisterResponse response = authService.register(new RegisterRequest(
+            "Nom", "Prénom", "out" + UUID.randomUUID().toString().substring(0, 8),
+            email, "correct-horse-battery", school.getId(), 3, null));
+
+        // 1. The account exists and is durable — the whole point.
+        assertThat(response.id()).isNotNull();
+        User persisted = userRepository.findByEmailIgnoreCase(email).orElse(null);
+        assertThat(persisted).as("account committed despite the mail failure").isNotNull();
+        assertThat(persisted.isEmailVerified()).isFalse();
+
+        // 2. The response admits the mail did not go out, so the UI can offer "renvoyer"
+        //    rather than pointing the student at an inbox that will stay empty.
+        assertThat(response.verificationEmailSent()).isFalse();
+
+        // 3. Nothing was actually delivered.
+        assertThat(mailSender.bodies).isEmpty();
+    }
+
+    /** And once the mail server is back, the ordinary resend path still works. */
+    @Test
+    void resendWorksAfterARegistrationWhoseMailFailed() {
+        School school = user.getSchool();
+        String email = "recover-" + UUID.randomUUID() + "@vetspace.dz";
+        mailSender.failing = true;
+        RegisterResponse response = authService.register(new RegisterRequest(
+            "Nom", "Prénom", "rec" + UUID.randomUUID().toString().substring(0, 8),
+            email, "correct-horse-battery", school.getId(), 3, null));
+        assertThat(response.verificationEmailSent()).isFalse();
+
+        mailSender.failing = false;
+        verificationService.resend(email);
+
+        assertThat(mailSender.recipients).containsExactly(email);
+        // The link from the resend genuinely verifies the account created during the outage.
+        verificationService.verify(lastTokenFromEmail());
+        assertThat(userRepository.findByEmailIgnoreCase(email).orElseThrow().isEmailVerified()).isTrue();
+    }
+
+    /** A healthy send reports success, so the flag is not simply hard-coded false. */
+    @Test
+    void registrationReportsSuccessWhenTheMailGoesOut() {
+        School school = user.getSchool();
+        String email = "happy-" + UUID.randomUUID() + "@vetspace.dz";
+
+        RegisterResponse response = authService.register(new RegisterRequest(
+            "Nom", "Prénom", "hap" + UUID.randomUUID().toString().substring(0, 8),
+            email, "correct-horse-battery", school.getId(), 3, null));
+
+        assertThat(response.verificationEmailSent()).isTrue();
+        assertThat(mailSender.recipients).containsExactly(email);
+    }
+
+    /** Resend must not 500 either — same reasoning, different entry point. */
+    @Test
+    void resendDoesNotThrowWhenTheMailServerIsDown() {
+        mailSender.failing = true;
+        verificationService.resend(user.getEmail());
+
+        // The token still rotated, so a later attempt has something to deliver.
+        assertThat(tokenRepository.findAll()).isNotEmpty();
     }
 }

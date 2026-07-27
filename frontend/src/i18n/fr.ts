@@ -56,6 +56,10 @@ export const fr = {
   'register.hasAccount': 'Déjà un compte ?',
   'register.loginLink': 'Se connecter',
   'register.success': 'Compte créé ! Vous pouvez maintenant vous connecter.',
+  // Le compte existe bel et bien — seul l'envoi a échoué. Le message le dit dans cet
+  // ordre pour que personne ne croie devoir recommencer son inscription.
+  'register.emailNotSent':
+    "Compte créé — l'e-mail de vérification n'a pas pu être envoyé, utilisez « renvoyer ».",
   'register.captchaRequired': 'Merci de valider le captcha.',
 
   // Mot de passe oublié
