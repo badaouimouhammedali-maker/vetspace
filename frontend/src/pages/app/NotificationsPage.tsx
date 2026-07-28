@@ -8,25 +8,7 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from '../../lib/endpoints';
-import type { NotificationKind } from '../../lib/schemas';
-
-const KIND_ICON: Record<NotificationKind, string> = {
-  UPDATE: '🆕',
-  QUESTIONS: '❓',
-  INFO: 'ℹ️',
-};
-
-function relativeDate(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "à l'instant";
-  if (mins < 60) return `il y a ${mins} min`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `il y a ${hours} h`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `il y a ${days} j`;
-  return new Date(iso).toLocaleDateString('fr-FR');
-}
+import { NOTIFICATION_KIND_ICON as KIND_ICON, relativeDate } from '../../lib/notificationUi';
 
 export function NotificationsPage() {
   const queryClient = useQueryClient();

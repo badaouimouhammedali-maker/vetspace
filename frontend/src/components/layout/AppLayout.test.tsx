@@ -9,7 +9,13 @@ import { AdminLayout } from './AdminLayout';
 import { AppLayout } from './AppLayout';
 
 vi.mock('../../auth/AuthContext', () => ({ useAuth: vi.fn() }));
-vi.mock('../../lib/endpoints', () => ({ fetchUnreadCount: vi.fn().mockResolvedValue({ count: 0 }) }));
+vi.mock('../../lib/endpoints', () => ({
+  fetchUnreadCount: vi.fn().mockResolvedValue({ count: 0 }),
+  // Pulled in by the bell dropdown the layout now renders.
+  fetchNotifications: vi.fn().mockResolvedValue([]),
+  markAllNotificationsRead: vi.fn().mockResolvedValue(undefined),
+  deleteNotification: vi.fn().mockResolvedValue(undefined),
+}));
 
 const mockUseAuth = useAuth as unknown as ReturnType<typeof vi.fn>;
 

@@ -5,11 +5,11 @@ import { useAuth } from '../../auth/AuthContext';
 import { t, type TranslationKey } from '../../i18n/fr';
 import { fetchUnreadCount } from '../../lib/endpoints';
 import type { Role } from '../../lib/schemas';
+import { NotificationsDropdown } from './NotificationsDropdown';
 import {
   Avatar,
   DropdownItem,
   DropdownPanel,
-  NotificationBadge,
   PageContainer,
   Sidebar,
   Topbar,
@@ -49,7 +49,9 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: 'nav.sectionAccount',
     items: [
-      { to: '/app/notifications', label: 'nav.notifications', icon: '🔔' },
+      // Notifications deliberately absent: they live in the topbar bell, which opens
+      // a scrollable panel in place instead of leaving the current page. The full
+      // history at /app/notifications stays reachable via the panel's "voir tout".
       { to: '/app/abonnement', label: 'nav.abonnement', icon: '💳' },
       { to: '/app/support', label: 'nav.support', icon: '💬' },
       { to: '/app/profil', label: 'nav.profile', icon: '👤' },
@@ -165,14 +167,7 @@ export function AppLayout() {
                 {dark ? '☀️' : '🌙'}
               </TopbarIconButton>
 
-              <NavLink
-                to="/app/notifications"
-                aria-label={t('nav.notifications')}
-                className="relative flex h-9 w-9 items-center justify-center rounded-md text-lg text-white/80 transition-colors duration-150 hover:bg-white/10 hover:text-white"
-              >
-                🔔
-                <NotificationBadge count={unread.data?.count ?? 0} />
-              </NavLink>
+              <NotificationsDropdown unreadCount={unread.data?.count ?? 0} />
 
               <div className="relative" ref={menu.ref}>
                 <button

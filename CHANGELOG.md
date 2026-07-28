@@ -49,6 +49,12 @@ Nothing has been released publicly yet, so everything to date sits under
 
 ### Changed
 
+- **Notifications** — the topbar bell now opens a scrollable panel in place instead of
+  navigating to a separate page: recent notifications, unread highlighting, per-item
+  delete, and mark-all-read on open, without leaving the current screen. The full
+  history remains at /app/notifications behind the panel's « voir tout l'historique »
+  link; the sidebar entry is gone since the bell is always visible.
+
 - **Build** — `backend/mvnw` is now the real Maven wrapper (`mvn wrapper:wrapper`),
   replacing a hand-rolled script that curled a tarball into a gitignored directory.
   Verified on a machine with no system Maven.

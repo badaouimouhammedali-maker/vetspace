@@ -326,6 +326,7 @@ export const fr = {
   'notifs.title': 'Notifications',
   'notifs.empty': 'Aucune notification.',
   'notifs.markAllRead': 'Tout marquer comme lu',
+  'notifs.viewAll': "Voir tout l'historique",
   'notifs.delete': 'Supprimer',
   'notifs.kindUPDATE': 'Mise à jour',
   'notifs.kindQUESTIONS': 'Questions',
