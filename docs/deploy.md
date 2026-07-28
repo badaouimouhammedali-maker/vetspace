@@ -32,7 +32,7 @@ values.
 | `DB_USER` | ⚙️ | `${{Postgres.PGUSER}}` | Database user. |
 | `DB_PASSWORD` | 🔒 | `${{Postgres.PGPASSWORD}}` | Database password. |
 | `JWT_SECRET` | 🔒 | `openssl rand -base64 48` | Signs access tokens. Rotating it logs everyone out. |
-| `FRONTEND_URL` | ⚙️ | `https://vetspace.vercel.app` | Base for password-reset links in emails. |
+| `FRONTEND_URL` | ⚙️ | `https://vetspace.vercel.app` | Base for the links inside verification and password-reset emails. Unset falls back to `http://localhost:3000` — the mail then delivers fine and every link in it is dead. **The prod profile refuses to boot when it is unset, localhost, or plain http.** |
 | `CORS_ALLOWED_ORIGINS` | ⚙️ | `https://vetspace.vercel.app` | Exact SPA origin(s), comma-separated. No wildcard, no trailing slash. |
 | `MAIL_MODE` | ⚙️ | `brevo-api` | `smtp`, `brevo-api`, or `log`. `log` prints instead of sending — never in prod. **`brevo-api` sends via Brevo's HTTPS API (port 443) and is the only mode that works where the platform blocks outbound SMTP — Railway's free tier black-holes ports 25/465/587 entirely, so `smtp` can never work there no matter the settings.** With `brevo-api`, the `MAIL_HOST`/`MAIL_PORT`/`MAIL_USERNAME`/`MAIL_PASSWORD` rows below are unused and can be deleted. |
 | `BREVO_API_KEY` | 🔒 | `xkeysib-…` | Only for `MAIL_MODE=brevo-api`. Brevo dashboard → SMTP & API → API Keys. The prod profile refuses to boot in this mode without it. |

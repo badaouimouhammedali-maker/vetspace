@@ -49,6 +49,7 @@ class ProductionConfigValidatorContextTest {
         args.put("spring.flyway.enabled", "true");
         args.put("server.port", "0");
         args.put("app.jwt.secret", GOOD_SECRET);
+        args.put("app.frontend-url", "https://vetspace.vercel.app");
         args.put("app.mail.mode", "smtp");
         // The prod profile turns SMTP auth on, and the validator demands a real host and
         // credentials to go with it.
@@ -109,6 +110,14 @@ class ProductionConfigValidatorContextTest {
             .hasRootCauseInstanceOf(IllegalStateException.class)
             .rootCause()
             .hasMessageContaining("MAIL_USERNAME is empty");
+    }
+
+    @Test
+    void refusesToStartWithAnUnsetFrontendUrl() {
+        assertThatThrownBy(() -> boot("app.frontend-url="))
+            .hasRootCauseInstanceOf(IllegalStateException.class)
+            .rootCause()
+            .hasMessageContaining("FRONTEND_URL");
     }
 
     @Test

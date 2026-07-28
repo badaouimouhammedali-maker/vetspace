@@ -65,6 +65,10 @@ Nothing has been released publicly yet, so everything to date sits under
 
 ### Fixed
 
+- Verification emails delivered successfully but every link inside pointed at
+  `http://localhost:3000`: `FRONTEND_URL` was unset in production and fell back to the
+  dev default. The prod validator now refuses to boot when it is unset, localhost, or
+  plain http (the links carry one-time tokens).
 - Registration and resend hung indefinitely in production when the SMTP server
   accepted the connection but never answered (typically STARTTLS against port 465, or a
   firewalled host): JavaMail's default timeouts are infinite. SMTP connect/read/write

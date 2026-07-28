@@ -35,6 +35,7 @@ public class ProductionConfigValidator {
     private static final int MIN_ADMIN_PASSWORD_LENGTH = 12;
 
     private final String jwtSecret;
+    private final String frontendUrl;
     private final String mailMode;
     private final String mailHost;
     private final String mailUsername;
@@ -46,6 +47,7 @@ public class ProductionConfigValidator {
     private final boolean autoVerifyEmails;
 
     public ProductionConfigValidator(@Value("${app.jwt.secret:}") String jwtSecret,
+                                     @Value("${app.frontend-url:}") String frontendUrl,
                                      @Value("${app.mail.mode:}") String mailMode,
                                      @Value("${spring.mail.host:}") String mailHost,
                                      @Value("${spring.mail.username:}") String mailUsername,
@@ -56,6 +58,7 @@ public class ProductionConfigValidator {
                                      @Value("${app.rate-limits-enabled:true}") boolean rateLimitsEnabled,
                                      @Value("${app.auth.auto-verify-emails:false}") boolean autoVerifyEmails) {
         this.jwtSecret = jwtSecret;
+        this.frontendUrl = frontendUrl;
         this.mailMode = mailMode;
         this.mailHost = mailHost;
         this.mailUsername = mailUsername;
@@ -82,6 +85,21 @@ public class ProductionConfigValidator {
             problems.add("JWT_SECRET is shorter than " + MIN_SECRET_BYTES + " bytes ("
                 + secret.getBytes(StandardCharsets.UTF_8).length + "). Generate one with: "
                 + "openssl rand -base64 48");
+        }
+
+        // --- Frontend URL ---------------------------------------------------
+        // Every verification and password-reset email embeds this as the link base.
+        // Unset falls back to http://localhost:3000, so the mail is delivered
+        // successfully — and every link in it is dead on arrival.
+        String frontend = frontendUrl == null ? "" : frontendUrl.trim();
+        if (frontend.isEmpty() || frontend.toLowerCase(Locale.ROOT).contains("localhost")
+            || frontend.contains("127.0.0.1")) {
+            problems.add("FRONTEND_URL is unset or points at localhost, so every link in a "
+                + "verification or password-reset email leads nowhere. Set it to the deployed "
+                + "SPA origin, e.g. https://vetspace.vercel.app");
+        } else if (!frontend.startsWith("https://")) {
+            problems.add("FRONTEND_URL must be https:// in production — these links carry "
+                + "one-time tokens.");
         }
 
         // --- Mail -----------------------------------------------------------

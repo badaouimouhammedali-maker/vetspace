@@ -15,6 +15,12 @@ class ProductionConfigValidatorTest {
 
     private static final String GOOD_SECRET = "n2Yb9Qw7ZK4pR8sT1vX3cF6hJ0mL5dA2gE7uI9oP4qS=";
     private static final String GOOD_ORIGINS = "https://vetspace.vercel.app";
+    private static final String GOOD_FRONTEND = "https://vetspace.vercel.app";
+
+    private ProductionConfigValidator validatorWithFrontendUrl(String frontendUrl) {
+        return new ProductionConfigValidator(GOOD_SECRET, frontendUrl, "smtp", "smtp.resend.com",
+            "resend", true, "", GOOD_ORIGINS, "", true, false);
+    }
 
     private ProductionConfigValidator validator(String secret, String mailMode, String origins,
                                                 String adminPassword) {
@@ -25,18 +31,18 @@ class ProductionConfigValidatorTest {
                                                 String adminPassword, boolean rateLimitsEnabled,
                                                 boolean autoVerifyEmails) {
         // Coherent SMTP host and credentials so only the case under test can fail.
-        return new ProductionConfigValidator(secret, mailMode, "smtp.resend.com", "resend", true,
-            "", origins, adminPassword, rateLimitsEnabled, autoVerifyEmails);
+        return new ProductionConfigValidator(secret, GOOD_FRONTEND, mailMode, "smtp.resend.com", "resend",
+            true, "", origins, adminPassword, rateLimitsEnabled, autoVerifyEmails);
     }
 
     private ProductionConfigValidator validatorWithMailAuth(String username, boolean smtpAuth) {
-        return new ProductionConfigValidator(GOOD_SECRET, "smtp", "smtp.resend.com", username,
-            smtpAuth, "", GOOD_ORIGINS, "", true, false);
+        return new ProductionConfigValidator(GOOD_SECRET, GOOD_FRONTEND, "smtp", "smtp.resend.com",
+            username, smtpAuth, "", GOOD_ORIGINS, "", true, false);
     }
 
     private ProductionConfigValidator validatorWithMailHost(String mailHost) {
-        return new ProductionConfigValidator(GOOD_SECRET, "smtp", mailHost, "resend", true,
-            "", GOOD_ORIGINS, "", true, false);
+        return new ProductionConfigValidator(GOOD_SECRET, GOOD_FRONTEND, "smtp", mailHost, "resend",
+            true, "", GOOD_ORIGINS, "", true, false);
     }
 
     private ProductionConfigValidator valid() {
@@ -70,6 +76,25 @@ class ProductionConfigValidatorTest {
             .hasMessageContaining("shorter than 32 bytes");
 
         assertThatCode(() -> validator("a".repeat(32), "smtp", GOOD_ORIGINS, "").validate())
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void rejectsAnUnsetLocalhostOrPlainHttpFrontendUrl() {
+        // The incident this pins: FRONTEND_URL unset in production defaulted to
+        // http://localhost:3000 — the verification email arrived fine, and its link
+        // pointed at the student's own machine.
+        for (String bad : new String[] {"", "http://localhost:3000", "http://127.0.0.1:3000"}) {
+            assertThatThrownBy(() -> validatorWithFrontendUrl(bad).validate())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("FRONTEND_URL");
+        }
+        // Plain http on a real domain: these links carry one-time tokens.
+        assertThatThrownBy(() -> validatorWithFrontendUrl("http://vetspace.vercel.app").validate())
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("https");
+
+        assertThatCode(() -> validatorWithFrontendUrl(GOOD_FRONTEND).validate())
             .doesNotThrowAnyException();
     }
 
@@ -122,7 +147,7 @@ class ProductionConfigValidatorTest {
 
     private ProductionConfigValidator validatorWithBrevoApi(String apiKey) {
         // brevo-api transport: no SMTP host or credentials — that must be legitimate.
-        return new ProductionConfigValidator(GOOD_SECRET, "brevo-api", "", "", true,
+        return new ProductionConfigValidator(GOOD_SECRET, GOOD_FRONTEND, "brevo-api", "", "", true,
             apiKey, GOOD_ORIGINS, "", true, false);
     }
 
