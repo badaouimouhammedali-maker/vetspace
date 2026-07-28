@@ -17,6 +17,9 @@ export function VerifyEmailPage() {
   const [params] = useSearchParams();
   const token = params.get('token');
   const prefilledEmail = params.get('email') ?? '';
+  // Set by RegisterPage right after a successful send: the intro then says "check your
+  // inbox" rather than implying the user has to ask for a (re)send first.
+  const justSent = params.get('sent') === '1';
 
   const [status, setStatus] = useState<Status>(token ? 'verifying' : 'needsVerification');
   const [email, setEmail] = useState(prefilledEmail);
@@ -81,7 +84,13 @@ export function VerifyEmailPage() {
 
       {status === 'needsVerification' || status === 'invalid' ? (
         <>
-          <p className="mt-6 text-sm text-brand-gray">{t('verify.resendIntro')}</p>
+          {justSent && status === 'needsVerification' ? (
+            <p className="mt-6 rounded-lg bg-brand-green/10 p-4 text-sm font-medium text-brand-green">
+              {t('verify.sentIntro')}
+            </p>
+          ) : (
+            <p className="mt-6 text-sm text-brand-gray">{t('verify.resendIntro')}</p>
+          )}
 
           {resent ? (
             <p className="mt-4 rounded-lg bg-brand-green/10 p-4 text-sm font-medium text-brand-green">

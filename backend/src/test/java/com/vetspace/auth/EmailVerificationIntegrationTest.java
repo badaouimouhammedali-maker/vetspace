@@ -275,6 +275,9 @@ class EmailVerificationIntegrationTest {
         User persisted = userRepository.findByEmailIgnoreCase(email).orElse(null);
         assertThat(persisted).as("account committed despite the mail failure").isNotNull();
         assertThat(persisted.isEmailVerified()).isFalse();
+        // And the response says so, which is what routes the UI to the verify screen
+        // instead of a login that would refuse the account.
+        assertThat(response.emailVerified()).isFalse();
 
         // 2. The response admits the mail did not go out, so the UI can offer "renvoyer"
         //    rather than pointing the student at an inbox that will stay empty.

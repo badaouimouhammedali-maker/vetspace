@@ -75,7 +75,7 @@ public class AuthService {
 
         boolean emailSent = emailVerificationService.trySendVerification(user);
         return new RegisterResponse(user.getId(), user.getEmail(), user.getUsername(), user.getRole(),
-            user.getStatus(), emailSent);
+            user.getStatus(), user.isEmailVerified(), emailSent);
     }
 
     /** The part that must be atomic: uniqueness checks and the insert. */

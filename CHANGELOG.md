@@ -65,6 +65,11 @@ Nothing has been released publicly yet, so everything to date sits under
 
 ### Fixed
 
+- After a successful registration the UI said "Vous pouvez maintenant vous connecter"
+  and routed to login — where an unverified account is refused with
+  EMAIL_NOT_VERIFIED. The register response now carries `emailVerified`; unverified
+  accounts land on the "check your inbox" screen with the resend button at hand, while
+  auto-verified ones (dev/e2e) keep the direct login redirect.
 - Verification emails delivered successfully but every link inside pointed at
   `http://localhost:3000`: `FRONTEND_URL` was unset in production and fell back to the
   dev default. The prod validator now refuses to boot when it is unset, localhost, or

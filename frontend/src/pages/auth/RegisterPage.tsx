@@ -60,15 +60,24 @@ export function RegisterPage() {
         studyYear: Number(studyYear),
         recaptchaToken,
       });
+      // Trois issues, du meilleur au pire. Les comparaisons strictes (`=== false`,
+      // `=== true`) et non `!…` : un backend antérieur à ces champs n'envoie rien,
+      // et l'absence doit garder l'ancien comportement (connexion) sans avertir à tort.
       if (created.verificationEmailSent === false) {
         // Le compte est créé : le serveur le commit avant même de composer l'e-mail.
         // On envoie donc l'utilisateur là où se trouve le bouton « renvoyer », adresse
         // pré-remplie, plutôt que vers une connexion qui refusera un compte non vérifié.
-        // `=== false` et non `!…` : un backend antérieur au champ n'envoie rien, et
-        // l'absence ne doit pas déclencher un avertissement à tort.
         toast('error', t('register.emailNotSent'));
         navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+      } else if (created.emailVerified === false) {
+        // L'e-mail est parti et le compte attend sa confirmation : la connexion ne
+        // ferait que répondre EMAIL_NOT_VERIFIED. Direction « vérifiez votre boîte »,
+        // avec le renvoi à portée de main.
+        toast('success', t('register.checkInbox'));
+        navigate(`/verify-email?email=${encodeURIComponent(email)}&sent=1`);
       } else {
+        // Auto-vérifié (dev/e2e) — ou backend d'avant ces champs : la connexion
+        // fonctionne immédiatement.
         toast('success', t('register.success'));
         navigate('/login');
       }

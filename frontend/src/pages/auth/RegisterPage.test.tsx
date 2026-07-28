@@ -64,8 +64,27 @@ describe('RegisterPage — verification email outcome', () => {
     vi.mocked(api.apiGet).mockResolvedValue([{ id: 'sch-1', name: 'ENSV Alger', slug: 'ensv' }]);
   });
 
-  it('sends the student to the login page when the email went out', async () => {
-    register.mockResolvedValue({ ...CREATED, verificationEmailSent: true });
+  it('sends the student to the check-your-inbox screen when the email went out', async () => {
+    // The mail went out and the account awaits confirmation — sending the student to
+    // login would only get them an EMAIL_NOT_VERIFIED refusal.
+    register.mockResolvedValue({ ...CREATED, emailVerified: false, verificationEmailSent: true });
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByRole('option', { name: 'ENSV Alger' });
+
+    await submitValidForm(user);
+
+    await waitFor(() =>
+      expect(navigate).toHaveBeenCalledWith('/verify-email?email=jane%40vetspace.dz&sent=1'),
+    );
+    expect(navigate).not.toHaveBeenCalledWith('/login');
+    expect(
+      screen.queryByText(/l'e-mail de vérification n'a pas pu être envoyé/),
+    ).not.toBeInTheDocument();
+  });
+
+  it('sends the student straight to login when the account is auto-verified (dev/e2e)', async () => {
+    register.mockResolvedValue({ ...CREATED, emailVerified: true, verificationEmailSent: true });
     const user = userEvent.setup();
     renderPage();
     await screen.findByRole('option', { name: 'ENSV Alger' });
@@ -73,9 +92,19 @@ describe('RegisterPage — verification email outcome', () => {
     await submitValidForm(user);
 
     await waitFor(() => expect(navigate).toHaveBeenCalledWith('/login'));
-    expect(
-      screen.queryByText(/l'e-mail de vérification n'a pas pu être envoyé/),
-    ).not.toBeInTheDocument();
+  });
+
+  it('keeps the old login redirect when the backend predates the new fields', async () => {
+    // Independent deploys: an older API sends neither field; that must not strand the
+    // user on a "check your inbox" screen for an email that was never part of its flow.
+    register.mockResolvedValue({ ...CREATED });
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByRole('option', { name: 'ENSV Alger' });
+
+    await submitValidForm(user);
+
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith('/login'));
   });
 
   it('says the email failed and routes to the resend screen, prefilled', async () => {

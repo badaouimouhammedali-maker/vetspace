@@ -56,6 +56,7 @@ export const fr = {
   'register.hasAccount': 'Déjà un compte ?',
   'register.loginLink': 'Se connecter',
   'register.success': 'Compte créé ! Vous pouvez maintenant vous connecter.',
+  'register.checkInbox': 'Compte créé ! Un e-mail de confirmation vous a été envoyé.',
   // Le compte existe bel et bien — seul l'envoi a échoué. Le message le dit dans cet
   // ordre pour que personne ne croie devoir recommencer son inscription.
   'register.emailNotSent':
@@ -89,6 +90,10 @@ export const fr = {
   'verify.invalid': 'Ce lien est invalide ou a expiré.',
   'verify.resendIntro':
     'Saisissez votre adresse pour recevoir un nouveau lien de confirmation (valable 24 heures).',
+  'verify.sentIntro':
+    "Un e-mail de confirmation vient de vous être envoyé — cliquez sur le lien qu'il contient "
+    + '(valable 24 heures). Rien reçu ? Vérifiez vos indésirables, ou renvoyez le lien '
+    + 'ci-dessous.',
   'verify.email': 'Adresse e-mail',
   'verify.resend': 'Renvoyer le lien',
   'verify.resent':

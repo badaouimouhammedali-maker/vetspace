@@ -99,6 +99,7 @@ Response: `201 Created`
   "username": "jdoe",
   "role": "STUDENT",
   "status": "ACTIVE",
+  "emailVerified": false,
   "verificationEmailSent": true
 }
 ```
@@ -111,6 +112,10 @@ Response: `201 Created`
   persisted either way, so a resend works immediately.
 - It is also `true` when `AUTO_VERIFY_EMAILS=true` (dev/e2e): there is no
   message to send and nothing for the user to do.
+- `emailVerified` is `true` only under `AUTO_VERIFY_EMAILS=true` (dev/e2e). The
+  client branches on it: verified accounts go straight to login; unverified ones
+  go to the "check your inbox" screen, since login would only answer
+  `EMAIL_NOT_VERIFIED` until the link is clicked.
 
 #### `POST /api/auth/login`
 Body: `{ "email": "...", "password": "..." }`

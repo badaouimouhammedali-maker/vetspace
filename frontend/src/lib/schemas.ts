@@ -45,10 +45,14 @@ export const registerResponseSchema = z.object({
   //
   // Optional rather than required: the frontend (Vercel) and the API (Railway)
   // deploy independently, so a build of this bundle can briefly talk to an API
-  // that predates the field. A required field would fail the parse and break
+  // that predates these fields. A required field would fail the parse and break
   // registration outright during that window; absent is read as "nothing to
-  // warn about", which is the old, correct behaviour. Hence the `=== false`
-  // test at the call site rather than a falsy check.
+  // warn about", which is the old, correct behaviour. Hence the explicit
+  // `=== false` / `=== true` tests at the call site rather than falsy checks.
+  //
+  // emailVerified is true only under AUTO_VERIFY_EMAILS (dev/e2e) — then the
+  // account needs no confirmation and login works immediately.
+  emailVerified: z.boolean().optional(),
   verificationEmailSent: z.boolean().optional(),
 });
 
