@@ -39,6 +39,7 @@ public class ProductionConfigValidator {
     private final String mailHost;
     private final String mailUsername;
     private final boolean mailSmtpAuth;
+    private final String brevoApiKey;
     private final String corsAllowedOrigins;
     private final String adminPassword;
     private final boolean rateLimitsEnabled;
@@ -49,6 +50,7 @@ public class ProductionConfigValidator {
                                      @Value("${spring.mail.host:}") String mailHost,
                                      @Value("${spring.mail.username:}") String mailUsername,
                                      @Value("${spring.mail.properties.mail.smtp.auth:false}") boolean mailSmtpAuth,
+                                     @Value("${app.mail.brevo-api-key:}") String brevoApiKey,
                                      @Value("${app.cors.allowed-origins:}") String corsAllowedOrigins,
                                      @Value("${app.seed.admin-password:}") String adminPassword,
                                      @Value("${app.rate-limits-enabled:true}") boolean rateLimitsEnabled,
@@ -58,6 +60,7 @@ public class ProductionConfigValidator {
         this.mailHost = mailHost;
         this.mailUsername = mailUsername;
         this.mailSmtpAuth = mailSmtpAuth;
+        this.brevoApiKey = brevoApiKey;
         this.corsAllowedOrigins = corsAllowedOrigins;
         this.adminPassword = adminPassword;
         this.rateLimitsEnabled = rateLimitsEnabled;
@@ -82,34 +85,43 @@ public class ProductionConfigValidator {
         }
 
         // --- Mail -----------------------------------------------------------
-        if ("log".equalsIgnoreCase(String.valueOf(mailMode).trim())) {
+        String mode = String.valueOf(mailMode).trim();
+        if ("log".equalsIgnoreCase(mode)) {
             problems.add("MAIL_MODE=log in production: password-reset and verification emails would "
-                + "be printed to the log instead of sent, with no visible error. Set MAIL_MODE=smtp.");
+                + "be printed to the log instead of sent, with no visible error. Set MAIL_MODE=smtp "
+                + "or MAIL_MODE=brevo-api.");
         }
-        // MAIL_HOST unset falls back to application.yml's localhost — inside a container
-        // that is the container itself, so every send fails (or hangs) with no hint that
-        // the variable was simply never configured.
-        String host = mailHost == null ? "" : mailHost.trim();
-        if ("smtp".equalsIgnoreCase(String.valueOf(mailMode).trim())
-            && (host.isEmpty() || host.equalsIgnoreCase("localhost") || host.equals("127.0.0.1"))) {
-            problems.add("MAIL_MODE=smtp but MAIL_HOST is unset or points at localhost — inside "
-                + "the container there is no SMTP server there. Set MAIL_HOST to the provider's "
-                + "server, e.g. smtp.resend.com.");
+        // The SMTP coherence rules apply only when SMTP is the transport — with
+        // MAIL_MODE=brevo-api the host and credentials are legitimately absent.
+        if ("smtp".equalsIgnoreCase(mode)) {
+            // MAIL_HOST unset falls back to application.yml's localhost — inside a container
+            // that is the container itself, so every send fails (or hangs) with no hint that
+            // the variable was simply never configured.
+            String host = mailHost == null ? "" : mailHost.trim();
+            if (host.isEmpty() || host.equalsIgnoreCase("localhost") || host.equals("127.0.0.1")) {
+                problems.add("MAIL_MODE=smtp but MAIL_HOST is unset or points at localhost — inside "
+                    + "the container there is no SMTP server there. Set MAIL_HOST to the provider's "
+                    + "server, e.g. smtp.resend.com.");
+            }
+            // The trap this catches: the base yml defaults suit local mailpit (no auth), so
+            // credentials configured with auth accidentally forced off are silently never
+            // sent, and the provider rejects or stalls the session. Real registrations then
+            // fail (or, before timeouts existed, hung) with no hint at the cause.
+            String username = mailUsername == null ? "" : mailUsername.trim();
+            if (!username.isEmpty() && !mailSmtpAuth) {
+                problems.add("MAIL_USERNAME is set but MAIL_SMTP_AUTH is not true, so the credentials "
+                    + "are never sent to the SMTP server. Set MAIL_SMTP_AUTH=true (and almost "
+                    + "certainly MAIL_STARTTLS=true — every mainstream provider requires it on "
+                    + "port 587).");
+            }
+            if (mailSmtpAuth && username.isEmpty()) {
+                problems.add("MAIL_SMTP_AUTH=true but MAIL_USERNAME is empty. Set the provider's "
+                    + "SMTP username and password.");
+            }
         }
-        // The trap this catches: the base yml defaults suit local mailpit (no auth), so
-        // credentials configured with auth accidentally forced off are silently never
-        // sent, and the provider rejects or stalls the session. Real registrations then
-        // fail (or, before timeouts existed, hung) with no hint at the cause.
-        String username = mailUsername == null ? "" : mailUsername.trim();
-        if (!username.isEmpty() && !mailSmtpAuth) {
-            problems.add("MAIL_USERNAME is set but MAIL_SMTP_AUTH is not true, so the credentials "
-                + "are never sent to the SMTP server. Set MAIL_SMTP_AUTH=true (and almost "
-                + "certainly MAIL_STARTTLS=true — every mainstream provider requires it on "
-                + "port 587).");
-        }
-        if (mailSmtpAuth && username.isEmpty()) {
-            problems.add("MAIL_SMTP_AUTH=true but MAIL_USERNAME is empty. Set the provider's "
-                + "SMTP username and password.");
+        if ("brevo-api".equalsIgnoreCase(mode) && (brevoApiKey == null || brevoApiKey.isBlank())) {
+            problems.add("MAIL_MODE=brevo-api but BREVO_API_KEY is empty. Create one in the "
+                + "Brevo dashboard (SMTP & API → API Keys) and set it.");
         }
 
         // --- CORS -----------------------------------------------------------

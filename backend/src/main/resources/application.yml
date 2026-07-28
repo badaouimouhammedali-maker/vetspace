@@ -93,7 +93,11 @@ app:
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
   mail:
     from: ${MAIL_FROM:noreply@vetspace.local}
+    # log (dev default) | smtp | brevo-api. brevo-api sends over HTTPS:443 via Brevo's
+    # REST API — the escape hatch for platforms that block outbound SMTP (Railway
+    # free tier blocks 25/465/587 outright, so smtp can never work there).
     mode: ${MAIL_MODE:log}
+    brevo-api-key: ${BREVO_API_KEY:}
   media:
     endpoint: ${MEDIA_ENDPOINT:http://localhost:9000}
     bucket: ${MEDIA_BUCKET:vetspace}

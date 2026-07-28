@@ -26,17 +26,17 @@ class ProductionConfigValidatorTest {
                                                 boolean autoVerifyEmails) {
         // Coherent SMTP host and credentials so only the case under test can fail.
         return new ProductionConfigValidator(secret, mailMode, "smtp.resend.com", "resend", true,
-            origins, adminPassword, rateLimitsEnabled, autoVerifyEmails);
+            "", origins, adminPassword, rateLimitsEnabled, autoVerifyEmails);
     }
 
     private ProductionConfigValidator validatorWithMailAuth(String username, boolean smtpAuth) {
         return new ProductionConfigValidator(GOOD_SECRET, "smtp", "smtp.resend.com", username,
-            smtpAuth, GOOD_ORIGINS, "", true, false);
+            smtpAuth, "", GOOD_ORIGINS, "", true, false);
     }
 
     private ProductionConfigValidator validatorWithMailHost(String mailHost) {
         return new ProductionConfigValidator(GOOD_SECRET, "smtp", mailHost, "resend", true,
-            GOOD_ORIGINS, "", true, false);
+            "", GOOD_ORIGINS, "", true, false);
     }
 
     private ProductionConfigValidator valid() {
@@ -118,6 +118,24 @@ class ProductionConfigValidatorTest {
             validator(GOOD_SECRET, "smtp", GOOD_ORIGINS, "", false, false).validate())
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("RATE_LIMITS_ENABLED=false");
+    }
+
+    private ProductionConfigValidator validatorWithBrevoApi(String apiKey) {
+        // brevo-api transport: no SMTP host or credentials — that must be legitimate.
+        return new ProductionConfigValidator(GOOD_SECRET, "brevo-api", "", "", true,
+            apiKey, GOOD_ORIGINS, "", true, false);
+    }
+
+    @Test
+    void brevoApiModeNeedsAKeyButNoSmtpSettings() {
+        assertThatThrownBy(() -> validatorWithBrevoApi("").validate())
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("BREVO_API_KEY");
+        // With the key present, absent SMTP host/credentials must not be flagged —
+        // switching transports means deleting them. (Note the prod default auth=true is
+        // simulated above and still must not trip the SMTP coherence rule.)
+        assertThatCode(() -> validatorWithBrevoApi("xkeysib-something").validate())
+            .doesNotThrowAnyException();
     }
 
     @Test

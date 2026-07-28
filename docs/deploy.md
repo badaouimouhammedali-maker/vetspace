@@ -34,7 +34,8 @@ values.
 | `JWT_SECRET` | 🔒 | `openssl rand -base64 48` | Signs access tokens. Rotating it logs everyone out. |
 | `FRONTEND_URL` | ⚙️ | `https://vetspace.vercel.app` | Base for password-reset links in emails. |
 | `CORS_ALLOWED_ORIGINS` | ⚙️ | `https://vetspace.vercel.app` | Exact SPA origin(s), comma-separated. No wildcard, no trailing slash. |
-| `MAIL_MODE` | ⚙️ | `smtp` | `log` prints instead of sending — **must be `smtp` in prod**. |
+| `MAIL_MODE` | ⚙️ | `brevo-api` | `smtp`, `brevo-api`, or `log`. `log` prints instead of sending — never in prod. **`brevo-api` sends via Brevo's HTTPS API (port 443) and is the only mode that works where the platform blocks outbound SMTP — Railway's free tier black-holes ports 25/465/587 entirely, so `smtp` can never work there no matter the settings.** With `brevo-api`, the `MAIL_HOST`/`MAIL_PORT`/`MAIL_USERNAME`/`MAIL_PASSWORD` rows below are unused and can be deleted. |
+| `BREVO_API_KEY` | 🔒 | `xkeysib-…` | Only for `MAIL_MODE=brevo-api`. Brevo dashboard → SMTP & API → API Keys. The prod profile refuses to boot in this mode without it. |
 | `MAIL_HOST` / `MAIL_PORT` | ⚙️ | `smtp.resend.com` / `587` | SMTP server. **Use the provider's STARTTLS port (almost always 587).** Port 465 expects TLS from the first byte, so a STARTTLS client and a 465 server each wait for the other — before send timeouts existed this hung registration forever; now it fails after `MAIL_TIMEOUT_MS`. The prod profile refuses to boot when this is unset (it would silently fall back to `localhost`). |
 | `MAIL_USERNAME` | ⚙️ | provider user | SMTP auth user (Resend: `resend`; SendGrid: `apikey`). The prod profile refuses to boot when SMTP auth is on and this is empty. |
 | `MAIL_PASSWORD` | 🔒 | provider key | SMTP auth password / API key. |
