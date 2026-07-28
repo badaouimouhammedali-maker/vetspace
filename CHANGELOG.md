@@ -12,6 +12,13 @@ Nothing has been released publicly yet, so everything to date sits under
 
 ### Added
 
+- **Mail** — `MAIL_MODE=brevo-api`: delivery through Brevo's HTTPS API (port 443) instead
+  of SMTP, for platforms that block outbound SMTP entirely — Railway's free tier
+  black-holes ports 25/465/587, so a perfectly correct `smtp-relay.brevo.com:587`
+  configuration can never connect from there. Same Brevo account and verified sender;
+  needs only `BREVO_API_KEY`. Failures surface as `MailException`, so the non-fatal
+  registration/reset handling applies unchanged, and the prod validator refuses to boot
+  in this mode without the key.
 - **Operations** — `docs/runbooks.md`: scheduled `pg_dump` to R2 from a separate Railway
   cron service, restore (rehearsed on a scratch database first), bad-migration recovery
   split by failure mode, and the lost-CSV / leaked-batch procedure.
@@ -52,16 +59,6 @@ Nothing has been released publicly yet, so everything to date sits under
   exited 0 — it exits 0 when it runs zero tests.
 - **Security** — dependency upgrade to Spring Boot 3.5.16, AWS SDK 2.48.3,
   springdoc 2.8.17.
-
-### Added
-
-- **Mail** — `MAIL_MODE=brevo-api`: delivery through Brevo's HTTPS API (port 443) instead
-  of SMTP, for platforms that block outbound SMTP entirely — Railway's free tier
-  black-holes ports 25/465/587, so a perfectly correct `smtp-relay.brevo.com:587`
-  configuration can never connect from there. Same Brevo account and verified sender;
-  needs only `BREVO_API_KEY`. Failures surface as `MailException`, so the non-fatal
-  registration/reset handling applies unchanged, and the prod validator refuses to boot
-  in this mode without the key.
 
 ### Fixed
 
