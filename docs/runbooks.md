@@ -131,6 +131,22 @@ psql vetspace_restore_check -c \
   "select version, description, success from flyway_schema_history order by installed_rank desc limit 5;"
 ```
 
+### 2.2b Rehearse a migration against real data
+
+Before deploying any migration that changes existing rows, run it against a restored
+production dump rather than against production:
+
+```bash
+export DATABASE_URL='postgresql://...'    # Railway → Postgres → Connect → Public URL
+./scripts/gate-restore-check.sh
+```
+
+It dumps production read-only, restores into a throwaway container, prints the row
+counts and *what the migration will actually merge*, applies the migration, then
+re-counts and asserts nothing was orphaned. It exits non-zero if the migration fails,
+which is the answer to "is this safe to deploy". The dump it leaves behind contains
+production data — delete it when you are done.
+
 ### 2.3 Restore into production
 
 **Stop the API first.** Railway → backend service → *Settings* → *Suspend*. A running
