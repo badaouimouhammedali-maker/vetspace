@@ -3,11 +3,13 @@ spring:
     name: vetspace-backend
   servlet:
     multipart:
-      # Container ceiling slightly above the app's 4MB business limit so MediaService
-      # can reject 4-5MB files with the standard error body; bigger uploads are cut
-      # off at the container level (MaxUploadSizeExceededException -> 413).
-      max-file-size: 5MB
-      max-request-size: 6MB
+      # Container ceiling slightly above the largest business limit (study resources at
+      # 25MB) so the services can reject oversize files with the standard error body;
+      # bigger uploads are cut off at the container level
+      # (MaxUploadSizeExceededException -> 413). Images stay capped at 4MB in
+      # MediaService regardless — this is only the outer envelope.
+      max-file-size: ${MAX_UPLOAD_SIZE:26MB}
+      max-request-size: ${MAX_REQUEST_SIZE:27MB}
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/vetspace}
     username: ${DB_USER:vetspace}
@@ -98,6 +100,11 @@ app:
     # free tier blocks 25/465/587 outright, so smtp can never work there).
     mode: ${MAIL_MODE:log}
     brevo-api-key: ${BREVO_API_KEY:}
+  resources:
+    # Free study-resource library. NOTE: while the API is proxied through Vercel, the
+    # edge caps request bodies at ~4.5MB, so anything above that fails before it reaches
+    # the app. See docs/deploy.md — either move to a custom domain or lower this.
+    max-file-size-mb: ${RESOURCE_MAX_FILE_SIZE_MB:25}
   media:
     endpoint: ${MEDIA_ENDPOINT:http://localhost:9000}
     bucket: ${MEDIA_BUCKET:vetspace}

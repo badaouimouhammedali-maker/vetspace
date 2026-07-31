@@ -208,6 +208,27 @@ Requires `Authorization: Bearer <accessToken>`; `401` without one.
 - `GET /api/source-exams` — authenticated. Session-builder helper: the
   national source-exam list, newest year first.
 
+### Free study library (student-facing)
+
+Authenticated, and **not** subscription-gated — course material is the free half of
+the product. The QCM bank stays behind `SubscriptionGate`.
+
+- `GET /api/resources/years` — study years that have at least one **published**
+  resource: `[3, 4]`. Drives the year selector; a year whose resources are all
+  drafts does not appear.
+- `GET /api/resources?studyYear=N` (or `?moduleId=`) — published resources grouped
+  by module, modules in `position` order:
+  `[{moduleId, moduleName, studyYear, modulePosition, resources: [...]}]`.
+  A module with nothing published is omitted entirely.
+- `GET /api/resources/{id}` — one resource including `fileUrl`. Unpublished is
+  `404` for students (never `403`, so a hidden file is indistinguishable from a
+  missing one); ADMIN/TEACHER get it.
+
+A resource is `{id, moduleId, moduleName, studyYear, title, description?, fileUrl,
+fileType: PDF|IMAGE, fileSizeBytes, position, published, createdAt, updatedAt}`.
+`fileUrl` points straight at R2 and is downloaded directly by the browser — the API
+never proxies the bytes.
+
 ### Admin API
 
 All endpoints under `/api/admin/**` require `ROLE_ADMIN` or `ROLE_TEACHER`
@@ -352,6 +373,27 @@ No auth. Aggregate totals for the marketing counters:
 published mindmaps. Result is memoized server-side for 60s.
 
 ### Packs & activation codes
+
+#### Study resources (ADMIN/TEACHER)
+
+- `POST /api/admin/resources` — `multipart/form-data` with two parts: `file`, and
+  `metadata` as JSON `{moduleId, title, description?, published}`. → `201` with the
+  resource.
+  - Accepted: **PDF, JPEG, PNG, WebP**, decided by **magic bytes**. The filename and
+    the client's `Content-Type` are never trusted — a `.pdf` whose bytes are `MZ` is
+    rejected with `400` and nothing reaches storage.
+  - Max **25 MB** (`RESOURCE_MAX_FILE_SIZE_MB`) → `413` above it. **While the API is
+    proxied through Vercel the practical ceiling is ~4.5 MB** — see docs/deploy.md.
+  - Stored at `resources/{uuid}.{ext}`: a random key, so the uploaded filename never
+    reaches storage and cannot carry a traversal or an extension mismatch.
+- `GET /api/admin/resources?moduleId=` — every resource of a module, drafts included.
+- `GET /api/admin/resources/summary` — per-module `{resourceCount, totalBytes}` so R2
+  usage is visible where the uploading happens.
+- `PUT /api/admin/resources/{id}` — title, description, module, published. Replacing
+  the *file* is a delete plus a re-upload.
+- `PATCH /api/admin/resources/{id}/publish` `{published}`.
+- `POST /api/admin/resources/reorder` `{orderedIds}` — rewrites `position`.
+- `DELETE /api/admin/resources/{id}` → `204`. **Deletes the R2 object too.**
 
 #### `GET /api/packs` — **public** (pricing page)
 `?studyYear=` (optional). Active, unexpired packs only:

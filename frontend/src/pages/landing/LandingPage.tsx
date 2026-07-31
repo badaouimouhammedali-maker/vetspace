@@ -21,7 +21,7 @@ export function LandingPage() {
         <title>VetSpace — La plateforme de QCM des étudiants vétérinaires</title>
         <meta
           name="description"
-          content="Révisez vos examens vétérinaires avec des milliers de QCM corrigés, des annales d'examens et des MindMaps. Suivi de progression, statistiques détaillées et contenu à jour."
+          content="Cours gratuits et QCM sur abonnement pour étudiants vétérinaires : supports de cours en accès libre, milliers de QCM corrigés, annales d'examens, MindMaps et suivi de progression."
         />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="VetSpace — QCM pour étudiants vétérinaires" />
@@ -229,6 +229,13 @@ const FEATURES: { title: string; body: string; image: string; alt: string }[] = 
     body: "Des cartes mentales et schémas synthétiques par cours pour ancrer l'essentiel et réviser vite les points clés la veille de l'épreuve.",
     image: '/landing/mindmaps.svg',
     alt: 'MindMaps et schémas',
+  },
+  {
+    // The acquisition argument: something valuable before any payment is asked for.
+    title: 'Vos cours, gratuitement',
+    body: "Polycopiés, schémas et supports de cours en accès libre, classés par année et par module : téléchargeables dès la création de votre compte, sans abonnement. Les QCM et leurs corrections restent sur abonnement.",
+    image: '/landing/mindmaps.svg',
+    alt: 'Bibliothèque de cours gratuits',
   },
 ];
 

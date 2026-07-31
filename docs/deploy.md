@@ -43,6 +43,7 @@ values.
 | `MAIL_SMTP_AUTH` | ⚙️ | *(leave unset)* | Defaults to `true` in prod, `false` locally (mailpit). Only set it for an unauthenticated relay. |
 | `MAIL_STARTTLS` | ⚙️ | *(leave unset)* | Defaults to `true` in prod, `false` locally. |
 | `MAIL_TIMEOUT_MS` | ⚙️ | *(leave unset)* | SMTP connect/read/write timeout, default `5000`. Bounds how long a dead mail server can delay a registration response (the account is already committed either way; the response then carries `verificationEmailSent: false`). |
+| `RESOURCE_MAX_FILE_SIZE_MB` | ⚙️ | *(leave unset → 25)* | Max size of a free study resource. **Capped in practice at ~4.5 MB by the Vercel proxy — see the note above.** |
 | `MEDIA_ENDPOINT` | ⚙️ | `https://<account-id>.r2.cloudflarestorage.com` | S3 API endpoint for uploads. |
 | `MEDIA_BUCKET` | ⚙️ | `vetspace-media` | Bucket name. |
 | `MEDIA_ACCESS_KEY` | 🔒 | R2 token id | Object-storage credential. |
@@ -163,6 +164,15 @@ call, and API traffic counting against your Vercel bandwidth.
 Because of that hop, content image uploads are capped at **4 MB** (profile
 photos stay at 2 MB) to stay under the proxy's request-body limit.
 
+> **Study resources and the 25 MB limit.** `RESOURCE_MAX_FILE_SIZE_MB` defaults to
+> 25, but while the API is proxied through Vercel the edge rejects request bodies
+> over roughly **4.5 MB** before they ever reach Railway — a 20 MB polycopié fails
+> with a proxy error, not with the app's own `413`. Until you move to a custom
+> domain (below), either set `RESOURCE_MAX_FILE_SIZE_MB=4` so the limit shown in
+> the admin UI is the truth, or accept that only small files upload. The durable
+> fix for large files is a presigned direct-to-R2 upload, which skips the API
+> entirely; it is not implemented yet.
+
 ### Cookie settings for this topology
 
 Same-origin means `COOKIE_SAME_SITE=Lax` is correct and sufficient — set it on
@@ -180,8 +190,9 @@ path with no third-party-cookie exposure:
 4. On Railway: `CORS_ALLOWED_ORIGINS=https://vetspace.dz`,
    `FRONTEND_URL=https://vetspace.dz`, and keep `COOKIE_SAME_SITE=Lax` — a
    subdomain of the same registrable domain is same-site, so `Lax` still works.
-5. Raise the 4 MB upload cap back toward the 5 MB container ceiling if you want,
-   since the proxy body limit no longer applies.
+5. Raise the 4 MB image cap toward the container ceiling if you want, and let
+   `RESOURCE_MAX_FILE_SIZE_MB` reach its full 25 MB — the proxy body limit no
+   longer applies once the API is on its own subdomain.
 
 `COOKIE_SAME_SITE` stays configurable precisely so this migration is a variable
 change, not a code change.

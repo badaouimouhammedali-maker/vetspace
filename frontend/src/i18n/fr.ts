@@ -138,6 +138,7 @@ export const fr = {
   'nav.notes': 'Notes',
   'nav.signals': 'Signals',
   'nav.notifications': 'Notification',
+  'nav.cours': 'Cours',
   'nav.abonnement': 'Abonnement',
   'nav.support': 'Support',
   'nav.profile': 'Profile',
@@ -323,6 +324,20 @@ export const fr = {
   'signals.rateLimited': 'Limite quotidienne de signalements atteinte.',
 
   // Notifications
+  // Free study library
+  'cours.title': 'Cours',
+  'cours.subtitle': 'Supports de cours en accès libre — PDF et images, sans abonnement.',
+  'cours.year': "Année d'étude",
+  'cours.search': 'Rechercher',
+  'cours.searchPlaceholder': 'Filtrer par titre…',
+  'cours.preview': 'Aperçu',
+  'cours.download': 'Télécharger',
+  'cours.file': 'fichier',
+  'cours.files': 'fichiers',
+  'cours.emptyAll': 'Aucun support de cours pour le moment.',
+  'cours.emptyYear': 'Aucun support pour cette année.',
+  'cours.emptySearch': 'Aucun support ne correspond à votre recherche.',
+
   'notifs.title': 'Notifications',
   'notifs.empty': 'Aucune notification.',
   'notifs.markAllRead': 'Tout marquer comme lu',
@@ -385,6 +400,7 @@ export const fr = {
   'nav.admin.schools': 'Écoles & Modules',
   'nav.admin.questions': 'Questions',
   'nav.admin.sourceExams': "Sources d'examen",
+  'nav.admin.resources': 'Ressources',
   'nav.admin.mindmaps': 'MindMaps',
   'nav.admin.packs': 'Packs & Codes',
   'nav.admin.users': 'Abonnés',

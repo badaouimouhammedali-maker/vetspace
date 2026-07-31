@@ -26,6 +26,7 @@ const AppLayout = lazy(() => named(import('./components/layout/AppLayout'), 'App
 const DashboardPage = lazy(() => named(import('./pages/app/DashboardPage'), 'DashboardPage'));
 const StatsPage = lazy(() => named(import('./pages/app/StatsPage'), 'StatsPage'));
 const MindmapsPage = lazy(() => named(import('./pages/app/MindmapsPage'), 'MindmapsPage'));
+const CoursPage = lazy(() => named(import('./pages/app/CoursPage'), 'CoursPage'));
 const SessionsPage = lazy(() => named(import('./pages/app/SessionsPage'), 'SessionsPage'));
 const LabelsPage = lazy(() => named(import('./pages/app/LabelsPage'), 'LabelsPage'));
 const NotesPage = lazy(() => named(import('./pages/app/NotesPage'), 'NotesPage'));
@@ -43,6 +44,7 @@ const EcolesPage = lazy(() => named(import('./pages/admin/EcolesPage'), 'EcolesP
 const QuestionsPage = lazy(() => named(import('./pages/admin/QuestionsPage'), 'QuestionsPage'));
 const SourcesPage = lazy(() => named(import('./pages/admin/SourcesPage'), 'SourcesPage'));
 const AdminMindmapsPage = lazy(() => named(import('./pages/admin/AdminMindmapsPage'), 'AdminMindmapsPage'));
+const RessourcesPage = lazy(() => named(import('./pages/admin/RessourcesPage'), 'RessourcesPage'));
 const PacksPage = lazy(() => named(import('./pages/admin/PacksPage'), 'PacksPage'));
 const AbonnesPage = lazy(() => named(import('./pages/admin/AbonnesPage'), 'AbonnesPage'));
 const SignalementsPage = lazy(() => named(import('./pages/admin/SignalementsPage'), 'SignalementsPage'));
@@ -160,6 +162,7 @@ export function App() {
             <Route index element={<DashboardPage />} />
             <Route path="statistiques" element={<StatsPage />} />
             <Route path="mindmaps" element={<MindmapsPage />} />
+            <Route path="cours" element={<CoursPage />} />
             <Route path="sessions/entrainement" element={<SessionsPage type="ENTRAINEMENT" />} />
             <Route path="sessions/examens" element={<SessionsPage type="EXAMEN" />} />
             <Route path="labels" element={<LabelsPage />} />
@@ -188,6 +191,7 @@ export function App() {
             <Route path="questions" element={<QuestionsPage />} />
             <Route path="sources" element={<SourcesPage />} />
             <Route path="mindmaps" element={<AdminMindmapsPage />} />
+            <Route path="ressources" element={<RessourcesPage />} />
             <Route path="packs" element={<PacksPage />} />
             <Route path="abonnes" element={<AbonnesPage />} />
             <Route path="signalements" element={<SignalementsPage />} />

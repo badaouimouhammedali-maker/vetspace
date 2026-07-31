@@ -118,6 +118,37 @@ National catalog data (V9): `school_id` was dropped along with modules'.
 Questions reference an exam via `questions.source_exam_id` (ON DELETE SET
 NULL), so an exam can be retired without taking its questions with it.
 
+### `resources`
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid PK | |
+| module_id | uuid NOT NULL, FK -> modules.id | |
+| title | varchar(255) NOT NULL | |
+| description | text NULL | |
+| file_url | varchar(500) NOT NULL | public R2 URL; the key is `resources/{uuid}.{ext}` |
+| file_type | varchar(10) NOT NULL CHECK | `PDF`, `IMAGE` — decided by magic bytes on upload |
+| file_size_bytes | bigint NOT NULL CHECK > 0 | the length actually written to storage |
+| position | int NOT NULL | manual ordering within a module |
+| published | boolean NOT NULL DEFAULT false | |
+| uploaded_by | uuid NULL, FK -> users.id | |
+| created_at, updated_at | timestamptz NOT NULL | |
+
+Indexes: `idx_resources_module_id`, `idx_resources_module_published`,
+`idx_resources_published`.
+
+The **free** half of the product (V10). Study material hangs off a module and is
+readable by any authenticated student — `SubscriptionGate` is deliberately not
+consulted on these reads, while the QCM bank stays behind it.
+
+**FK: `module_id` → `modules.id` ON DELETE CASCADE.** A resource has no meaning
+without its module. **FK: `uploaded_by` → `users.id` ON DELETE SET NULL** — and
+hence nullable: deleting the teacher who uploaded a polycopié must not delete the
+polycopié.
+
+Deleting a row also deletes the R2 object (`ResourceService.delete`). The storage
+key is recovered from `file_url` by anchoring on the `resources/` prefix rather than
+on the configured base URL, so rows survive a change of public domain.
+
 ### `questions`
 | Column | Type | Notes |
 |---|---|---|

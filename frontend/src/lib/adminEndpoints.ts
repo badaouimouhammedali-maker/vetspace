@@ -8,6 +8,8 @@ import {
   adminOverviewSchema,
   adminPackSchema,
   adminSchoolSchema,
+  moduleResourceSummarySchema,
+  resourceSchema,
   adminSourceExamSchema,
   adminUserSchema,
   generateCodesResponseSchema,
@@ -26,6 +28,7 @@ import {
   type Difficulty,
   type ExamType,
   type QuestionAdmin,
+  type Resource,
   type SignalStatus,
   type UserStatus,
 } from './schemas';
@@ -247,3 +250,50 @@ export const fetchSubscriptionAudit = (email: string) =>
 
 // Re-export catalog picker types for pages that compose across these.
 export type { AdminSchool, AdminModule, AdminCourse, AdminSourceExam, AdminPack };
+
+// Free study resources -------------------------------------------------
+export const fetchAdminResources = (moduleId: string) =>
+  apiGet(`/api/admin/resources?moduleId=${moduleId}`, z.array(resourceSchema));
+
+export const fetchResourceSummary = () =>
+  apiGet('/api/admin/resources/summary', z.array(moduleResourceSummarySchema));
+
+/**
+ * Multipart upload with progress. The file part is typed by magic bytes server-side;
+ * the browser's declared content type is only a hint and is not trusted there.
+ */
+export const uploadResource = (
+  file: File,
+  metadata: { moduleId: string; title: string; description?: string; published: boolean },
+  onProgress?: (percent: number) => void,
+): Promise<Resource> => {
+  const form = new FormData();
+  form.append('file', file);
+  form.append(
+    'metadata',
+    new Blob([JSON.stringify(metadata)], { type: 'application/json' }),
+  );
+  return api
+    .post('/api/admin/resources', form, {
+      onUploadProgress: (e) => {
+        if (onProgress && e.total) {
+          onProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      },
+    })
+    .then((r) => resourceSchema.parse(r.data));
+};
+
+export const updateResource = (
+  id: string,
+  body: { moduleId: string; title: string; description?: string; published: boolean },
+): Promise<Resource> =>
+  api.put(`/api/admin/resources/${id}`, body).then((r) => resourceSchema.parse(r.data));
+
+export const publishResource = (id: string, published: boolean) =>
+  api.patch(`/api/admin/resources/${id}/publish`, { published }).then((r) => resourceSchema.parse(r.data));
+
+export const reorderResources = (orderedIds: string[]) =>
+  api.post('/api/admin/resources/reorder', { orderedIds });
+
+export const deleteResource = (id: string) => api.delete(`/api/admin/resources/${id}`);

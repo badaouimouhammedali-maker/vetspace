@@ -25,6 +25,7 @@ const NAV_SECTIONS: NavSection[] = [
       { to: '/admin/questions', label: 'nav.admin.questions', icon: '❓' },
       { to: '/admin/sources', label: 'nav.admin.sourceExams', icon: '📄' },
       { to: '/admin/mindmaps', label: 'nav.admin.mindmaps', icon: '🧠' },
+      { to: '/admin/ressources', label: 'nav.admin.resources', icon: '📚' },
     ],
   },
   {

@@ -8,6 +8,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Component
@@ -37,5 +38,15 @@ public class S3MediaStorage implements MediaStorage {
                 .contentType(contentType)
                 .build(),
             RequestBody.fromBytes(bytes));
+    }
+
+    @Override
+    public void delete(String key) {
+        // S3 DeleteObject is already idempotent — deleting a missing key succeeds — so
+        // there is nothing to swallow here.
+        s3Client.deleteObject(DeleteObjectRequest.builder()
+            .bucket(properties.getBucket())
+            .key(key)
+            .build());
     }
 }

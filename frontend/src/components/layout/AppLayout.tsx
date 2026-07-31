@@ -36,6 +36,7 @@ const NAV_SECTIONS: NavSection[] = [
       { to: '/app/sessions/entrainement', label: 'nav.sessionsEntrainement', icon: '📝' },
       { to: '/app/sessions/examens', label: 'nav.sessionsExamens', icon: '🎓' },
       { to: '/app/mindmaps', label: 'nav.mindmaps', icon: '🧠' },
+      { to: '/app/cours', label: 'nav.cours', icon: '📚' },
     ],
   },
   {

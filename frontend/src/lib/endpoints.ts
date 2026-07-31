@@ -9,6 +9,7 @@ import {
   labelSchema,
   meSchema,
   mindmapSchema,
+  moduleResourcesSchema,
   moduleSchema,
   noteSchema,
   notificationSchema,
@@ -245,3 +246,9 @@ export const changePassword = (currentPassword: string, newPassword: string) =>
 
 export const deleteAccount = (password: string) =>
   api.delete('/api/users/me', { data: { password } });
+
+// --- Free study library (authenticated, no subscription required) ------
+export const fetchResourceYears = () => apiGet('/api/resources/years', z.array(z.number()));
+
+export const fetchResources = (studyYear: number) =>
+  apiGet(`/api/resources?studyYear=${studyYear}`, z.array(moduleResourcesSchema));

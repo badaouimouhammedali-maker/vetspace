@@ -362,9 +362,16 @@ class AdminCatalogIntegrationTest {
 
         final List<Upload> uploads = new CopyOnWriteArrayList<>();
 
+        final List<String> deleted = new CopyOnWriteArrayList<>();
+
         @Override
         public void put(String key, byte[] bytes, String contentType) {
             uploads.add(new Upload(key, bytes.length, contentType));
+        }
+
+        @Override
+        public void delete(String key) {
+            deleted.add(key);
         }
     }
 }

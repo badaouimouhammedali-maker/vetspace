@@ -12,6 +12,18 @@ Nothing has been released publicly yet, so everything to date sits under
 
 ### Added
 
+- **Free study-resource library.** Study material — PDFs and images attached to a module
+  — is now free to any logged-in student, while the QCM bank stays behind the
+  subscription. Students get `/app/cours`: year selector defaulting to their own year,
+  module accordion, title search, inline PDF preview with a download fallback, and the
+  mindmap lightbox for images. Admins get `/admin/ressources`: drag-and-drop upload with
+  progress, publish toggle, reorder, delete, and per-module + total byte counts so R2
+  usage is visible where the uploading happens. Uploads are typed by **magic bytes**
+  (a `.pdf` whose bytes are `MZ` is rejected and never reaches storage), stored under a
+  random `resources/{uuid}.{ext}` key, and deleting a resource deletes the R2 object too.
+  **Note:** the 25 MB limit (`RESOURCE_MAX_FILE_SIZE_MB`) cannot be reached while the API
+  is proxied through Vercel, whose edge caps request bodies at ~4.5 MB — see docs/deploy.md.
+
 - **Mail** — `MAIL_MODE=brevo-api`: delivery through Brevo's HTTPS API (port 443) instead
   of SMTP, for platforms that block outbound SMTP entirely — Railway's free tier
   black-holes ports 25/465/587, so a perfectly correct `smtp-relay.brevo.com:587`

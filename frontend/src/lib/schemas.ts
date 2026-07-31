@@ -119,6 +119,48 @@ export type Label = z.infer<typeof labelSchema>;
 export const countSchema = z.object({ count: z.number() });
 
 // ---------------------------------------------------------------------
+// Free study library
+// ---------------------------------------------------------------------
+
+export const fileTypeSchema = z.enum(['PDF', 'IMAGE']);
+export type FileType = z.infer<typeof fileTypeSchema>;
+
+export const resourceSchema = z.object({
+  id: z.string().uuid(),
+  moduleId: z.string().uuid(),
+  moduleName: z.string(),
+  studyYear: z.number(),
+  title: z.string(),
+  description: z.string().nullable(),
+  fileUrl: z.string(),
+  fileType: fileTypeSchema,
+  fileSizeBytes: z.number(),
+  position: z.number(),
+  published: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type Resource = z.infer<typeof resourceSchema>;
+
+export const moduleResourcesSchema = z.object({
+  moduleId: z.string().uuid(),
+  moduleName: z.string(),
+  studyYear: z.number(),
+  modulePosition: z.number(),
+  resources: z.array(resourceSchema),
+});
+export type ModuleResources = z.infer<typeof moduleResourcesSchema>;
+
+export const moduleResourceSummarySchema = z.object({
+  moduleId: z.string().uuid(),
+  moduleName: z.string(),
+  studyYear: z.number(),
+  resourceCount: z.number(),
+  totalBytes: z.number(),
+});
+export type ModuleResourceSummary = z.infer<typeof moduleResourceSummarySchema>;
+
+// ---------------------------------------------------------------------
 // Sessions
 // ---------------------------------------------------------------------
 
