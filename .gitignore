@@ -28,3 +28,10 @@ coverage/
 e2e/results.json
 e2e/test-results/
 e2e/playwright-report/
+
+# Database dumps. These contain real user data — emails, password hashes,
+# activation codes. gate-restore-check.sh writes one into the repo root, and an
+# untracked file one `git add -A` away from a public remote is not a risk worth
+# carrying.
+prod-dump-*.sql.gz
+*.sql.gz

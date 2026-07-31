@@ -103,5 +103,8 @@ psql_s -tAc "SELECT table_name FROM information_schema.columns
              WHERE column_name='school_id' AND table_schema='public' ORDER BY 1;"
 
 echo
-echo "Done. The scratch container is removed automatically; $DUMP is kept —"
-echo "it contains production data, so delete it once you are finished."
+echo "Done. The scratch container is removed automatically."
+echo
+echo "$DUMP holds production data — real emails and password hashes. It is"
+echo "gitignored, but delete it when you are finished rather than leaving it around:"
+echo "    rm $DUMP"
