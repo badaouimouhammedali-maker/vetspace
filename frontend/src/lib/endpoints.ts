@@ -130,11 +130,9 @@ export const fetchPublicStats = () => apiGet('/api/public/stats', publicStatsSch
 
 // Abonnement -----------------------------------------------------------
 
-export const fetchPacks = (schoolId: string | null, studyYear: number | null) => {
+/** Packs are national: study year is the only filter left. */
+export const fetchPacks = (studyYear: number | null) => {
   const params = new URLSearchParams();
-  if (schoolId) {
-    params.set('schoolId', schoolId);
-  }
   if (studyYear != null) {
     params.set('studyYear', String(studyYear));
   }

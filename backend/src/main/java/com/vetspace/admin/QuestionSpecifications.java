@@ -55,12 +55,15 @@ public final class QuestionSpecifications {
         };
     }
 
-    /** Everything a student may see/count: published question in a published course in a published module of their school. */
-    public static Specification<Question> visibleToStudent(UUID schoolId) {
+    /**
+     * Everything a student may see/count: a published question in a published course in a
+     * published module. Content is national, so published is the whole test — there is no
+     * school leg any more.
+     */
+    public static Specification<Question> visibleToStudent() {
         return (root, query, cb) -> cb.and(
             cb.isTrue(root.get("published")),
             cb.isTrue(root.get("course").get("published")),
-            cb.isTrue(root.get("course").get("module").get("published")),
-            cb.equal(root.get("course").get("module").get("school").get("id"), schoolId));
+            cb.isTrue(root.get("course").get("module").get("published")));
     }
 }

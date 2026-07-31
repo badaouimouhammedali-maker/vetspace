@@ -19,8 +19,18 @@ public final class AdminDtos {
         long sessionsToday,
         long activeSubscriptions,
         long openSignals,
-        List<RegistrationDto> latestRegistrations
+        List<RegistrationDto> latestRegistrations,
+        List<SchoolBreakdownDto> studentsBySchool
     ) {
+    }
+
+    /**
+     * Students per école. Content is national, so this is the one place the field still
+     * does work: it tells the team where their students actually are.
+     *
+     * @param schoolName null for the bucket of students with no école recorded
+     */
+    public record SchoolBreakdownDto(UUID schoolId, String schoolName, long students) {
     }
 
     public record RegistrationDto(UUID id, String username, String email, String fullName,

@@ -125,7 +125,7 @@ public class DevDataSeeder implements ApplicationRunner {
             .build());
 
         Module module = moduleRepository.save(Module.builder()
-            .school(school).studyYear(STUDY_YEAR).name("Anatomie").position(1).published(true).build());
+            .studyYear(STUDY_YEAR).name("Anatomie").position(1).published(true).build());
         Course osteologie = courseRepository.save(Course.builder()
             .module(module).name("Ostéologie").position(1).published(true).freePreview(true).build());
         Course arthrologie = courseRepository.save(Course.builder()
@@ -143,7 +143,6 @@ public class DevDataSeeder implements ApplicationRunner {
             .build());
 
         Pack pack = packRepository.save(Pack.builder()
-            .school(school)
             .studyYear(STUDY_YEAR)
             .name("Pack 3e année — 2026/2027")
             .academicYear("2026-2027")

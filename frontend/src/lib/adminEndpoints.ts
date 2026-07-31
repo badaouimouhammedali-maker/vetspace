@@ -49,14 +49,13 @@ export const deleteSchool = (id: string) => api.delete(`/api/admin/schools/${id}
 export const fetchAdminModules = () =>
   apiGet(`/api/admin/modules?size=${ALL}`, pageSchema(adminModuleSchema)).then((p) => p.content);
 export const createModule = (body: {
-  schoolId: string;
   studyYear: number;
   name: string;
   published: boolean;
 }) => apiPost('/api/admin/modules', body, adminModuleSchema);
 export const updateModule = (
   id: string,
-  body: { schoolId: string; studyYear: number; name: string; published: boolean },
+  body: { studyYear: number; name: string; published: boolean },
 ): Promise<AdminModule> =>
   api.put(`/api/admin/modules/${id}`, body).then((r) => adminModuleSchema.parse(r.data));
 export const deleteModule = (id: string) => api.delete(`/api/admin/modules/${id}`);
@@ -89,14 +88,13 @@ export const reorderCourses = (orderedIds: string[]) =>
 export const fetchAdminSourceExams = () =>
   apiGet(`/api/admin/source-exams?size=${ALL}`, pageSchema(adminSourceExamSchema)).then((p) => p.content);
 export const createSourceExam = (body: {
-  schoolId: string;
   label: string;
   year: number;
   examType: ExamType;
 }) => apiPost('/api/admin/source-exams', body, adminSourceExamSchema);
 export const updateSourceExam = (
   id: string,
-  body: { schoolId: string; label: string; year: number; examType: ExamType },
+  body: { label: string; year: number; examType: ExamType },
 ): Promise<AdminSourceExam> =>
   api.put(`/api/admin/source-exams/${id}`, body).then((r) => adminSourceExamSchema.parse(r.data));
 export const deleteSourceExam = (id: string) => api.delete(`/api/admin/source-exams/${id}`);
@@ -123,7 +121,6 @@ export const publishMindmap = (id: string, published: boolean) =>
 export const fetchAdminPacks = () =>
   apiGet(`/api/admin/packs?size=${ALL}`, pageSchema(adminPackSchema)).then((p) => p.content);
 export interface PackInput {
-  schoolId: string;
   studyYear: number | null;
   name: string;
   academicYear: string;

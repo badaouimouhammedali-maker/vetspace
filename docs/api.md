@@ -89,7 +89,10 @@ Request body:
 - `recaptchaToken` is verified server-side against `RECAPTCHA_SECRET`
   unless `RECAPTCHA_ENABLED=false` (set in `dev`/tests).
 - Duplicate `email` (case-insensitive) or `username` → `409 Conflict`.
-- Unknown `schoolId` → `400 Bad Request`.
+- `schoolId` is required and must exist (`400` otherwise). It is stored on the
+  user as a **profile/analytics field only** — since content went national it
+  scopes no content and no access. See the admin overview's
+  `studentsBySchool` breakdown.
 
 Response: `201 Created`
 ```json
@@ -195,15 +198,15 @@ Requires `Authorization: Bearer <accessToken>`; `401` without one.
 
 - `GET /api/schools` — **public** (the signup form needs it). Returns
   `[{id, name, slug}]`, sorted by name, unpaged.
-- `GET /api/modules?studyYear=N` — authenticated. For **students**:
-  published modules of **their own school** only. For **ADMIN/TEACHER**:
-  all modules of that study year across schools. Ordered by position.
+- `GET /api/modules?studyYear=N` — authenticated. **Content is national**:
+  every student sees the same modules for that study year, whatever their
+  école. Students get published modules only; ADMIN/TEACHER also see
+  unpublished ones. Ordered by position.
 - `GET /api/modules/{id}/courses` — authenticated. For students: published
-  courses only, and the module itself must be published and belong to the
-  student's school — otherwise `404` (indistinguishable from nonexistent).
-  ADMIN/TEACHER see all courses of any module.
+  courses of a published module — otherwise `404` (indistinguishable from
+  nonexistent). ADMIN/TEACHER see all courses of any module.
 - `GET /api/source-exams` — authenticated. Session-builder helper: the
-  caller's school's source exams (staff: all), newest year first.
+  national source-exam list, newest year first.
 
 ### Admin API
 
@@ -244,8 +247,10 @@ Extra operations:
 
 Notes:
 - On create, `position` is assigned automatically (appended at the end of
-  the module's school+studyYear group / course's module); use `reorder` to
+  the module's studyYear group / course's module); use `reorder` to
   change it.
+- Module create/update require `(studyYear, name)` to be free — duplicates
+  answer `409 Conflict`. Packs are unique on `(studyYear, academicYear)`.
 - Module/course/mindmap requests take `published` directly, so create can
   publish immediately.
 
@@ -315,8 +320,8 @@ Session-builder helper: how many questions match the filters.
 (all optional). Returns `{ "count": N }`.
 
 - **Students** count only published questions in published courses of
-  published modules **of their own school**. Subscription gating is not
-  yet applied (comes with the session engine).
+  published modules. Content is national, so no school filter applies.
+  Subscription gating is not yet applied (comes with the session engine).
 - ADMIN/TEACHER count everything matching the filters.
 
 Students never receive proposition truth values or explanations outside
@@ -349,9 +354,11 @@ published mindmaps. Result is memoized server-side for 60s.
 ### Packs & activation codes
 
 #### `GET /api/packs` — **public** (pricing page)
-`?schoolId=&studyYear=` (both optional). Active, unexpired packs only:
-`[{id, schoolId, studyYear, name, academicYear, priceDa, expiresAt}]`.
-`studyYear: null` = résidanat-style pack (any year).
+`?studyYear=` (optional). Active, unexpired packs only:
+`[{id, studyYear, name, academicYear, priceDa, expiresAt}]`.
+`studyYear: null` = résidanat-style pack (any year). Packs are national;
+the former `schoolId` filter and field are gone (an unknown query
+parameter is ignored rather than rejected).
 
 #### `POST /api/admin/codes` (ADMIN only) → `201`
 Body `{"packId": "<uuid>", "count": 1–500, "maxUses": 1}` (`maxUses`
@@ -398,8 +405,8 @@ count every attempt) → `429`.
 
 Session creation/play (and repeat), `GET /api/questions/count`, and the
 student mindmap endpoints require an **active subscription matching the
-student's school + study year** (a pack with `studyYear: null` matches any
-year). ADMIN/TEACHER are exempt. Failure:
+student's study year** (a pack with `studyYear: null` matches any year).
+The student's école plays no part. ADMIN/TEACHER are exempt. Failure:
 
 ```json
 { "error": "SUBSCRIPTION_REQUIRED", "message": "…", "timestamp": "…" }
@@ -413,8 +420,8 @@ stays playable/answerable; a second session, paid-content filters, or
 repeat all return `SUBSCRIPTION_REQUIRED`.
 
 ### Mindmaps (student-facing, subscription-gated)
-- `GET /api/mindmaps?courseId=` — published mindmaps of a
-  published/own-school course (staff: everything).
+- `GET /api/mindmaps?courseId=` — published mindmaps of a published
+  course (staff: everything).
 - `GET /api/mindmaps/{id}` — same visibility rules; invisible = `404`.
 
 ### Sessions (authenticated, owner-only)
@@ -440,7 +447,7 @@ behaves exactly like a nonexistent one (`404`, never `403`).
 }
 ```
 Selects **random** matching questions (student visibility rules: published
-question/course/module, own school), capped at `questionCount`; `400` if
+question/course/module), capped at `questionCount`; `400` if
 nothing matches. `onlyUnseen` excludes questions from any of the user's
 previous sessions. Filters are stored (jsonb) for `repeat SAME_FILTERS`.
 Missing title → auto `"<Module> (dd/MM/yyyy HH:mm)"` (first module of the
@@ -519,9 +526,9 @@ Removes the session and (via DB cascade) its question rows and answers.
   oldest first): `{date, juste, fausse, consultees}` per day. A question's
   bucket is its **last** answer/consult time.
 - `GET /api/stats/overview` — dashboard payload: `bank` totals
-  (published questions / source exams / published mindmaps — school-scoped
-  for students, global for staff), `lastSession` (same shape as the
-  session stats rows, `null` if none) and `activeSubscriptions`.
+  (published questions / source exams / published mindmaps — national, the
+  same for every student), `lastSession` (same shape as the session stats
+  rows, `null` if none) and `activeSubscriptions`.
 
 ### Labels (authenticated, own only — foreign ids read as 404)
 
@@ -582,8 +589,14 @@ subject, body, createdAt}], …}`. Replies happen out-of-band by email.
 
 - `GET /api/admin/overview` (ADMIN/TEACHER) → `{students, questions,
   sessionsToday, activeSubscriptions, openSignals, latestRegistrations:
-  [{id, username, email, fullName, schoolName?, studyYear?, createdAt}]}`
-  (8 most recent student registrations).
+  [{id, username, email, fullName, schoolName?, studyYear?, createdAt}],
+  studentsBySchool: [{schoolId, schoolName, students}]}`
+  (8 most recent student registrations, plus the per-école student
+  breakdown, biggest first). Schools with no students appear with `0`;
+  students whose école was never set appear as a trailing row with
+  `schoolId: null, schoolName: null`, so the parts add up to `students`.
+  This breakdown is the reason the école field is still collected —
+  it scopes no content.
 - `GET /api/admin/users?query=&page=&size=` (ADMIN/TEACHER) — student
   search (blank query = all), paged, newest first: `{content: [{id,
   username, email, fullName, role, status, schoolName?, studyYear?,

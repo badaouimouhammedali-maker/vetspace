@@ -16,8 +16,8 @@ export function AbonnementPage() {
   const [success, setSuccess] = useState<string | null>(null);
 
   const packs = useQuery({
-    queryKey: ['packs', user?.schoolId, user?.studyYear],
-    queryFn: () => fetchPacks(user?.schoolId ?? null, user?.studyYear ?? null),
+    queryKey: ['packs', user?.studyYear],
+    queryFn: () => fetchPacks(user?.studyYear ?? null),
   });
 
   const redeem = useMutation({

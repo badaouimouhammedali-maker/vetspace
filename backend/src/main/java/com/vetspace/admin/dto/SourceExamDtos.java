@@ -14,13 +14,12 @@ public final class SourceExamDtos {
     }
 
     public record SourceExamRequest(
-        @NotNull UUID schoolId,
         @NotBlank @Size(max = 255) String label,
         @NotNull @Min(1900) @Max(2200) Integer year,
         @NotNull ExamType examType
     ) {
     }
 
-    public record SourceExamDto(UUID id, UUID schoolId, String label, Integer year, ExamType examType) {
+    public record SourceExamDto(UUID id, String label, Integer year, ExamType examType) {
     }
 }

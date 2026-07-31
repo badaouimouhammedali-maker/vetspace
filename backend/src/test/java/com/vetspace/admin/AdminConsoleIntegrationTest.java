@@ -53,6 +53,18 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @Testcontainers
 class AdminConsoleIntegrationTest {
 
+    /** Packs are unique on (study_year, academic_year) nationally; varchar(20). */
+    private static String uniqueAcademicYear() {
+        return "26/" + UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    /**
+     * Fresh per test method, not per class: modules are unique on (study_year, name)
+     * nationally, and setUp runs before every test — a class-level constant collides
+     * with itself on the second method.
+     */
+    private final String moduleName = "Anatomie " + UUID.randomUUID();
+
     @Container
     static final PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16");
 
@@ -95,7 +107,7 @@ class AdminConsoleIntegrationTest {
     void setUp() {
         school = schoolRepository.save(School.builder().name("ENSV").slug("ensv-" + UUID.randomUUID()).build());
         Module module = moduleRepository.save(Module.builder()
-            .school(school).studyYear(3).name("Anatomie").position(1).published(true).build());
+            .studyYear(3).name(moduleName).position(1).published(true).build());
         Course course = courseRepository.save(Course.builder()
             .module(module).name("Ostéologie").position(1).published(true).build());
         question = questionRepository.save(Question.builder()
@@ -117,7 +129,7 @@ class AdminConsoleIntegrationTest {
         User u = userRepository.save(user(Role.STUDENT, school, year, rawPassword));
         Instant expires = Instant.now().plus(365, ChronoUnit.DAYS);
         Pack pack = packRepository.save(Pack.builder()
-            .school(school).studyYear(year).name("Pack test").academicYear("2026-2027")
+            .studyYear(year).name("Pack test").academicYear(uniqueAcademicYear())
             .priceDa(1000).active(true).expiresAt(expires).build());
         ActivationCode code = activationCodeRepository.save(ActivationCode.builder()
             .pack(pack).codeHash("test-" + UUID.randomUUID()).maxUses(1).usedCount(1).revoked(false).build());
@@ -152,6 +164,22 @@ class AdminConsoleIntegrationTest {
             .andExpect(jsonPath("$.activeSubscriptions").value(greaterThanOrEqualTo(1)))
             .andExpect(jsonPath("$.openSignals").value(greaterThanOrEqualTo(0)))
             .andExpect(jsonPath("$.latestRegistrations[*].email", hasItem(student.getEmail())));
+    }
+
+    /**
+     * The breakdown is what keeps "école" earning its place on the signup form now that
+     * it scopes nothing: it is the one screen where the field does work.
+     */
+    @Test
+    void overviewBreaksStudentsDownBySchool() throws Exception {
+        mockMvc.perform(get("/api/admin/overview").header("Authorization", "Bearer " + adminToken))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.studentsBySchool").isArray())
+            // This test's own student belongs to `school`, so that row must be there and
+            // must count at least them.
+            .andExpect(jsonPath("$.studentsBySchool[?(@.schoolName == '" + school.getName() + "')]").exists())
+            .andExpect(jsonPath("$.studentsBySchool[?(@.schoolName == '" + school.getName() + "')].students")
+                .value(hasItem(greaterThanOrEqualTo(1))));
     }
 
     @Test

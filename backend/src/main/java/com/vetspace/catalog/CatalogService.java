@@ -23,8 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
- * Read-only catalog for the app's non-admin surfaces. Students only ever see published content
- * belonging to their own school; ADMIN/TEACHER see everything (they use these reads too).
+ * Read-only catalog for the app's non-admin surfaces. Content is national: students see
+ * every published module for their study year, whatever école they belong to.
+ * ADMIN/TEACHER additionally see unpublished content (they use these reads too).
  */
 @Service
 public class CatalogService {
@@ -59,18 +60,11 @@ public class CatalogService {
 
     public List<ModuleDto> listModules(UUID callerId, Integer studyYear) {
         User caller = requireUser(callerId);
-        List<Module> modules;
-        if (isStaff(caller)) {
-            modules = moduleRepository.findByStudyYearOrderByPositionAsc(studyYear);
-        } else {
-            if (caller.getSchool() == null) {
-                return List.of();
-            }
-            modules = moduleRepository.findBySchoolIdAndStudyYearAndPublishedTrueOrderByPositionAsc(
-                caller.getSchool().getId(), studyYear);
-        }
+        List<Module> modules = isStaff(caller)
+            ? moduleRepository.findByStudyYearOrderByPositionAsc(studyYear)
+            : moduleRepository.findByStudyYearAndPublishedTrueOrderByPositionAsc(studyYear);
         return modules.stream()
-            .map(m -> new ModuleDto(m.getId(), m.getSchool().getId(), m.getStudyYear(), m.getName(), m.getPosition(), m.isPublished()))
+            .map(m -> new ModuleDto(m.getId(), m.getStudyYear(), m.getName(), m.getPosition(), m.isPublished()))
             .toList();
     }
 
@@ -83,27 +77,21 @@ public class CatalogService {
             return courseRepository.findByModuleIdOrderByPositionAsc(moduleId).stream().map(this::toDto).toList();
         }
 
-        // Students: an unpublished module, or one belonging to another school, must be
-        // indistinguishable from a nonexistent one (404, never 403).
-        boolean ownSchool = caller.getSchool() != null && caller.getSchool().getId().equals(module.getSchool().getId());
-        if (!module.isPublished() || !ownSchool) {
+        // Students: an unpublished module must be indistinguishable from a nonexistent
+        // one (404, never 403). School is no longer part of the test — every published
+        // module is national.
+        if (!module.isPublished()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Module not found");
         }
         return courseRepository.findByModuleIdAndPublishedTrueOrderByPositionAsc(moduleId).stream().map(this::toDto).toList();
     }
 
-    /** Session-builder helper: the caller's school's source exams (staff: all). */
+    /** Session-builder helper: the national source-exam list, newest first. */
     public List<com.vetspace.admin.dto.SourceExamDtos.SourceExamDto> listSourceExams(UUID callerId) {
-        User caller = requireUser(callerId);
-        List<com.vetspace.domain.content.SourceExam> exams;
-        if (isStaff(caller) || caller.getSchool() == null) {
-            exams = sourceExamRepository.findAll();
-        } else {
-            exams = sourceExamRepository.findBySchoolIdOrderByYearDesc(caller.getSchool().getId());
-        }
-        return exams.stream()
+        requireUser(callerId);
+        return sourceExamRepository.findAllByOrderByYearDesc().stream()
             .map(e -> new com.vetspace.admin.dto.SourceExamDtos.SourceExamDto(
-                e.getId(), e.getSchool().getId(), e.getLabel(), e.getYear(), e.getExamType()))
+                e.getId(), e.getLabel(), e.getYear(), e.getExamType()))
             .toList();
     }
 
@@ -116,7 +104,7 @@ public class CatalogService {
             return mindmapRepository.findByCourseIdOrderByTitleAsc(courseId).stream().map(this::toDto).toList();
         }
         subscriptionGate.require(caller);
-        if (!isVisibleToStudent(caller, course)) {
+        if (!isVisibleToStudent(course)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found");
         }
         return mindmapRepository.findByCourseIdAndPublishedTrueOrderByTitleAsc(courseId).stream().map(this::toDto).toList();
@@ -130,17 +118,15 @@ public class CatalogService {
             return toDto(mindmap);
         }
         subscriptionGate.require(caller);
-        if (!mindmap.isPublished() || !isVisibleToStudent(caller, mindmap.getCourse())) {
+        if (!mindmap.isPublished() || !isVisibleToStudent(mindmap.getCourse())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Mindmap not found");
         }
         return toDto(mindmap);
     }
 
-    private boolean isVisibleToStudent(User caller, Course course) {
-        return course.isPublished()
-            && course.getModule().isPublished()
-            && caller.getSchool() != null
-            && caller.getSchool().getId().equals(course.getModule().getSchool().getId());
+    /** Published all the way up the chain is the whole visibility rule now. */
+    private boolean isVisibleToStudent(Course course) {
+        return course.isPublished() && course.getModule().isPublished();
     }
 
     private MindmapDto toDto(Mindmap m) {

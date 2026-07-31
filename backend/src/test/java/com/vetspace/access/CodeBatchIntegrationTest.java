@@ -40,6 +40,11 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @Testcontainers
 class CodeBatchIntegrationTest {
 
+    /** Packs are unique on (study_year, academic_year) nationally; varchar(20). */
+    private static String uniqueAcademicYear() {
+        return "26/" + UUID.randomUUID().toString().substring(0, 8);
+    }
+
     @Container
     static final PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16");
 
@@ -87,8 +92,8 @@ class CodeBatchIntegrationTest {
             .build());
         adminId = admin.getId();
         Pack pack = packRepository.save(Pack.builder()
-            .school(school).studyYear(3).name("Pack test " + UUID.randomUUID())
-            .academicYear("2026-2027").priceDa(3500).active(true)
+            .studyYear(3).name("Pack test " + UUID.randomUUID())
+            .academicYear(uniqueAcademicYear()).priceDa(3500).active(true)
             .expiresAt(Instant.now().plus(300, ChronoUnit.DAYS).truncatedTo(ChronoUnit.MICROS))
             .build());
         packId = pack.getId();

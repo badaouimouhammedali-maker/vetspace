@@ -121,19 +121,19 @@ public class StatsService {
         return new OverviewDto(bank, lastSession, subscriptions);
     }
 
+    /**
+     * The question bank is national, so every student sees the same totals. Staff still
+     * count with the looser "published question" rule rather than the student rule,
+     * which also requires the course and module to be published.
+     */
     private BankTotalsDto bankTotals(User user) {
         boolean staff = user.getRole() == Role.ADMIN || user.getRole() == Role.TEACHER;
-        if (staff || user.getSchool() == null) {
-            return new BankTotalsDto(
-                questionRepository.count(QuestionSpecifications.published(true)),
-                sourceExamRepository.count(),
-                mindmapRepository.countByPublishedTrue());
-        }
-        UUID schoolId = user.getSchool().getId();
         return new BankTotalsDto(
-            questionRepository.count(QuestionSpecifications.visibleToStudent(schoolId)),
-            sourceExamRepository.countBySchoolId(schoolId),
-            mindmapRepository.countPublishedForSchool(schoolId));
+            questionRepository.count(staff
+                ? QuestionSpecifications.published(true)
+                : QuestionSpecifications.visibleToStudent()),
+            sourceExamRepository.count(),
+            mindmapRepository.countByPublishedTrue());
     }
 
     private SessionStatsDto toSessionStats(Session s, SessionProgress p) {

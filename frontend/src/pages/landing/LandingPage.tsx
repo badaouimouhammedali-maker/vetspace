@@ -3,8 +3,8 @@ import { Button, CardGridSkeleton, Disclosure } from '../../components/ui';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { fetchPacks, fetchPublicStats, fetchSchools } from '../../lib/endpoints';
-import type { PublicPack, School } from '../../lib/schemas';
+import { fetchPacks, fetchPublicStats } from '../../lib/endpoints';
+import type { PublicPack } from '../../lib/schemas';
 
 const NAV = [
   { href: '#accueil', label: 'Accueil' },
@@ -341,18 +341,13 @@ function Specs() {
 // ---------------------------------------------------------------------
 
 function Pricing() {
-  const packs = useQuery({ queryKey: ['public', 'packs'], queryFn: () => fetchPacks(null, null) });
-  const schools = useQuery({ queryKey: ['public', 'schools'], queryFn: fetchSchools });
+  const packs = useQuery({ queryKey: ['public', 'packs'], queryFn: () => fetchPacks(null) });
 
-  const schoolName = (id: string) =>
-    (schools.data ?? []).find((s: School) => s.id === id)?.name ?? 'École';
-
-  const grouped = new Map<string, PublicPack[]>();
-  (packs.data ?? []).forEach((p) => {
-    const list = grouped.get(p.schoolId) ?? [];
-    list.push(p);
-    grouped.set(p.schoolId, list);
-  });
+  // Packs are national: one flat grid ordered by study year, all-years packs last.
+  // Grouping by école used to be the organising idea here and no longer means anything.
+  const sorted: PublicPack[] = [...(packs.data ?? [])].sort(
+    (a, b) => (a.studyYear ?? 99) - (b.studyYear ?? 99) || a.name.localeCompare(b.name, 'fr'),
+  );
 
   return (
     <section id="abonnements" className="scroll-mt-16 px-4 py-20 lg:px-8">
@@ -360,51 +355,44 @@ function Pricing() {
         <SectionHeading
           eyebrow="Abonnements"
           title="Choisissez votre pack"
-          subtitle="Un accès complet jusqu'à la fin de l'année universitaire, par école et par année d'étude."
+          subtitle="Un accès complet jusqu'à la fin de l'année universitaire, pour votre année d'étude."
         />
 
         {packs.isLoading ? (
           <div className="mt-10">
             <CardGridSkeleton count={3} />
           </div>
-        ) : grouped.size === 0 ? (
+        ) : sorted.length === 0 ? (
           <p className="mt-10 text-center text-brand-gray">
             Les offres seront bientôt disponibles. Créez votre compte pour être prévenu.
           </p>
         ) : (
-          <div className="mt-12 space-y-12">
-            {[...grouped.entries()].map(([schoolId, list]) => (
-              <div key={schoolId}>
-                <h3 className="mb-5 text-lg font-bold text-brand-navy">{schoolName(schoolId)}</h3>
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {list.map((p) => (
-                    <div
-                      key={p.id}
-                      className="flex flex-col rounded-lg border border-gray-100 bg-surface p-6 shadow-subtle"
-                    >
-                      <h4 className="text-base font-bold text-brand-navy">{p.name}</h4>
-                      <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-brand-gray">
-                        {p.studyYear == null ? 'Toutes les années' : `Année ${p.studyYear}`} ·{' '}
-                        {p.academicYear}
-                      </p>
-                      <div className="mt-4 flex items-baseline gap-1">
-                        <span className="text-display text-brand-green">
-                          {p.priceDa.toLocaleString('fr-FR')}
-                        </span>
-                        <span className="font-semibold text-brand-gray">DA</span>
-                      </div>
-                      <p className="mt-1 text-sm text-brand-gray">
-                        Jusqu'à la fin de l'année universitaire
-                      </p>
-                      <Link
-                        to="/register"
-                        className="mt-5 rounded-lg bg-brand-green px-4 py-2.5 text-center text-sm font-bold text-white transition hover:bg-brand-green-hover"
-                      >
-                        Choisir ce pack
-                      </Link>
-                    </div>
-                  ))}
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {sorted.map((p) => (
+              <div
+                key={p.id}
+                className="flex flex-col rounded-lg border border-gray-100 bg-surface p-6 shadow-subtle"
+              >
+                <h4 className="text-base font-bold text-brand-navy">{p.name}</h4>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+                  {p.studyYear == null ? 'Toutes les années' : `Année ${p.studyYear}`} ·{' '}
+                  {p.academicYear}
+                </p>
+                <div className="mt-4 flex items-baseline gap-1">
+                  <span className="text-display text-brand-green">
+                    {p.priceDa.toLocaleString('fr-FR')}
+                  </span>
+                  <span className="font-semibold text-brand-gray">DA</span>
                 </div>
+                <p className="mt-1 text-sm text-brand-gray">
+                  Jusqu'à la fin de l'année universitaire
+                </p>
+                <Link
+                  to="/register"
+                  className="mt-5 rounded-lg bg-brand-green px-4 py-2.5 text-center text-sm font-bold text-white transition hover:bg-brand-green-hover"
+                >
+                  Choisir ce pack
+                </Link>
               </div>
             ))}
           </div>

@@ -224,7 +224,6 @@ class SchemaIntegrityDataJpaTest {
     private Course persistCourse() {
         School school = persistSchool();
         Module module = moduleRepository.saveAndFlush(Module.builder()
-            .school(school)
             .studyYear(3)
             .name("Anatomie")
             .position(0)
@@ -283,7 +282,6 @@ class SchemaIntegrityDataJpaTest {
 
     private Pack newPack(School school) {
         return Pack.builder()
-            .school(school)
             .name("Pack 3e année")
             .academicYear("2026-2027")
             .priceDa(3500)

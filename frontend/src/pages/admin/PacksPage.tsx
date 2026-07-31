@@ -8,7 +8,6 @@ import {
   createPack,
   deletePack,
   fetchAdminPacks,
-  fetchAdminSchools,
   fetchCodes,
   generateCodes,
   revokeCode,
@@ -24,11 +23,9 @@ export function PacksPage() {
   const qc = useQueryClient();
   const { toast } = useToast();
   const packs = useQuery({ queryKey: ['admin', 'packs'], queryFn: fetchAdminPacks });
-  const schools = useQuery({ queryKey: ['admin', 'schools'], queryFn: fetchAdminSchools });
   const [packModal, setPackModal] = useState<AdminPack | 'new' | null>(null);
   const [genFor, setGenFor] = useState<AdminPack | null>(null);
 
-  const schoolName = (id: string) => schools.data?.find((s) => s.id === id)?.name ?? '—';
 
   const del = useMutation({
     mutationFn: deletePack,
@@ -59,7 +56,6 @@ export function PacksPage() {
             <thead>
               <tr className="border-b border-gray-100 text-left text-xs uppercase text-brand-gray">
                 <th className="px-4 py-3 font-semibold">Nom</th>
-                <th className="px-4 py-3 font-semibold">École</th>
                 <th className="px-4 py-3 font-semibold">Année</th>
                 <th className="px-4 py-3 font-semibold">Prix</th>
                 <th className="px-4 py-3 font-semibold">Expire</th>
@@ -76,7 +72,6 @@ export function PacksPage() {
                       {p.academicYear}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-brand-gray">{schoolName(p.schoolId)}</td>
                   <td className="px-4 py-3 text-brand-gray">
                     {p.studyYear == null ? 'Toutes' : `A${p.studyYear}`}
                   </td>
@@ -119,7 +114,6 @@ export function PacksPage() {
       {packModal ? (
         <PackModal
           pack={packModal === 'new' ? null : packModal}
-          schools={(schools.data ?? []).map((s) => ({ id: s.id, name: s.name }))}
           onClose={() => setPackModal(null)}
           onSaved={() => {
             setPackModal(null);
@@ -244,17 +238,14 @@ function CodesSection({ packs }: { packs: AdminPack[] }) {
 
 function PackModal({
   pack,
-  schools,
   onClose,
   onSaved,
 }: {
   pack: AdminPack | null;
-  schools: { id: string; name: string }[];
   onClose: () => void;
   onSaved: () => void;
 }) {
   const { toast } = useToast();
-  const [schoolId, setSchoolId] = useState(pack?.schoolId ?? schools[0]?.id ?? '');
   const [studyYear, setStudyYear] = useState<number | null>(pack?.studyYear ?? null);
   const [name, setName] = useState(pack?.name ?? '');
   const [academicYear, setAcademicYear] = useState(pack?.academicYear ?? '');
@@ -269,7 +260,6 @@ function PackModal({
   const save = useMutation({
     mutationFn: () => {
       const body: PackInput = {
-        schoolId,
         studyYear,
         name,
         academicYear,
@@ -295,15 +285,6 @@ function PackModal({
         }}
         className="space-y-4"
       >
-        <Field label="École" htmlFor="pk-school">
-          <Select id="pk-school" value={schoolId} onChange={(e) => setSchoolId(e.target.value)}>
-            {schools.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </Select>
-        </Field>
         <Field label="Année d'étude" htmlFor="pk-year">
           <Select
             id="pk-year"

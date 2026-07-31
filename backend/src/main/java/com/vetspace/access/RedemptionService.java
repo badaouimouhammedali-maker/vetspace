@@ -72,15 +72,14 @@ public class RedemptionService {
         return new RedeemResponse(subscription.getId(), pack.getName(), subscription.getStartsAt(), subscription.getEndsAt());
     }
 
-    /** Public pricing data: active, unexpired packs only. */
-    public List<PublicPackDto> publicPacks(UUID schoolId, Integer studyYear) {
+    /** Public pricing data: active, unexpired packs only. Packs are national — study year is the only filter. */
+    public List<PublicPackDto> publicPacks(Integer studyYear) {
         Specification<Pack> spec = Specification.allOf(
             (root, query, cb) -> cb.isTrue(root.get("active")),
             (root, query, cb) -> cb.greaterThan(root.get("expiresAt"), Instant.now()),
-            schoolId == null ? null : (root, query, cb) -> cb.equal(root.get("school").get("id"), schoolId),
             studyYear == null ? null : (root, query, cb) -> cb.equal(root.get("studyYear"), studyYear));
         return packRepository.findAll(spec, Sort.by("name")).stream()
-            .map(p -> new PublicPackDto(p.getId(), p.getSchool().getId(), p.getStudyYear(), p.getName(),
+            .map(p -> new PublicPackDto(p.getId(), p.getStudyYear(), p.getName(),
                 p.getAcademicYear(), p.getPriceDa(), p.getExpiresAt()))
             .toList();
     }

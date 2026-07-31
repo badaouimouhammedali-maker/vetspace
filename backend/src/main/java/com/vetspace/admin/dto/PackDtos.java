@@ -15,7 +15,6 @@ public final class PackDtos {
     }
 
     public record PackRequest(
-        @NotNull UUID schoolId,
         @Min(1) @Max(10) Integer studyYear,
         @NotBlank @Size(max = 255) String name,
         @NotBlank @Size(max = 20) String academicYear,
@@ -25,7 +24,7 @@ public final class PackDtos {
     ) {
     }
 
-    public record PackDto(UUID id, UUID schoolId, Integer studyYear, String name, String academicYear,
+    public record PackDto(UUID id, Integer studyYear, String name, String academicYear,
                            Integer priceDa, boolean active, Instant expiresAt) {
     }
 }

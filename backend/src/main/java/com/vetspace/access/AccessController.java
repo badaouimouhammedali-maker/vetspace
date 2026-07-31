@@ -28,11 +28,17 @@ public class AccessController {
         this.redeemRateLimiter = redeemRateLimiter;
     }
 
-    /** Public: the marketing/pricing page reads this without an account. */
+    /**
+     * Public: the marketing/pricing page reads this without an account.
+     *
+     * <p>The {@code schoolId} parameter is gone with national content. An old client
+     * still sending it is answered with the national list rather than a 400 — Spring
+     * ignores unknown query parameters, and a pricing page failing during the window
+     * between the API and SPA deploys would be worse than one extra pack on screen.
+     */
     @GetMapping("/packs")
-    public List<PublicPackDto> packs(@RequestParam(required = false) UUID schoolId,
-                                      @RequestParam(required = false) Integer studyYear) {
-        return redemptionService.publicPacks(schoolId, studyYear);
+    public List<PublicPackDto> packs(@RequestParam(required = false) Integer studyYear) {
+        return redemptionService.publicPacks(studyYear);
     }
 
     @PostMapping("/codes/redeem")

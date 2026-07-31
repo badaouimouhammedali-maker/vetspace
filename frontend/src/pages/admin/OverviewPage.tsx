@@ -46,6 +46,47 @@ export function OverviewPage() {
             ))}
           </div>
 
+          {/* École no longer scopes any content, so this is where the field earns its
+              keep: it tells the team where their students actually are. */}
+          <h2 className="mb-3 mt-8 text-lg font-bold text-brand-navy">Répartition par école</h2>
+          <Card className="p-0">
+            {(overview.data.studentsBySchool ?? []).length === 0 ? (
+              <div className="p-5">
+                <EmptyState icon="🏫" title="Aucun étudiant inscrit" compact />
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-50">
+                {(overview.data.studentsBySchool ?? []).map((row) => {
+                  const share =
+                    overview.data.students > 0
+                      ? Math.round((row.students / overview.data.students) * 100)
+                      : 0;
+                  return (
+                    <li
+                      key={row.schoolId ?? 'unassigned'}
+                      className="flex items-center gap-4 px-4 py-3"
+                    >
+                      <span className="w-48 shrink-0 truncate text-sm font-semibold text-brand-navy">
+                        {row.schoolName ?? 'École non renseignée'}
+                      </span>
+                      {/* A bar makes the distribution readable at a glance; the number
+                          stays because a bar alone cannot be quoted in a meeting. */}
+                      <span className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-gray-100">
+                        <span
+                          className="block h-full rounded-full bg-brand-green"
+                          style={{ width: `${share}%` }}
+                        />
+                      </span>
+                      <span className="w-24 shrink-0 text-right text-sm text-brand-gray">
+                        {row.students} <span className="text-xs">({share}%)</span>
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </Card>
+
           <h2 className="mb-3 mt-8 text-lg font-bold text-brand-navy">Dernières inscriptions</h2>
           <Card className="overflow-x-auto p-0">
             {overview.data.latestRegistrations.length === 0 ? (

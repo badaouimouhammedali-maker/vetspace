@@ -147,13 +147,13 @@ class AdminCatalogIntegrationTest {
     @Test
     void teacherCanManageCatalogButNotPacks() throws Exception {
         String moduleBody = objectMapper.writeValueAsString(Map.of(
-            "schoolId", school.getId().toString(), "studyYear", 2, "name", "Physio", "published", false));
+            "studyYear", 2, "name", "Physio", "published", false));
         mockMvc.perform(post("/api/admin/modules").header("Authorization", "Bearer " + teacherToken)
                 .contentType(MediaType.APPLICATION_JSON).content(moduleBody))
             .andExpect(status().isCreated());
 
         String packBody = objectMapper.writeValueAsString(Map.of(
-            "schoolId", school.getId().toString(), "studyYear", 2, "name", "Pack", "academicYear", "2026-2027",
+            "studyYear", 2, "name", "Pack", "academicYear", "2026-2027",
             "priceDa", 3000, "active", true, "expiresAt", "2027-09-01T00:00:00Z"));
         mockMvc.perform(post("/api/admin/packs").header("Authorization", "Bearer " + teacherToken)
                 .contentType(MediaType.APPLICATION_JSON).content(packBody))
@@ -168,10 +168,42 @@ class AdminCatalogIntegrationTest {
     // Publish visibility
     // ---------------------------------------------------------------
 
+    /**
+     * National uniqueness: two modules cannot share (study_year, name) any more. Without
+     * this check the database answers with a constraint violation, which the admin sees
+     * as an unexplained 500.
+     */
+    @Test
+    void duplicateModuleNameForTheSameYearIsRejected() throws Exception {
+        String name = "Physiologie " + UUID.randomUUID();
+        String body = objectMapper.writeValueAsString(Map.of(
+            "studyYear", 6, "name", name, "published", false));
+
+        mockMvc.perform(post("/api/admin/modules").header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON).content(body))
+            .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/admin/modules").header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON).content(body))
+            .andExpect(status().isConflict());
+
+        // The same name in another year stays legal — year is the scope now.
+        String otherYear = objectMapper.writeValueAsString(Map.of(
+            "studyYear", 7, "name", name, "published", false));
+        mockMvc.perform(post("/api/admin/modules").header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON).content(otherYear))
+            .andExpect(status().isCreated());
+    }
+
     @Test
     void studentsSeeOnlyPublishedModulesAndCourses() throws Exception {
-        Module published = moduleRepository.save(module("Anatomie", 4, true));
-        Module unpublished = moduleRepository.save(module("Brouillon", 4, false));
+        // Unique names, and presence assertions rather than list sizes: the catalogue is
+        // national now, so /api/modules?studyYear=4 also returns whatever every other
+        // test class seeded for that year.
+        String publishedName = "Anatomie " + UUID.randomUUID();
+        String unpublishedName = "Brouillon " + UUID.randomUUID();
+        Module published = moduleRepository.save(module(publishedName, 4, true));
+        Module unpublished = moduleRepository.save(module(unpublishedName, 4, false));
         courseRepository.save(course(published, "Ostéologie", 1, true));
         courseRepository.save(course(published, "Brouillon cours", 2, false));
 
@@ -180,14 +212,14 @@ class AdminCatalogIntegrationTest {
             .andExpect(status().isOk())
             .andReturn();
         JsonNode studentModules = objectMapper.readTree(studentList.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8));
-        assertThat(studentModules).hasSize(1);
-        assertThat(studentModules.get(0).get("name").asText()).isEqualTo("Anatomie");
+        assertThat(names(studentModules)).contains(publishedName).doesNotContain(unpublishedName);
 
         MvcResult adminList = mockMvc.perform(get("/api/modules?studyYear=4")
                 .header("Authorization", "Bearer " + adminToken))
             .andExpect(status().isOk())
             .andReturn();
-        assertThat(objectMapper.readTree(adminList.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8))).hasSize(2);
+        assertThat(names(objectMapper.readTree(adminList.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8))))
+            .contains(publishedName, unpublishedName);
 
         MvcResult studentCourses = mockMvc.perform(get("/api/modules/" + published.getId() + "/courses")
                 .header("Authorization", "Bearer " + studentToken))
@@ -287,12 +319,18 @@ class AdminCatalogIntegrationTest {
     // Fixtures
     // ---------------------------------------------------------------
 
+    /** Module names in a JSON array, so assertions can ignore rows other tests seeded. */
+    private static List<String> names(JsonNode modules) {
+        List<String> out = new java.util.ArrayList<>();
+        modules.forEach(m -> out.add(m.get("name").asText()));
+        return out;
+    }
+
     private Module module(String name, int studyYear, boolean published) {
         return Module.builder()
-            .school(school)
             .studyYear(studyYear)
             .name(name)
-            .position(moduleRepository.maxPosition(school.getId(), studyYear) + 1)
+            .position(moduleRepository.maxPosition(studyYear) + 1)
             .published(published)
             .build();
     }

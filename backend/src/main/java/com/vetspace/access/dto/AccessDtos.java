@@ -55,7 +55,7 @@ public final class AccessDtos {
                                         Instant startsAt, Instant endsAt, UUID activationCodeId) {
     }
 
-    public record PublicPackDto(UUID id, UUID schoolId, Integer studyYear, String name, String academicYear,
+    public record PublicPackDto(UUID id, Integer studyYear, String name, String academicYear,
                                  Integer priceDa, Instant expiresAt) {
     }
 }

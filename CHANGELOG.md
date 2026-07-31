@@ -49,6 +49,16 @@ Nothing has been released publicly yet, so everything to date sits under
 
 ### Changed
 
+- **Content is national.** Every school now sees the same modules, courses, questions,
+  exams and packs; `school_id` was dropped from `modules`, `source_exams` and `packs`
+  (V9), which merges what used to be per-school duplicates. Modules are unique on
+  `(study_year, name)`, packs on `(study_year, academic_year)` with `NULLS NOT
+  DISTINCT`. The subscription gate matches on **study year alone** — a student's école
+  no longer takes part in access. "École" survives as a profile field on users (signup
+  keeps it, required) plus notification targeting, and now earns its place through a
+  "Répartition par école" breakdown on the admin overview. The school selectors are gone
+  from the modules, sources and packs admin screens; the Écoles screen stays.
+
 - **Notifications** — the topbar bell now opens a scrollable panel in place instead of
   navigating to a separate page: recent notifications, unread highlighting, per-item
   delete, and mark-all-read on open, without leaving the current screen. The full

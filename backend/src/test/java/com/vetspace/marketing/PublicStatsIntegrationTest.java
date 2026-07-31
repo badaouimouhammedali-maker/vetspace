@@ -36,6 +36,13 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @Testcontainers
 class PublicStatsIntegrationTest {
 
+    /**
+     * Fresh per test method, not per class: modules are unique on (study_year, name)
+     * nationally, and setUp runs before every test — a class-level constant collides
+     * with itself on the second method.
+     */
+    private final String moduleName = "Anatomie " + UUID.randomUUID();
+
     @Container
     static final PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16");
 
@@ -63,12 +70,12 @@ class PublicStatsIntegrationTest {
     void setUp() {
         School school = schoolRepository.save(School.builder().name("ENSV").slug("ensv-" + UUID.randomUUID()).build());
         Module module = moduleRepository.save(Module.builder()
-            .school(school).studyYear(3).name("Anatomie").position(1).published(true).build());
+            .studyYear(3).name(moduleName).position(1).published(true).build());
         Course course = courseRepository.save(Course.builder()
             .module(module).name("Ostéologie").position(1).published(true).build());
         questionRepository.save(Question.builder().course(course).statement("Q?").published(true).build());
         sourceExamRepository.save(SourceExam.builder()
-            .school(school).label("Examen 2024").year(2024).examType(ExamType.EXAMEN).build());
+            .label("Examen 2024").year(2024).examType(ExamType.EXAMEN).build());
         mindmapRepository.save(Mindmap.builder()
             .course(course).title("Carte").imageUrl("http://localhost:9000/vetspace/media/x.png").published(true).build());
     }

@@ -87,12 +87,11 @@ public class AdminCatalogService {
 
     @Transactional
     public ModuleDto createModule(ModuleRequest request) {
-        School school = requireSchool(request.schoolId());
+        requireNameFreeForYear(request.studyYear(), request.name(), null);
         Module module = Module.builder()
-            .school(school)
             .studyYear(request.studyYear())
             .name(request.name())
-            .position(moduleRepository.maxPosition(school.getId(), request.studyYear()) + 1)
+            .position(moduleRepository.maxPosition(request.studyYear()) + 1)
             .published(request.published())
             .build();
         return toDto(moduleRepository.save(module));
@@ -109,7 +108,7 @@ public class AdminCatalogService {
     @Transactional
     public ModuleDto updateModule(UUID id, ModuleRequest request) {
         Module module = requireModule(id);
-        module.setSchool(requireSchool(request.schoolId()));
+        requireNameFreeForYear(request.studyYear(), request.name(), id);
         module.setStudyYear(request.studyYear());
         module.setName(request.name());
         module.setPublished(request.published());
@@ -197,7 +196,6 @@ public class AdminCatalogService {
     @Transactional
     public SourceExamDto createSourceExam(SourceExamRequest request) {
         SourceExam exam = SourceExam.builder()
-            .school(requireSchool(request.schoolId()))
             .label(request.label())
             .year(request.year())
             .examType(request.examType())
@@ -216,7 +214,6 @@ public class AdminCatalogService {
     @Transactional
     public SourceExamDto updateSourceExam(UUID id, SourceExamRequest request) {
         SourceExam exam = requireSourceExam(id);
-        exam.setSchool(requireSchool(request.schoolId()));
         exam.setLabel(request.label());
         exam.setYear(request.year());
         exam.setExamType(request.examType());
@@ -330,8 +327,22 @@ public class AdminCatalogService {
         return new SchoolDto(s.getId(), s.getName(), s.getSlug());
     }
 
+    /**
+     * Modules are unique on (study_year, name) now that content is national. Checking
+     * here turns what the database would answer as a constraint-violation 500 into the
+     * 409 an admin can act on. {@code selfId} lets an update keep its own name.
+     */
+    private void requireNameFreeForYear(Integer studyYear, String name, UUID selfId) {
+        moduleRepository.findByStudyYearAndNameIgnoreCase(studyYear, name)
+            .filter(existing -> !existing.getId().equals(selfId))
+            .ifPresent(existing -> {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Un module nommé « " + name + " » existe déjà pour cette année");
+            });
+    }
+
     private ModuleDto toDto(Module m) {
-        return new ModuleDto(m.getId(), m.getSchool().getId(), m.getStudyYear(), m.getName(), m.getPosition(), m.isPublished());
+        return new ModuleDto(m.getId(), m.getStudyYear(), m.getName(), m.getPosition(), m.isPublished());
     }
 
     private CourseDto toDto(Course c) {
@@ -339,7 +350,7 @@ public class AdminCatalogService {
     }
 
     private SourceExamDto toDto(SourceExam e) {
-        return new SourceExamDto(e.getId(), e.getSchool().getId(), e.getLabel(), e.getYear(), e.getExamType());
+        return new SourceExamDto(e.getId(), e.getLabel(), e.getYear(), e.getExamType());
     }
 
     private MindmapDto toDto(Mindmap m) {

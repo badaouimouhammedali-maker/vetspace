@@ -66,6 +66,18 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @Testcontainers
 class CodeRedemptionIntegrationTest {
 
+    /** Packs are unique on (study_year, academic_year) nationally; varchar(20). */
+    private static String uniqueAcademicYear() {
+        return "26/" + UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    /**
+     * Fresh per test method, not per class: modules are unique on (study_year, name)
+     * nationally, and setUp runs before every test — a class-level constant collides
+     * with itself on the second method.
+     */
+    private final String moduleName = "Anatomie " + UUID.randomUUID();
+
     @Container
     static final PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16");
 
@@ -149,7 +161,7 @@ class CodeRedemptionIntegrationTest {
 
         school = schoolRepository.save(School.builder().name("ENSV").slug("ensv-" + UUID.randomUUID()).build());
         Module module = moduleRepository.save(Module.builder()
-            .school(school).studyYear(3).name("Anatomie").position(1).published(true).build());
+            .studyYear(3).name(moduleName).position(1).published(true).build());
         paidCourse = courseRepository.save(Course.builder()
             .module(module).name("Payant").position(1).published(true).freePreview(false).build());
         freeCourse = courseRepository.save(Course.builder()
@@ -158,7 +170,7 @@ class CodeRedemptionIntegrationTest {
         seedQuestions(freeCourse, 3);
 
         pack = packRepository.save(Pack.builder()
-            .school(school).studyYear(3).name("Pack 3A").academicYear("2026-2027")
+            .studyYear(3).name("Pack 3A").academicYear(uniqueAcademicYear())
             .priceDa(3500).active(true)
             // Truncate to micros: Postgres timestamps hold microseconds, while Instant.now()
             // is nanosecond-precision on Linux (and micro on macOS). Without this the in-memory

@@ -24,6 +24,12 @@ Conventions used throughout:
 | name | varchar(255) NOT NULL | |
 | slug | varchar(255) NOT NULL UNIQUE | |
 
+Since V9, schools scope **nothing**. Content is national and the access gate
+looks only at study year. The table survives for two purposes: the dropdown
+on the signup form, and the "Répartition par école" breakdown on the admin
+overview — i.e. analytics. It is still referenced by `users.school_id` and
+`notifications.school_id` (message targeting), and by nothing else.
+
 ### `users`
 | Column | Type | Notes |
 |---|---|---|
@@ -34,7 +40,7 @@ Conventions used throughout:
 | last_name, first_name | varchar(100) NOT NULL | |
 | role | varchar(20) NOT NULL CHECK | `ADMIN`, `TEACHER`, `STUDENT` |
 | status | varchar(20) NOT NULL CHECK | `ACTIVE`, `DISABLED` — the account deactivation mechanism, used instead of deleting users |
-| school_id | uuid NULL, FK -> schools.id | nullable: unset until a pack is redeemed, or for staff not tied to one school |
+| school_id | uuid NULL, FK -> schools.id | profile/analytics only — scopes no content and no access; nullable for staff not tied to one school |
 | study_year | int NULL | |
 | photo_url | varchar(500) NULL | |
 | theme_primary, theme_secondary, theme_tertiary | varchar(20) NULL | |
@@ -75,17 +81,18 @@ orphaned credential rows behind.
 | Column | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
-| school_id | uuid NOT NULL, FK -> schools.id | |
-| study_year | int NOT NULL | |
+| study_year | int NOT NULL | the only content scope |
 | name | varchar(255) NOT NULL | |
 | position | int NOT NULL | manual ordering within a study year |
 | published | boolean NOT NULL DEFAULT false | |
 
-**FK: `school_id` → `schools.id` ON DELETE CASCADE.** Modules are
-strictly owned by a school; there's no independent use for a module once
-its school is gone. This is the top of a strong-ownership chain that
-cascades all the way down to courses, questions, propositions and
-mindmaps.
+**UNIQUE `(study_year, name)`** (`uq_modules_year_name`).
+
+Content is **national** (V9): every school sees the same modules. A module
+belongs to a study year, not to a school — `school_id` was dropped, and the
+uniqueness that replaced it is what stops two "Anatomie" year 3 modules
+coexisting. This is still the top of a strong-ownership chain that cascades
+down to courses, questions, propositions and mindmaps.
 
 ### `courses`
 | Column | Type | Notes |
@@ -103,13 +110,13 @@ exist without its module.
 | Column | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
-| school_id | uuid NOT NULL, FK -> schools.id | |
-| label | varchar(255) NOT NULL | e.g. "Externat Alger P6 2026" |
+| label | varchar(255) NOT NULL | e.g. "Externat P6 2026" |
 | year | int NOT NULL | |
 | exam_type | varchar(20) NOT NULL CHECK | `ENTRAINEMENT`, `EXAMEN` |
 
-**FK: `school_id` → `schools.id` ON DELETE CASCADE.** Exam metadata is
-school-owned catalog data with the same lifecycle as modules.
+National catalog data (V9): `school_id` was dropped along with modules'.
+Questions reference an exam via `questions.source_exam_id` (ON DELETE SET
+NULL), so an exam can be retired without taking its questions with it.
 
 ### `questions`
 | Column | Type | Notes |
@@ -229,7 +236,6 @@ answer layer too.
 | Column | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
-| school_id | uuid NOT NULL, FK -> schools.id | |
 | study_year | int NULL | NULL = résidanat-style pack, not scoped to a single year |
 | name | varchar(255) NOT NULL | |
 | academic_year | varchar(20) NOT NULL | e.g. "2026-2027" |
@@ -237,9 +243,14 @@ answer layer too.
 | active | boolean NOT NULL DEFAULT true | |
 | expires_at | timestamptz NOT NULL | fixed end date shared by all subscriptions sold from this pack |
 
-**FK: `school_id` → `schools.id` ON DELETE CASCADE.** Packs are part of a
-school's sales catalog; `subscriptions` (below) independently protects
-against orphaning access someone already paid for.
+**UNIQUE NULLS NOT DISTINCT `(study_year, academic_year)`**
+(`uq_packs_year_academic`). `NULLS NOT DISTINCT` matters: Postgres treats
+NULLs as distinct by default, so without it two year-less packs for the same
+academic year would slip past the constraint.
+
+Packs are national (V9) — one price list for the country, selected by study
+year. `subscriptions` (below) independently protects against orphaning
+access someone already paid for.
 
 ### `activation_codes`
 | Column | Type | Notes |

@@ -83,7 +83,6 @@ export type ApiError = z.infer<typeof apiErrorSchema>;
 
 export const moduleSchema = z.object({
   id: z.string().uuid(),
-  schoolId: z.string().uuid(),
   studyYear: z.number(),
   name: z.string(),
   position: z.number(),
@@ -103,7 +102,6 @@ export type Course = z.infer<typeof courseSchema>;
 
 export const sourceExamSchema = z.object({
   id: z.string().uuid(),
-  schoolId: z.string().uuid(),
   label: z.string(),
   year: z.number(),
   examType: z.enum(['ENTRAINEMENT', 'EXAMEN']),
@@ -263,7 +261,6 @@ export type DailyStats = z.infer<typeof dailyStatsSchema>;
 
 export const publicPackSchema = z.object({
   id: z.string().uuid(),
-  schoolId: z.string().uuid(),
   studyYear: z.number().nullable(),
   name: z.string(),
   academicYear: z.string(),
@@ -389,7 +386,6 @@ export type AdminSchool = z.infer<typeof adminSchoolSchema>;
 
 export const adminModuleSchema = z.object({
   id: z.string().uuid(),
-  schoolId: z.string().uuid(),
   studyYear: z.number(),
   name: z.string(),
   position: z.number(),
@@ -409,7 +405,6 @@ export type AdminCourse = z.infer<typeof adminCourseSchema>;
 
 export const adminSourceExamSchema = z.object({
   id: z.string().uuid(),
-  schoolId: z.string().uuid(),
   label: z.string(),
   year: z.number(),
   examType: examTypeSchema,
@@ -429,7 +424,6 @@ export type AdminMindmap = z.infer<typeof adminMindmapSchema>;
 
 export const adminPackSchema = z.object({
   id: z.string().uuid(),
-  schoolId: z.string().uuid(),
   studyYear: z.number().nullable(),
   name: z.string(),
   academicYear: z.string(),
@@ -510,6 +504,14 @@ export const registrationSchema = z.object({
   studyYear: z.number().nullable(),
   createdAt: z.string(),
 });
+export const schoolBreakdownSchema = z.object({
+  // Null for the "no école recorded" bucket.
+  schoolId: z.string().uuid().nullable(),
+  schoolName: z.string().nullable(),
+  students: z.number(),
+});
+export type SchoolBreakdown = z.infer<typeof schoolBreakdownSchema>;
+
 export const adminOverviewSchema = z.object({
   students: z.number(),
   questions: z.number(),
@@ -517,6 +519,11 @@ export const adminOverviewSchema = z.object({
   activeSubscriptions: z.number(),
   openSignals: z.number(),
   latestRegistrations: z.array(registrationSchema),
+  // Optional, not required: content went national in the same release, and the SPA and
+  // API deploy independently — an API without the field yet must not blank the whole
+  // screen. (`.default([])` would be nicer but apiGet's z.ZodType<T> signature infers
+  // the input type, which makes the field optional at the call site anyway.)
+  studentsBySchool: z.array(schoolBreakdownSchema).optional(),
 });
 export type AdminOverview = z.infer<typeof adminOverviewSchema>;
 

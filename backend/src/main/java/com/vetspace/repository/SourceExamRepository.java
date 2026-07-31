@@ -7,7 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SourceExamRepository extends JpaRepository<SourceExam, UUID> {
 
-    long countBySchoolId(UUID schoolId);
-
-    List<SourceExam> findBySchoolIdOrderByYearDesc(UUID schoolId);
+    List<SourceExam> findAllByOrderByYearDesc();
 }

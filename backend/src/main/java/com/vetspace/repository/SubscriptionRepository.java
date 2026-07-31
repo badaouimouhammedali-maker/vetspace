@@ -22,14 +22,18 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, UUID
     @Query("select count(s) from Subscription s where s.user.id = :userId and :now between s.startsAt and s.endsAt")
     long countActiveForUser(@Param("userId") UUID userId, @Param("now") Instant now);
 
-    /** The access gate: an in-window subscription whose pack targets the student's school and study year (null = any year). */
+    /**
+     * The access gate: an in-window subscription whose pack targets the student's study
+     * year (null = every year). Content went national, so the school a student belongs to
+     * no longer takes part — a pack bought by any student unlocks the same national
+     * catalogue for their year.
+     */
     @Query("""
         select count(s) > 0 from Subscription s
         where s.user.id = :userId
           and :now between s.startsAt and s.endsAt
-          and s.pack.school.id = :schoolId
           and (s.pack.studyYear is null or s.pack.studyYear = :studyYear)
         """)
-    boolean hasActiveMatchingSubscription(@Param("userId") UUID userId, @Param("schoolId") UUID schoolId,
+    boolean hasActiveMatchingSubscription(@Param("userId") UUID userId,
                                            @Param("studyYear") Integer studyYear, @Param("now") Instant now);
 }

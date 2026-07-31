@@ -65,6 +65,18 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @Testcontainers
 class SessionIntegrationTest {
 
+    /** Packs are unique on (study_year, academic_year) nationally; varchar(20). */
+    private static String uniqueAcademicYear() {
+        return "26/" + UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    /**
+     * Fresh per test method, not per class: modules are unique on (study_year, name)
+     * nationally, and setUp runs before every test — a class-level constant collides
+     * with itself on the second method.
+     */
+    private final String moduleName = "Anatomie " + UUID.randomUUID();
+
     @Container
     static final PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16");
 
@@ -144,7 +156,7 @@ class SessionIntegrationTest {
 
         school = schoolRepository.save(School.builder().name("ENSV").slug("ensv-" + UUID.randomUUID()).build());
         Module module = moduleRepository.save(Module.builder()
-            .school(school).studyYear(3).name("Anatomie").position(1).published(true).build());
+            .studyYear(3).name(moduleName).position(1).published(true).build());
         course = courseRepository.save(Course.builder()
             .module(module).name("Ostéologie").position(1).published(true).build());
 
@@ -191,7 +203,7 @@ class SessionIntegrationTest {
     private void subscribe(User user, School school) {
         Instant expires = Instant.now().plus(365, ChronoUnit.DAYS);
         Pack pack = packRepository.save(Pack.builder()
-            .school(school).studyYear(3).name("Pack test").academicYear("2026-2027")
+            .studyYear(3).name("Pack test").academicYear(uniqueAcademicYear())
             .priceDa(1000).active(true).expiresAt(expires).build());
         ActivationCode code = activationCodeRepository.save(ActivationCode.builder()
             .pack(pack).codeHash("test-" + UUID.randomUUID()).maxUses(1).usedCount(1).revoked(false).build());
@@ -333,7 +345,7 @@ class SessionIntegrationTest {
                 .header("Authorization", "Bearer " + studentToken)
                 .contentType(MediaType.APPLICATION_JSON).content(body))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.title").value(org.hamcrest.Matchers.startsWith("Anatomie (")));
+            .andExpect(jsonPath("$.title").value(org.hamcrest.Matchers.startsWith(moduleName + " (")));
     }
 
     @Test

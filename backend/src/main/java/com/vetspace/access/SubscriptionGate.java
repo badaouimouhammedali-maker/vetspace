@@ -8,8 +8,12 @@ import org.springframework.stereotype.Component;
 
 /**
  * The paywall. Content endpoints (session create/play, question count, student mindmaps)
- * require an active subscription matching the student's school + study year. ADMIN/TEACHER
- * pass unconditionally. Demo mode is decided by callers on top of hasAccess().
+ * require an active subscription matching the student's study year. ADMIN/TEACHER pass
+ * unconditionally. Demo mode is decided by callers on top of hasAccess().
+ *
+ * <p>School used to be half of that match. Content is national now, so it no longer
+ * takes part: a student's école is a profile field for analytics, and gating on it would
+ * deny access to the very catalogue their pack paid for.
  */
 @Component
 public class SubscriptionGate {
@@ -24,11 +28,11 @@ public class SubscriptionGate {
         if (user.getRole() == Role.ADMIN || user.getRole() == Role.TEACHER) {
             return true;
         }
-        if (user.getSchool() == null || user.getStudyYear() == null) {
+        if (user.getStudyYear() == null) {
             return false;
         }
         return subscriptionRepository.hasActiveMatchingSubscription(
-            user.getId(), user.getSchool().getId(), user.getStudyYear(), Instant.now());
+            user.getId(), user.getStudyYear(), Instant.now());
     }
 
     public void require(User user) {

@@ -15,14 +15,13 @@ public final class ModuleDtos {
     }
 
     public record ModuleRequest(
-        @NotNull UUID schoolId,
         @NotNull @Min(1) @Max(10) Integer studyYear,
         @NotBlank @Size(max = 255) String name,
         boolean published
     ) {
     }
 
-    public record ModuleDto(UUID id, UUID schoolId, Integer studyYear, String name, Integer position, boolean published) {
+    public record ModuleDto(UUID id, Integer studyYear, String name, Integer position, boolean published) {
     }
 
     public record PublishRequest(@NotNull Boolean published) {

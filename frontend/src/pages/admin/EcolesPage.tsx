@@ -34,7 +34,6 @@ export function EcolesPage() {
   const modules = useQuery({ queryKey: ['admin', 'modules'], queryFn: fetchAdminModules });
   const courses = useQuery({ queryKey: ['admin', 'courses'], queryFn: fetchAdminCourses });
 
-  const [schoolId, setSchoolId] = useState('');
   const [year, setYear] = useState(1);
   const [schoolModal, setSchoolModal] = useState<AdminSchool | 'new' | null>(null);
   const [moduleModal, setModuleModal] = useState<AdminModule | 'new' | null>(null);
@@ -50,9 +49,9 @@ export function EcolesPage() {
   const visibleModules = useMemo(
     () =>
       (modules.data ?? [])
-        .filter((m) => m.schoolId === schoolId && m.studyYear === year)
+        .filter((m) => m.studyYear === year)
         .sort((a, b) => a.position - b.position),
-    [modules.data, schoolId, year],
+    [modules.data, year],
   );
 
   const coursesByModule = useMemo(() => {
@@ -143,7 +142,7 @@ export function EcolesPage() {
     <div>
       <AdminHeader
         title="Écoles & Modules"
-        subtitle="Gérez le catalogue par école et année d'étude."
+        subtitle="Le catalogue est national : les modules sont gérés par année d'étude. Les écoles servent au formulaire d'inscription et aux statistiques."
       >
         <PrimaryButton onClick={() => setSchoolModal('new')}>+ École</PrimaryButton>
       </AdminHeader>
@@ -186,18 +185,8 @@ export function EcolesPage() {
         )}
       </Card>
 
-      {/* Context selector */}
+      {/* Context selector: study year only — modules are national now. */}
       <div className="mb-4 grid gap-3 sm:grid-cols-2">
-        <Field label="École" htmlFor="school-ctx">
-          <Select id="school-ctx" value={schoolId} onChange={(e) => setSchoolId(e.target.value)}>
-            <option value="">— Choisir une école —</option>
-            {(schools.data ?? []).map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </Select>
-        </Field>
         <Field label="Année d'étude" htmlFor="year-ctx">
           <Select id="year-ctx" value={year} onChange={(e) => setYear(Number(e.target.value))}>
             {YEARS.map((y) => (
@@ -209,13 +198,7 @@ export function EcolesPage() {
         </Field>
       </div>
 
-      {!schoolId ? (
-        <Card>
-          <p className="text-sm text-brand-gray">
-            Sélectionnez une école et une année pour gérer ses modules et cours.
-          </p>
-        </Card>
-      ) : (
+      {(
         <Card>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-bold uppercase tracking-wide text-brand-gray">Modules</h2>
@@ -393,7 +376,6 @@ export function EcolesPage() {
       {moduleModal ? (
         <ModuleModal
           module={moduleModal === 'new' ? null : moduleModal}
-          schoolId={schoolId}
           year={year}
           onClose={() => setModuleModal(null)}
           onSaved={() => {
@@ -467,13 +449,11 @@ function SchoolModal({
 
 function ModuleModal({
   module,
-  schoolId,
   year,
   onClose,
   onSaved,
 }: {
   module: AdminModule | null;
-  schoolId: string;
   year: number;
   onClose: () => void;
   onSaved: () => void;
@@ -485,12 +465,11 @@ function ModuleModal({
     mutationFn: () =>
       module
         ? updateModule(module.id, {
-            schoolId: module.schoolId,
             studyYear: module.studyYear,
             name,
             published,
           })
-        : createModule({ schoolId, studyYear: year, name, published }),
+        : createModule({ studyYear: year, name, published }),
     onSuccess: () => {
       toast('success', 'Module enregistré.');
       onSaved();

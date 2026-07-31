@@ -13,6 +13,23 @@ import org.springframework.data.repository.query.Param;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 
+    /**
+     * Students per école for the admin overview, biggest first. Left join so a school
+     * with no students still appears — a zero is a fact worth seeing on that screen.
+     */
+    @Query("""
+        select new com.vetspace.admin.dto.AdminDtos$SchoolBreakdownDto(
+            s.id, s.name, count(u.id))
+        from School s left join User u on u.school = s and u.role = :role
+        group by s.id, s.name
+        order by count(u.id) desc, s.name asc
+        """)
+    List<com.vetspace.admin.dto.AdminDtos.SchoolBreakdownDto> countStudentsBySchool(@Param("role") Role role);
+
+    /** Students whose école was never set — invisible to the join above. */
+    long countByRoleAndSchoolIsNull(Role role);
+
+
     Optional<User> findByEmailIgnoreCase(String email);
 
     Optional<User> findByUsername(String username);

@@ -17,7 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Student-facing question queries for the session builder. Subscription gating is NOT applied
- * yet (arrives with the session engine); visibility rules (published-only, own school) are.
+ * yet (arrives with the session engine); visibility rules (published-only) are.
  */
 @Service
 public class QuestionQueryService {
@@ -50,9 +50,6 @@ public class QuestionQueryService {
         if (staff) {
             return questionRepository.count(filters);
         }
-        if (caller.getSchool() == null) {
-            return 0;
-        }
-        return questionRepository.count(filters.and(QuestionSpecifications.visibleToStudent(caller.getSchool().getId())));
+        return questionRepository.count(filters.and(QuestionSpecifications.visibleToStudent()));
     }
 }

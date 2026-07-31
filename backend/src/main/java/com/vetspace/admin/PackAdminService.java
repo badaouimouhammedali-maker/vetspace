@@ -4,7 +4,6 @@ import com.vetspace.admin.dto.PackDtos.PackDto;
 import com.vetspace.admin.dto.PackDtos.PackRequest;
 import com.vetspace.domain.access.Pack;
 import com.vetspace.repository.PackRepository;
-import com.vetspace.repository.SchoolRepository;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,18 +16,14 @@ import org.springframework.web.server.ResponseStatusException;
 public class PackAdminService {
 
     private final PackRepository packRepository;
-    private final SchoolRepository schoolRepository;
 
-    public PackAdminService(PackRepository packRepository, SchoolRepository schoolRepository) {
+    public PackAdminService(PackRepository packRepository) {
         this.packRepository = packRepository;
-        this.schoolRepository = schoolRepository;
     }
 
     @Transactional
     public PackDto create(PackRequest request) {
         Pack pack = Pack.builder()
-            .school(schoolRepository.findById(request.schoolId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "School not found")))
             .studyYear(request.studyYear())
             .name(request.name())
             .academicYear(request.academicYear())
@@ -50,8 +45,6 @@ public class PackAdminService {
     @Transactional
     public PackDto update(UUID id, PackRequest request) {
         Pack pack = require(id);
-        pack.setSchool(schoolRepository.findById(request.schoolId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "School not found")));
         pack.setStudyYear(request.studyYear());
         pack.setName(request.name());
         pack.setAcademicYear(request.academicYear());
@@ -72,7 +65,7 @@ public class PackAdminService {
     }
 
     private PackDto toDto(Pack p) {
-        return new PackDto(p.getId(), p.getSchool().getId(), p.getStudyYear(), p.getName(), p.getAcademicYear(),
+        return new PackDto(p.getId(), p.getStudyYear(), p.getName(), p.getAcademicYear(),
             p.getPriceDa(), p.isActive(), p.getExpiresAt());
     }
 }

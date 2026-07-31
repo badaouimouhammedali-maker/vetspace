@@ -168,10 +168,7 @@ public class SessionService {
         if (user.getRole() == Role.ADMIN || user.getRole() == Role.TEACHER) {
             return null;
         }
-        if (user.getSchool() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No questions match the given filters");
-        }
-        return QuestionSpecifications.visibleToStudent(user.getSchool().getId());
+        return QuestionSpecifications.visibleToStudent();
     }
 
     private Specification<Question> moduleIdsSpec(List<UUID> moduleIds) {

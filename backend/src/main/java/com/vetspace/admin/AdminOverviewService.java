@@ -2,6 +2,7 @@ package com.vetspace.admin;
 
 import com.vetspace.admin.dto.AdminDtos.OverviewDto;
 import com.vetspace.admin.dto.AdminDtos.RegistrationDto;
+import com.vetspace.admin.dto.AdminDtos.SchoolBreakdownDto;
 import com.vetspace.domain.extras.SignalStatus;
 import com.vetspace.domain.school.School;
 import com.vetspace.domain.user.Role;
@@ -51,7 +52,25 @@ public class AdminOverviewService {
             sessionRepository.countByStartedAtGreaterThanEqual(startOfDay),
             subscriptionRepository.countActive(now),
             signalRepository.countByStatus(SignalStatus.OPEN),
-            latest);
+            latest,
+            studentsBySchool());
+    }
+
+    /**
+     * École is no longer a content boundary, so this breakdown is what keeps the field
+     * earning its place on the signup form: where the students actually come from.
+     */
+    private List<SchoolBreakdownDto> studentsBySchool() {
+        List<SchoolBreakdownDto> perSchool = userRepository.countStudentsBySchool(Role.STUDENT);
+        long unassigned = userRepository.countByRoleAndSchoolIsNull(Role.STUDENT);
+        if (unassigned == 0) {
+            return perSchool;
+        }
+        // Appended rather than dropped: students with no école are still students, and a
+        // breakdown whose parts do not add up to the headline count invites a bug hunt.
+        List<SchoolBreakdownDto> withUnassigned = new java.util.ArrayList<>(perSchool);
+        withUnassigned.add(new SchoolBreakdownDto(null, null, unassigned));
+        return List.copyOf(withUnassigned);
     }
 
     private RegistrationDto toRegistration(User u) {

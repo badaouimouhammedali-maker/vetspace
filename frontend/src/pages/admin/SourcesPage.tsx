@@ -7,7 +7,6 @@ import { apiErrorMessage, apiErrorReference } from '../../lib/api';
 import {
   createSourceExam,
   deleteSourceExam,
-  fetchAdminSchools,
   fetchAdminSourceExams,
   updateSourceExam,
 } from '../../lib/adminEndpoints';
@@ -22,11 +21,9 @@ const EXAM_TYPES: { value: ExamType; label: string }[] = [
 export function SourcesPage() {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const schools = useQuery({ queryKey: ['admin', 'schools'], queryFn: fetchAdminSchools });
   const sources = useQuery({ queryKey: ['admin', 'source-exams'], queryFn: fetchAdminSourceExams });
   const [modal, setModal] = useState<AdminSourceExam | 'new' | null>(null);
 
-  const schoolName = (id: string) => schools.data?.find((s) => s.id === id)?.name ?? '—';
 
   const del = useMutation({
     mutationFn: deleteSourceExam,
@@ -57,7 +54,6 @@ export function SourcesPage() {
                 <th className="px-4 py-3 font-semibold">Libellé</th>
                 <th className="px-4 py-3 font-semibold">Année</th>
                 <th className="px-4 py-3 font-semibold">Type</th>
-                <th className="px-4 py-3 font-semibold">École</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -71,7 +67,6 @@ export function SourcesPage() {
                       {s.examType === 'EXAMEN' ? 'Examen' : 'Entraînement'}
                     </StatusBadge>
                   </td>
-                  <td className="px-4 py-3 text-brand-gray">{schoolName(s.schoolId)}</td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-2">
                       <GhostButton onClick={() => setModal(s)}>Modifier</GhostButton>
@@ -97,7 +92,6 @@ export function SourcesPage() {
       {modal ? (
         <SourceModal
           source={modal === 'new' ? null : modal}
-          schools={(schools.data ?? []).map((s) => ({ id: s.id, name: s.name }))}
           onClose={() => setModal(null)}
           onSaved={() => {
             setModal(null);
@@ -111,23 +105,20 @@ export function SourcesPage() {
 
 function SourceModal({
   source,
-  schools,
   onClose,
   onSaved,
 }: {
   source: AdminSourceExam | null;
-  schools: { id: string; name: string }[];
   onClose: () => void;
   onSaved: () => void;
 }) {
   const { toast } = useToast();
-  const [schoolId, setSchoolId] = useState(source?.schoolId ?? schools[0]?.id ?? '');
   const [label, setLabel] = useState(source?.label ?? '');
   const [year, setYear] = useState(source?.year ?? new Date().getFullYear());
   const [examType, setExamType] = useState<ExamType>(source?.examType ?? 'EXAMEN');
   const save = useMutation({
     mutationFn: () => {
-      const body = { schoolId, label, year, examType };
+      const body = { label, year, examType };
       return source ? updateSourceExam(source.id, body) : createSourceExam(body);
     },
     onSuccess: () => {
@@ -145,15 +136,6 @@ function SourceModal({
         }}
         className="space-y-4"
       >
-        <Field label="École" htmlFor="src-school">
-          <Select id="src-school" value={schoolId} onChange={(e) => setSchoolId(e.target.value)}>
-            {schools.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </Select>
-        </Field>
         <Field label="Libellé" htmlFor="src-label">
           <TextInput
             id="src-label"
