@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import { t, type TranslationKey } from '../../i18n/fr';
+import { Logo } from '../Logo';
 
 export interface NavItem {
   to: string;
@@ -65,7 +66,7 @@ export function Sidebar({
   return (
     <div className="flex h-full flex-col">
       <NavLink to={homeTo} className="flex shrink-0 justify-center px-6 py-6" onClick={onNavigate}>
-        <img src="/brand/Logo white.svg" alt="VetSpace" className="h-12" />
+        <Logo variant="full" theme="dark" size="sm" />
       </NavLink>
 
       <nav className="sidebar-scroll flex-1 overflow-y-auto px-3 pb-4">

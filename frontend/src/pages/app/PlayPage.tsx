@@ -25,6 +25,7 @@ import {
 } from '../../lib/endpoints';
 import { SafeHtml } from '../../lib/sanitize';
 import type { Correction, SessionSummary } from '../../lib/schemas';
+import { Logo } from '../../components/Logo';
 
 type LocalState = { state: 'ANSWERED' | 'CONSULTED'; isCorrect: boolean | null };
 
@@ -210,7 +211,7 @@ export function PlayPage() {
     const score = result?.score ?? play.data.score ?? null;
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-canvas p-6">
-        <img src="/brand/Logo.svg" alt="VetSpace" className="h-14" />
+        <Logo variant="full" theme="light" size="lg" />
         <Card className="w-full max-w-md text-center">
           <h1 className="text-h1 text-brand-navy">{t('play.scoreTitle')}</h1>
           <p className="mt-6 text-caption font-medium text-brand-gray">{t('play.yourScore')}</p>
@@ -263,7 +264,7 @@ export function PlayPage() {
       {/* Rail gauche : questions + chronomètres */}
       <aside className="flex w-44 shrink-0 flex-col border-r border-gray-200 bg-surface lg:w-56">
         <Link to="/app" className="flex justify-center border-b border-gray-100 py-4">
-          <img src="/brand/Logo.svg" alt="VetSpace" className="h-9" />
+          <Logo variant="full" theme="light" size="sm" />
         </Link>
         <nav className="flex-1 space-y-1 overflow-y-auto p-3">
           {questions.map((q, i) => {

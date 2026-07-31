@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { fetchPacks, fetchPublicStats } from '../../lib/endpoints';
 import type { PublicPack } from '../../lib/schemas';
+import { Logo } from '../../components/Logo';
 
 const NAV = [
   { href: '#accueil', label: 'Accueil' },
@@ -29,7 +30,7 @@ export function LandingPage() {
           property="og:description"
           content="QCM corrigés, annales d'examens et MindMaps pour préparer vos examens vétérinaires sereinement."
         />
-        <meta property="og:image" content="/brand/Logo.svg" />
+        <meta property="og:image" content="/brand/logo.svg" />
         <meta name="theme-color" content="#12355B" />
       </Helmet>
 
@@ -56,7 +57,7 @@ function Header() {
     <header className="sticky top-0 z-40 bg-brand-navy text-white shadow-subtle">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 lg:px-8">
         <a href="#accueil" className="flex items-center gap-2">
-          <img src="/brand/Logo white.svg" alt="VetSpace" className="h-9" />
+          <Logo variant="full" theme="dark" size="md" />
         </a>
         <nav className="hidden items-center gap-7 text-sm font-semibold md:flex">
           {NAV.map((n) => (
@@ -484,7 +485,7 @@ function Footer() {
     <footer className="bg-brand-navy px-4 py-12 text-white lg:px-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 md:flex-row md:items-start md:justify-between">
         <div className="max-w-sm">
-          <img src="/brand/Logo white.svg" alt="VetSpace" className="h-9" />
+          <Logo variant="full" theme="dark" size="md" />
           <p className="mt-3 text-sm text-white/60">
             La plateforme de QCM des étudiants vétérinaires. Révisez, progressez, réussissez.
           </p>
