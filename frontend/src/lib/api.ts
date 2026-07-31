@@ -1,4 +1,9 @@
-import axios, { AxiosError, type AxiosRequestConfig } from 'axios';
+import axios, {
+  AxiosError,
+  type AxiosRequestConfig,
+  type AxiosInstance,
+  type InternalAxiosRequestConfig,
+} from 'axios';
 import type { z } from 'zod';
 import { apiErrorSchema } from './schemas';
 
@@ -14,6 +19,30 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+/**
+ * Second client, for multipart uploads ONLY (admin media + study resources).
+ *
+ * <p>Everything else goes through {@link api}, i.e. same-origin `/api`, proxied by
+ * Vercel — that is what keeps the refresh cookie first-party. But the Vercel rewrite cannot carry the
+ * full size range: measured against the deployed stack, 10 MB and 20 MB pass through
+ * and reach Spring, while 25 MB fails with a 502 at the proxy. A 25 MB polycopié is
+ * exactly what this feature is for, so uploads — and nothing else — go straight to the
+ * API origin.
+ *
+ * <p>`withCredentials: false` is deliberate and is what makes this safe: uploads
+ * authenticate with the in-memory JWT in the Authorization header, so no cookie is
+ * involved, there is no SameSite question to answer, and the refresh cookie is never
+ * exposed to a second origin. The server's CORS allowlist already permits Authorization
+ * and Content-Type from the SPA origin.
+ *
+ * <p>Falls back to {@link api}'s base URL when VITE_API_DIRECT_URL is unset — dev and
+ * the containerised stack are same-origin already and need no bypass.
+ */
+export const uploadApi = axios.create({
+  baseURL: import.meta.env.VITE_API_DIRECT_URL || import.meta.env.VITE_API_URL || '',
+  withCredentials: false,
+});
+
 let accessToken: string | null = null;
 
 export function setAccessToken(token: string | null): void {
@@ -24,12 +53,15 @@ export function getAccessToken(): string | null {
   return accessToken;
 }
 
-api.interceptors.request.use((config) => {
+function attachBearer(config: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
   return config;
-});
+}
+
+api.interceptors.request.use(attachBearer);
+uploadApi.interceptors.request.use(attachBearer);
 
 /** Événements globaux consommés par l'app (toast + navigation), sans couplage direct. */
 export const API_EVENTS = {
@@ -70,7 +102,13 @@ interface RetriableConfig extends AxiosRequestConfig {
   _retried?: boolean;
 }
 
-api.interceptors.response.use(
+/**
+ * Shared by both clients. The retry replays on the *same* instance the request came
+ * from, so an upload that 401s mid-flight is retried against the direct origin rather
+ * than silently falling back to the proxy it was written to avoid.
+ */
+function installAuthHandling(instance: AxiosInstance): void {
+  instance.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const config = error.config as RetriableConfig | undefined;
@@ -89,13 +127,17 @@ api.interceptors.response.use(
       const token = await singleFlightRefresh();
       if (token) {
         config._retried = true;
-        return api.request(config);
+        return instance.request(config);
       }
       window.dispatchEvent(new CustomEvent(API_EVENTS.sessionExpired));
     }
     return Promise.reject(error);
   },
-);
+  );
+}
+
+installAuthHandling(api);
+installAuthHandling(uploadApi);
 
 /** Toute réponse passe par zod : une API qui dérive du contrat échoue ici, pas en profondeur dans l'UI. */
 export async function apiGet<T>(url: string, schema: z.ZodType<T>): Promise<T> {

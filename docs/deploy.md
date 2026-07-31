@@ -43,7 +43,7 @@ values.
 | `MAIL_SMTP_AUTH` | ⚙️ | *(leave unset)* | Defaults to `true` in prod, `false` locally (mailpit). Only set it for an unauthenticated relay. |
 | `MAIL_STARTTLS` | ⚙️ | *(leave unset)* | Defaults to `true` in prod, `false` locally. |
 | `MAIL_TIMEOUT_MS` | ⚙️ | *(leave unset)* | SMTP connect/read/write timeout, default `5000`. Bounds how long a dead mail server can delay a registration response (the account is already committed either way; the response then carries `verificationEmailSent: false`). |
-| `RESOURCE_MAX_FILE_SIZE_MB` | ⚙️ | *(leave unset → 25)* | Max size of a free study resource. **Capped in practice at ~4.5 MB by the Vercel proxy — see the note above.** |
+| `RESOURCE_MAX_FILE_SIZE_MB` | ⚙️ | *(leave unset → 25)* | Max size of a free study resource. Reachable because uploads bypass the Vercel proxy — see the note in §3. |
 | `MEDIA_ENDPOINT` | ⚙️ | `https://<account-id>.r2.cloudflarestorage.com` | S3 API endpoint for uploads. |
 | `MEDIA_BUCKET` | ⚙️ | `vetspace-media` | Bucket name. |
 | `MEDIA_ACCESS_KEY` | 🔒 | R2 token id | Object-storage credential. |
@@ -71,6 +71,7 @@ public**, and changing either requires a redeploy.
 | Variable | | Value | Purpose |
 |---|---|---|---|
 | `VITE_API_URL` | ⚙️ | *(leave empty)* | Empty = same-origin `/api`, which is what the Vercel proxy serves (§3). Set it to the API origin only if you drop the proxy. |
+| `VITE_API_DIRECT_URL` | ⚙️ | `https://vetspace-production.up.railway.app` | The API origin, used **only** for multipart uploads (admin media + study resources), which bypass the rewrite — see §3. Everything else keeps using `/api`. Leave empty to send uploads through the proxy too (fine below ~20 MB). |
 | `VITE_RECAPTCHA_SITE_KEY` | ⚙️ | Google **site** key | Public half of the captcha pair. Empty hides the widget. |
 
 > Never put `JWT_SECRET`, `RECAPTCHA_SECRET` or any R2 key in a `VITE_*`
@@ -164,14 +165,33 @@ call, and API traffic counting against your Vercel bandwidth.
 Because of that hop, content image uploads are capped at **4 MB** (profile
 photos stay at 2 MB) to stay under the proxy's request-body limit.
 
-> **Study resources and the 25 MB limit.** `RESOURCE_MAX_FILE_SIZE_MB` defaults to
-> 25, but while the API is proxied through Vercel the edge rejects request bodies
-> over roughly **4.5 MB** before they ever reach Railway — a 20 MB polycopié fails
-> with a proxy error, not with the app's own `413`. Until you move to a custom
-> domain (below), either set `RESOURCE_MAX_FILE_SIZE_MB=4` so the limit shown in
-> the admin UI is the truth, or accept that only small files upload. The durable
-> fix for large files is a presigned direct-to-R2 upload, which skips the API
-> entirely; it is not implemented yet.
+> **Why uploads skip the proxy.** Multipart uploads — admin media and study
+> resources — are the only requests that do **not** go through the Vercel rewrite.
+> They are sent straight to the API origin via `VITE_API_DIRECT_URL`.
+>
+> Measured against the deployed stack on 2026-07-31: 10 MB and 20 MB pass through
+the Vercel rewrite and reach Spring (confirmed by our own `x-request-id` on the
+response); **25 MB fails with a 502 at the proxy**. The same 24 MB upload sent
+straight to the API returns 201. So the ceiling is somewhere between 20 and 25 MB —
+not the 4.5 MB figure quoted in Vercel's docs, which applies to Serverless/Edge
+*Functions*, not to rewrites.
+>
+> A 25 MB polycopié is exactly the case the feature exists for, so the proxy path
+> cannot carry the full range and uploads bypass it. Everything else still goes
+> through `/api` same-origin, which is what keeps the refresh cookie first-party.
+>
+> This is safe because uploads authenticate with the in-memory JWT in the
+> `Authorization` header, not with the cookie: the upload client sets
+> `withCredentials: false`, so no cookie is sent to the second origin and there is no
+> SameSite question to answer. `CORS_ALLOWED_ORIGINS` must list the SPA origin —
+> verified in production: a preflight from `https://vetspace.vercel.app` returns 200
+> with `Authorization` and `Content-Type` allowed, and an unknown origin gets 403.
+>
+> **A custom domain removes the need entirely.** Once the API is on
+> `api.vetspace.dz` the SPA and API are same-site: drop the rewrite, clear
+> `VITE_API_DIRECT_URL`, and every request takes one direct path again. The other
+> durable fix is presigned direct-to-R2 uploads, which skip the API for the bytes
+> altogether and cap nothing at 25 MB; neither is implemented yet.
 
 ### Cookie settings for this topology
 

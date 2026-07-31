@@ -21,8 +21,11 @@ Nothing has been released publicly yet, so everything to date sits under
   usage is visible where the uploading happens. Uploads are typed by **magic bytes**
   (a `.pdf` whose bytes are `MZ` is rejected and never reaches storage), stored under a
   random `resources/{uuid}.{ext}` key, and deleting a resource deletes the R2 object too.
-  **Note:** the 25 MB limit (`RESOURCE_MAX_FILE_SIZE_MB`) cannot be reached while the API
-  is proxied through Vercel, whose edge caps request bodies at ~4.5 MB — see docs/deploy.md.
+  Multipart uploads (and only those) go straight to the API origin via
+  `VITE_API_DIRECT_URL` instead of through the Vercel rewrite, which 502s on a 25 MB
+  body — measured: 10 MB and 20 MB pass, 25 MB does not. They authenticate with the
+  in-memory JWT and send no cookie (`withCredentials: false`), so the refresh cookie
+  stays first-party and no SameSite question arises.
 
 - **Mail** — `MAIL_MODE=brevo-api`: delivery through Brevo's HTTPS API (port 443) instead
   of SMTP, for platforms that block outbound SMTP entirely — Railway's free tier

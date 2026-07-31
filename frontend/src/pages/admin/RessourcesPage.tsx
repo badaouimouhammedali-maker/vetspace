@@ -12,7 +12,7 @@ import {
   reorderResources,
   uploadResource,
 } from '../../lib/adminEndpoints';
-import { apiErrorMessage } from '../../lib/api';
+import { apiErrorMessage, apiErrorStatus } from '../../lib/api';
 import { formatFileSize } from '../../lib/formatFileSize';
 import { AdminHeader, Card, GhostButton, PrimaryButton, StatusBadge } from './adminUi';
 
@@ -59,7 +59,12 @@ export function RessourcesPage() {
   function pick(selected: File | null) {
     if (!selected) return;
     if (selected.size > MAX_MB * 1024 * 1024) {
-      toast('error', `Fichier trop volumineux (max ${MAX_MB} Mo).`);
+      // Named size and limit, not a generic failure: the admin needs to know their file
+      // is the problem and by how much, before they retry the same 30MB scan twice.
+      toast(
+        'error',
+        `Fichier trop volumineux — ${MAX_MB} Mo maximum (le vôtre : ${formatFileSize(selected.size)}).`,
+      );
       return;
     }
     setFile(selected);
@@ -95,7 +100,13 @@ export function RessourcesPage() {
       if (inputRef.current) inputRef.current.value = '';
       await refresh();
     } catch (err) {
-      toast('error', apiErrorMessage(err) ?? "L'envoi a échoué.");
+      // 413 can still arrive from the server even after the client-side check — a proxy
+      // in front of the API may impose its own, smaller limit.
+      const message =
+        apiErrorStatus(err) === 413
+          ? `Fichier trop volumineux — ${MAX_MB} Mo maximum.`
+          : (apiErrorMessage(err) ?? "L'envoi a échoué.");
+      toast('error', message);
     } finally {
       setProgress(null);
     }
@@ -210,7 +221,7 @@ export function RessourcesPage() {
                 </button>
               </p>
               <p className="mt-1 text-xs text-brand-gray">
-                PDF, JPEG, PNG ou WebP — {MAX_MB} Mo maximum
+                PDF, JPEG, PNG ou WebP — {MAX_MB} Mo maximum par fichier
               </p>
               <input
                 ref={inputRef}

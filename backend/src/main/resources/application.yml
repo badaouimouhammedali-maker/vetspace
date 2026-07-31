@@ -101,9 +101,9 @@ app:
     mode: ${MAIL_MODE:log}
     brevo-api-key: ${BREVO_API_KEY:}
   resources:
-    # Free study-resource library. NOTE: while the API is proxied through Vercel, the
-    # edge caps request bodies at ~4.5MB, so anything above that fails before it reaches
-    # the app. See docs/deploy.md — either move to a custom domain or lower this.
+    # Free study-resource library. Reachable in full because the SPA sends multipart
+    # uploads straight to this API rather than through the Vercel rewrite, which 502s
+    # on a 25MB body. See docs/deploy.md.
     max-file-size-mb: ${RESOURCE_MAX_FILE_SIZE_MB:25}
   media:
     endpoint: ${MEDIA_ENDPOINT:http://localhost:9000}

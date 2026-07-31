@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { api, apiGet, apiPost } from './api';
+import { api, apiGet, apiPost, uploadApi } from './api';
 import {
   adminCodeSchema,
   adminCourseSchema,
@@ -206,7 +206,8 @@ export const importQuestions = (rows: unknown[]) =>
 export const uploadContentImage = (file: File) => {
   const form = new FormData();
   form.append('file', file);
-  return api.post('/api/admin/media', form).then((r) => z.object({ url: z.string() }).parse(r.data));
+  // uploadApi, not api: multipart bypasses the Vercel rewrite, which 502s above ~20MB.
+  return uploadApi.post('/api/admin/media', form).then((r) => z.object({ url: z.string() }).parse(r.data));
 };
 
 // Signals (admin) ------------------------------------------------------
@@ -273,7 +274,9 @@ export const uploadResource = (
     'metadata',
     new Blob([JSON.stringify(metadata)], { type: 'application/json' }),
   );
-  return api
+  // uploadApi, not api: the Vercel rewrite 502s on a 25MB body (measured), and 25MB
+  // is exactly the limit this feature promises. See docs/deploy.md.
+  return uploadApi
     .post('/api/admin/resources', form, {
       onUploadProgress: (e) => {
         if (onProgress && e.total) {
