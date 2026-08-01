@@ -21,8 +21,10 @@ import {
   Skeleton,
   formatSeconds,
 } from '../../components/ui';
+import { PrecisionChip } from '../../components/Badge';
 import { t } from '../../i18n/fr';
-import { fetchOverview, fetchWeekly } from '../../lib/endpoints';
+import { fetchCourseCoverage, fetchOverview, fetchWeekly } from '../../lib/endpoints';
+import type { CourseCoverage, ModuleCoverage } from '../../lib/schemas';
 
 function StatCard({ label, value, icon }: { label: string; value: number; icon: string }) {
   return (
@@ -41,10 +43,44 @@ function StatCard({ label, value, icon }: { label: string; value: number; icon: 
   );
 }
 
+/**
+ * Answered-question floor for the revision card. Below it a percentage is noise — one
+ * wrong answer out of two is 50% and would outrank a course the student has genuinely
+ * struggled through. Kept in step with the copy in `home.toReviseEmpty`.
+ */
+const MIN_ANSWERED_FOR_ADVICE = 5;
+
+/** Worst précision first, among courses with enough answers to mean anything. */
+function coursesToRevise(modules: ModuleCoverage[]): CourseCoverage[] {
+  return modules
+    .flatMap((m) => m.courses)
+    .filter((c) => c.answeredQuestions >= MIN_ANSWERED_FOR_ADVICE)
+    .sort((a, b) => a.precisionPercent - b.precisionPercent)
+    .slice(0, 3);
+}
+
 export function DashboardPage() {
   const { user } = useAuth();
   const overview = useQuery({ queryKey: ['overview'], queryFn: fetchOverview });
   const weekly = useQuery({ queryKey: ['weekly'], queryFn: fetchWeekly });
+  /**
+   * The coverage endpoint is subscription-gated, and a 403 SUBSCRIPTION_REQUIRED is
+   * globally intercepted into a toast plus a redirect to /app/abonnement. Firing this
+   * query unconditionally would therefore bounce every unsubscribed student straight off
+   * their own dashboard — a page that is deliberately reachable without a subscription.
+   * So we ask only when the answer can be a 200, and hide the card otherwise; the
+   * "Aucun abonnement actif" card directly above already explains why.
+   *
+   * <p>Shares its cache key with /app/suivi, so arriving there from this card is instant.
+   */
+  const staff = user?.role === 'ADMIN' || user?.role === 'TEACHER';
+  const mayFetchCoverage = staff || (user?.activeSubscriptions.length ?? 0) > 0;
+  const coverage = useQuery({
+    queryKey: ['course-coverage'],
+    queryFn: fetchCourseCoverage,
+    enabled: mayFetchCoverage,
+  });
+  const toRevise = coursesToRevise(coverage.data ?? []);
 
   const last = overview.data?.lastSession ?? null;
   const subscription = overview.data?.activeSubscriptions[0] ?? null;
@@ -141,6 +177,36 @@ export function DashboardPage() {
           )}
         </Card>
       </div>
+
+      {/* Cours à réviser — la porte d'entrée vers /app/suivi. Absent sans abonnement :
+          la donnée est derrière le paywall, et /app/suivi le serait aussi. */}
+      {mayFetchCoverage ? (
+      <Card>
+        <SectionHeader title={t('home.toRevise')} />
+        {coverage.isLoading ? (
+          <Skeleton className="h-24" />
+        ) : toRevise.length === 0 ? (
+          <p className="text-sm text-brand-gray">{t('home.toReviseEmpty')}</p>
+        ) : (
+          <ul className="divide-y divide-subtle">
+            {toRevise.map((course) => (
+              <li key={course.courseId} className="flex items-center gap-3 py-2.5">
+                <span className="min-w-0 flex-1 truncate text-sm font-semibold text-brand-navy">
+                  {course.courseName}
+                </span>
+                <span className="shrink-0 text-xs tabular-nums text-brand-gray">
+                  {course.correctQuestions}/{course.answeredQuestions}
+                </span>
+                <PrecisionChip percent={course.precisionPercent} />
+              </li>
+            ))}
+          </ul>
+        )}
+        <LinkButton to="/app/suivi" variant="secondary" className="mt-4 self-start">
+          {t('home.toReviseAll')}
+        </LinkButton>
+      </Card>
+      ) : null}
 
       {/* Performance hebdomadaire */}
       <Card>

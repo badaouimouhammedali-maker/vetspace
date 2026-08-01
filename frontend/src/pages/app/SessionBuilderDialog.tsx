@@ -22,10 +22,23 @@ export function SessionBuilderDialog({
   open,
   onClose,
   defaultType,
+  defaultModuleId = '',
+  defaultCourseIds,
 }: {
   open: boolean;
   onClose: () => void;
   defaultType: SessionType;
+  /**
+   * Opens the dialog with the module/course pickers already set — how "Réviser ce cours"
+   * gets from a coverage row into a session without making the student re-find the course
+   * they just clicked.
+   *
+   * <p>These are initial values only: the fields stay editable, and because they seed
+   * `useState` they are read once at mount. A caller that changes them between opens must
+   * remount the dialog (`key={courseId}`), which is what /app/suivi does.
+   */
+  defaultModuleId?: string;
+  defaultCourseIds?: string[];
 }) {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -33,8 +46,8 @@ export function SessionBuilderDialog({
   const { toast } = useToast();
 
   const [type, setType] = useState<SessionType>(defaultType);
-  const [moduleId, setModuleId] = useState('');
-  const [courseIds, setCourseIds] = useState<string[]>([]);
+  const [moduleId, setModuleId] = useState(defaultModuleId);
+  const [courseIds, setCourseIds] = useState<string[]>(defaultCourseIds ?? []);
   const [sourceExamId, setSourceExamId] = useState('');
   const [difficulty, setDifficulty] = useState('');
   const [onlyUnseen, setOnlyUnseen] = useState(false);

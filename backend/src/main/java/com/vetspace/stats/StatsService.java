@@ -1,14 +1,18 @@
 package com.vetspace.stats;
 
+import com.vetspace.access.SubscriptionGate;
 import com.vetspace.admin.QuestionSpecifications;
 import com.vetspace.domain.session.QuestionState;
 import com.vetspace.domain.session.Session;
 import com.vetspace.domain.session.SessionType;
 import com.vetspace.domain.user.Role;
 import com.vetspace.domain.user.User;
+import com.vetspace.repository.CourseRepository;
+import com.vetspace.repository.CourseRepository.CourseCatalogRow;
 import com.vetspace.repository.MindmapRepository;
 import com.vetspace.repository.QuestionRepository;
 import com.vetspace.repository.SessionQuestionRepository;
+import com.vetspace.repository.SessionQuestionRepository.CourseCoverageRow;
 import com.vetspace.repository.SessionQuestionRepository.CourseStatsRow;
 import com.vetspace.repository.SessionQuestionRepository.SessionProgress;
 import com.vetspace.repository.SessionQuestionRepository.WeeklyRow;
@@ -17,8 +21,10 @@ import com.vetspace.repository.SourceExamRepository;
 import com.vetspace.repository.SubscriptionRepository;
 import com.vetspace.repository.UserRepository;
 import com.vetspace.stats.dto.StatsDtos.BankTotalsDto;
+import com.vetspace.stats.dto.StatsDtos.CourseCoverageDto;
 import com.vetspace.stats.dto.StatsDtos.CourseStatsDto;
 import com.vetspace.stats.dto.StatsDtos.DailyStatsDto;
+import com.vetspace.stats.dto.StatsDtos.ModuleCoverageDto;
 import com.vetspace.stats.dto.StatsDtos.OverviewDto;
 import com.vetspace.stats.dto.StatsDtos.SessionStatsDto;
 import com.vetspace.user.dto.ActiveSubscriptionDto;
@@ -28,6 +34,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -48,11 +56,14 @@ public class StatsService {
     private final MindmapRepository mindmapRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final UserRepository userRepository;
+    private final CourseRepository courseRepository;
+    private final SubscriptionGate subscriptionGate;
 
     public StatsService(SessionRepository sessionRepository, SessionQuestionRepository sessionQuestionRepository,
                          QuestionRepository questionRepository, SourceExamRepository sourceExamRepository,
                          MindmapRepository mindmapRepository, SubscriptionRepository subscriptionRepository,
-                         UserRepository userRepository) {
+                         UserRepository userRepository, CourseRepository courseRepository,
+                         SubscriptionGate subscriptionGate) {
         this.sessionRepository = sessionRepository;
         this.sessionQuestionRepository = sessionQuestionRepository;
         this.questionRepository = questionRepository;
@@ -60,6 +71,8 @@ public class StatsService {
         this.mindmapRepository = mindmapRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.userRepository = userRepository;
+        this.courseRepository = courseRepository;
+        this.subscriptionGate = subscriptionGate;
     }
 
     public List<SessionStatsDto> sessionStats(UUID userId, SessionType type) {
@@ -81,6 +94,75 @@ public class StatsService {
         return sessionQuestionRepository.statsByCourse(sessionId).stream()
             .map(this::toCourseStats)
             .toList();
+    }
+
+    /**
+     * Lifetime per-course coverage for the caller's own study year: how much of each
+     * course they have worked through and how well, grouped by module.
+     *
+     * <p>Subscription-gated like the rest of the QCM bank — this reports on the paid
+     * content, so an unsubscribed student gets 403 SUBSCRIPTION_REQUIRED rather than a
+     * catalogue listing of everything they have not bought. (Staff pass the gate, as
+     * everywhere.)
+     *
+     * <p>Two queries rather than one outer-joined monster: the catalogue totals are the
+     * same for every student of the year, the interaction counts are per user, and they
+     * are indexed from opposite ends. Joining them in Java keeps both plans trivial —
+     * see docs/api.md for the measured plan.
+     */
+    public List<ModuleCoverageDto> courseCoverage(UUID userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unknown user"));
+        subscriptionGate.require(user);
+
+        // Staff have no study year of their own; there is no "their year" to report on.
+        Integer studyYear = user.getStudyYear();
+        if (studyYear == null) {
+            return List.of();
+        }
+
+        Map<UUID, CourseCoverageRow> mine = sessionQuestionRepository.coverageByCourse(userId, studyYear).stream()
+            .collect(Collectors.toMap(CourseCoverageRow::getCourseId, Function.identity()));
+
+        // LinkedHashMap: publishedCatalogForYear already returns catalogue order, and the
+        // grouping must not throw it away — "default order" is one of the sort options.
+        Map<UUID, ModuleAccumulator> byModule = new LinkedHashMap<>();
+        for (CourseCatalogRow row : courseRepository.publishedCatalogForYear(studyYear)) {
+            byModule
+                .computeIfAbsent(row.getModuleId(), id -> new ModuleAccumulator(id, row.getModuleName()))
+                .courses.add(toCoverage(row, mine.get(row.getCourseId())));
+        }
+        return byModule.values().stream().map(ModuleAccumulator::toDto).toList();
+    }
+
+    private static CourseCoverageDto toCoverage(CourseCatalogRow catalog, CourseCoverageRow mine) {
+        long total = catalog.getTotalQuestions();
+        // Absent row = a course never touched. Zeroes, not a gap in the list.
+        long seen = mine == null ? 0 : mine.getSeenQuestions();
+        long answered = mine == null ? 0 : mine.getAnsweredQuestions();
+        long correct = mine == null ? 0 : mine.getCorrectQuestions();
+        // A course with no questions yet divides by nothing: guard the ratio, not the row.
+        double precision = answered == 0 ? 0.0 : round2(correct * 100.0 / answered);
+        return new CourseCoverageDto(catalog.getCourseId(), catalog.getCourseName(),
+            total, seen, answered, correct, Math.max(0, total - seen), precision);
+    }
+
+    /** Mutable while grouping; the module totals are just the sum of its courses. */
+    private static final class ModuleAccumulator {
+        private final UUID moduleId;
+        private final String moduleName;
+        private final List<CourseCoverageDto> courses = new ArrayList<>();
+
+        private ModuleAccumulator(UUID moduleId, String moduleName) {
+            this.moduleId = moduleId;
+            this.moduleName = moduleName;
+        }
+
+        private ModuleCoverageDto toDto() {
+            long total = courses.stream().mapToLong(CourseCoverageDto::totalQuestions).sum();
+            long seen = courses.stream().mapToLong(CourseCoverageDto::seenQuestions).sum();
+            return new ModuleCoverageDto(moduleId, moduleName, total, seen, List.copyOf(courses));
+        }
     }
 
     /** Last 7 days including today, one bucket per UTC day, zero-filled. */

@@ -5,6 +5,7 @@ import {
   countSchema,
   courseSchema,
   courseStatsSchema,
+  moduleCoverageSchema,
   dailyStatsSchema,
   labelSchema,
   meSchema,
@@ -150,6 +151,10 @@ export const fetchSessionStats = (type: SessionType | null) =>
 
 export const fetchCourseStats = (sessionId: string) =>
   apiGet(`/api/stats/sessions/${sessionId}/by-course`, z.array(courseStatsSchema));
+
+/** Lifetime coverage of the caller's own study year, grouped by module. */
+export const fetchCourseCoverage = () =>
+  apiGet('/api/stats/courses', z.array(moduleCoverageSchema));
 
 // MindMaps -------------------------------------------------------------
 

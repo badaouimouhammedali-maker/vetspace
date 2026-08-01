@@ -139,6 +139,7 @@ export const fr = {
   'nav.signals': 'Signals',
   'nav.notifications': 'Notification',
   'nav.cours': 'Cours',
+  'nav.suivi': 'Suivi Cours',
   'nav.abonnement': 'Abonnement',
   'nav.support': 'Support',
   'nav.profile': 'Profile',
@@ -337,6 +338,34 @@ export const fr = {
   'cours.emptyAll': 'Aucun support de cours pour le moment.',
   'cours.emptyYear': 'Aucun support pour cette année.',
   'cours.emptySearch': 'Aucun support ne correspond à votre recherche.',
+
+  // Suivi des cours (couverture par cours)
+  'suivi.title': 'Suivi Cours',
+  'suivi.subtitle': 'Votre couverture cours par cours — et où réviser en priorité.',
+  'suivi.sort': 'Trier par',
+  'suivi.sortDefault': 'Ordre du programme',
+  'suivi.sortWeakest': 'Précision la plus faible',
+  'suivi.sortLeastCovered': 'Les moins couverts',
+  'suivi.progress': 'questions vues',
+  'suivi.answered': 'répondues',
+  'suivi.correct': 'acquises',
+  'suivi.neverSeen': 'jamais vues',
+  'suivi.noQuestions': 'Aucune question pour le moment',
+  'suivi.notStarted': 'Pas encore commencé',
+  'suivi.revise': 'Réviser ce cours',
+  'suivi.empty': "Aucun cours publié pour votre année d'étude.",
+  'suivi.moduleProgress': 'vues',
+  // Le pourcentage est calculé par question distincte, pas par tentative : une question
+  // juste au moins une fois compte comme acquise. Dit explicitement, sinon l'écart avec
+  // le score d'une session ressemble à un bug.
+  // « ÷ » se lit « + » en petit corps, ce qui inverse le sens : formulé en toutes lettres.
+  'suivi.precisionHelp':
+    'Précision = part des questions répondues qui sont acquises, sur l’ensemble de vos sessions. Une question juste au moins une fois compte comme acquise.',
+
+  // Cours à réviser (carte du tableau de bord)
+  'home.toRevise': '3 cours à réviser',
+  'home.toReviseEmpty': 'Répondez à au moins 5 questions dans un cours pour voir vos priorités ici.',
+  'home.toReviseAll': 'Voir tout le suivi',
 
   'notifs.title': 'Notifications',
   'notifs.empty': 'Aucune notification.',

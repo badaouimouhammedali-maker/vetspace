@@ -3,6 +3,7 @@ package com.vetspace.stats;
 import com.vetspace.domain.session.SessionType;
 import com.vetspace.stats.dto.StatsDtos.CourseStatsDto;
 import com.vetspace.stats.dto.StatsDtos.DailyStatsDto;
+import com.vetspace.stats.dto.StatsDtos.ModuleCoverageDto;
 import com.vetspace.stats.dto.StatsDtos.OverviewDto;
 import com.vetspace.stats.dto.StatsDtos.SessionStatsDto;
 import java.util.List;
@@ -35,6 +36,18 @@ public class StatsController {
     @GetMapping("/sessions/{id}/by-course")
     public List<CourseStatsDto> byCourse(@AuthenticationPrincipal UUID userId, @PathVariable UUID id) {
         return statsService.byCourse(userId, id);
+    }
+
+    /**
+     * Lifetime coverage of the caller's own study year, by module and course.
+     *
+     * <p>No id parameter and no user parameter on purpose: the only data this can ever
+     * return is the authenticated caller's, so there is nothing to authorise beyond
+     * being signed in and subscribed.
+     */
+    @GetMapping("/courses")
+    public List<ModuleCoverageDto> courses(@AuthenticationPrincipal UUID userId) {
+        return statsService.courseCoverage(userId);
     }
 
     @GetMapping("/weekly")

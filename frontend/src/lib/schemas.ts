@@ -336,6 +336,33 @@ export const courseStatsSchema = z.object({
 });
 export type CourseStats = z.infer<typeof courseStatsSchema>;
 
+/**
+ * Lifetime coverage of one course — everything counted per distinct question across all
+ * of the student's sessions, not per attempt. `precisionPercent` is
+ * correctQuestions/answeredQuestions, so it answers "how much of this course do I know",
+ * which is a different question from the per-session score in `courseStatsSchema`.
+ */
+export const courseCoverageSchema = z.object({
+  courseId: z.string().uuid(),
+  courseName: z.string(),
+  totalQuestions: z.number(),
+  seenQuestions: z.number(),
+  answeredQuestions: z.number(),
+  correctQuestions: z.number(),
+  neverSeenQuestions: z.number(),
+  precisionPercent: z.number(),
+});
+export type CourseCoverage = z.infer<typeof courseCoverageSchema>;
+
+export const moduleCoverageSchema = z.object({
+  moduleId: z.string().uuid(),
+  moduleName: z.string(),
+  totalQuestions: z.number(),
+  seenQuestions: z.number(),
+  courses: z.array(courseCoverageSchema),
+});
+export type ModuleCoverage = z.infer<typeof moduleCoverageSchema>;
+
 // ---------------------------------------------------------------------
 // MindMaps
 // ---------------------------------------------------------------------

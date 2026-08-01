@@ -572,6 +572,59 @@ Removes the session and (via DB cascade) its question rows and answers.
   same for every student), `lastSession` (same shape as the session stats
   rows, `null` if none) and `activeSubscriptions`.
 
+#### `GET /api/stats/courses` → `200` — lifetime coverage by course
+
+**Subscription required** (`403 SUBSCRIPTION_REQUIRED`); staff pass the gate
+as everywhere. Reports only on the caller's own study year and only on the
+caller's own sessions — there is no id or user parameter to get wrong. A
+staff account with no study year gets `[]`.
+
+Published courses of the year, grouped by module, in catalogue order
+(`module.position`, `module.name`, `course.position`, `course.name`):
+
+```json
+[{"moduleId":"…","moduleName":"Anatomie","totalQuestions":15,"seenQuestions":8,
+  "courses":[{"courseId":"…","courseName":"Ostéologie","totalQuestions":8,
+              "seenQuestions":8,"answeredQuestions":6,"correctQuestions":4,
+              "neverSeenQuestions":0,"precisionPercent":66.67}]}]
+```
+
+Everything is counted **per distinct question across every session**, never
+per attempt:
+
+| field | meaning |
+| --- | --- |
+| `totalQuestions` | published questions in the course (0 for an empty course) |
+| `seenQuestions` | distinct questions that have appeared in one of the caller's sessions, whatever they then did with it — the same definition as the builder's `onlyUnseen` filter, so the two screens cannot disagree |
+| `answeredQuestions` | distinct questions actually answered; a consulted-only question is *seen* but not *answered* |
+| `correctQuestions` | distinct questions answered correctly **at least once**; getting it right in a later session corrects an earlier miss |
+| `neverSeenQuestions` | `totalQuestions - seenQuestions` |
+| `precisionPercent` | `correctQuestions / answeredQuestions × 100`, `0` when nothing is answered |
+
+`precisionPercent` here is **not** the per-session `precisionPercent` above:
+this one asks "how much of this course do I know", the session one asks "how
+well did I do that day". The same student legitimately has different numbers
+for the two, which is why the UI spells the definition out.
+
+Only currently-visible questions count on both sides. A question the student
+saw before it was unpublished stops counting as seen at the same moment it
+stops counting towards the total, so `seenQuestions ≤ totalQuestions` always
+holds and the progress bar cannot exceed 100%.
+
+**Cost.** Two queries — catalogue totals (no user) plus the caller's
+interaction rollup — joined in the service. Measured on a scratch database at
+480 courses / 28 800 questions / 10 000 sessions / 300 000 `session_questions`:
+
+| query | time | plan |
+| --- | --- | --- |
+| interaction rollup | 2.9 ms | `idx_sessions_user_id` → `session_questions_pkey` (session_id prefix) → `questions_pkey` |
+| catalogue totals | 5.0 ms | `idx_questions_course_id`, once more than one study year of content exists |
+
+**No new index was added**: every access path the planner chose is served by
+an index that already exists. With a single year of content the catalogue
+query seq-scans `questions` instead, which is the cheaper plan at that size,
+and the planner switches on its own as the bank grows.
+
 ### Labels (authenticated, own only — foreign ids read as 404)
 
 - `POST /api/labels` `{name, color}` (color must be `#rrggbb`) → `201`;

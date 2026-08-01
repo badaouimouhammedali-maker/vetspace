@@ -56,6 +56,54 @@ public interface SessionQuestionRepository extends JpaRepository<SessionQuestion
     @Query("select distinct sq.id.questionId from SessionQuestion sq where sq.session.user.id = :userId")
     List<UUID> questionIdsSeenByUser(@Param("userId") UUID userId);
 
+    /**
+     * Per-course coverage for one student: how much of each course they have actually
+     * worked through, across every session they have ever run.
+     *
+     * <p>Everything is counted per DISTINCT question, not per session row. A question
+     * answered in four sessions is one question seen, and it counts as correct if it was
+     * right in <em>any</em> of them — "have I got this one yet?", which is the question a
+     * revision screen is answering. Per-attempt accuracy already exists per session at
+     * {@code statsByCourse}; the two numbers are different on purpose.
+     *
+     * <p>Only currently-visible questions are counted, matching
+     * {@link com.vetspace.admin.QuestionSpecifications#visibleToStudent()}. Without that,
+     * a question the student saw before it was unpublished would still count as seen while
+     * no longer counting towards the total, and the progress bar would read over 100%.
+     *
+     * <p>Courses the student has never touched are simply absent from the result; the
+     * service pairs this with the catalogue totals and fills them in as zeroes.
+     */
+    @Query("""
+        select c.id as courseId,
+               count(distinct q.id) as seenQuestions,
+               count(distinct case when sq.state = com.vetspace.domain.session.QuestionState.ANSWERED
+                                   then q.id else null end) as answeredQuestions,
+               count(distinct case when sq.isCorrect = true then q.id else null end) as correctQuestions
+        from SessionQuestion sq
+          join sq.question q
+          join q.course c
+          join c.module m
+        where sq.session.user.id = :userId
+          and m.studyYear = :studyYear
+          and m.published = true
+          and c.published = true
+          and q.published = true
+        group by c.id
+        """)
+    List<CourseCoverageRow> coverageByCourse(@Param("userId") UUID userId,
+                                              @Param("studyYear") Integer studyYear);
+
+    interface CourseCoverageRow {
+        UUID getCourseId();
+
+        long getSeenQuestions();
+
+        long getAnsweredQuestions();
+
+        long getCorrectQuestions();
+    }
+
     interface SessionProgress {
         UUID getSessionId();
 

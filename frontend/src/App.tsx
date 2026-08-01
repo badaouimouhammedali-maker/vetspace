@@ -27,6 +27,7 @@ const DashboardPage = lazy(() => named(import('./pages/app/DashboardPage'), 'Das
 const StatsPage = lazy(() => named(import('./pages/app/StatsPage'), 'StatsPage'));
 const MindmapsPage = lazy(() => named(import('./pages/app/MindmapsPage'), 'MindmapsPage'));
 const CoursPage = lazy(() => named(import('./pages/app/CoursPage'), 'CoursPage'));
+const SuiviPage = lazy(() => named(import('./pages/app/SuiviPage'), 'SuiviPage'));
 const SessionsPage = lazy(() => named(import('./pages/app/SessionsPage'), 'SessionsPage'));
 const LabelsPage = lazy(() => named(import('./pages/app/LabelsPage'), 'LabelsPage'));
 const NotesPage = lazy(() => named(import('./pages/app/NotesPage'), 'NotesPage'));
@@ -163,6 +164,7 @@ export function App() {
             <Route path="statistiques" element={<StatsPage />} />
             <Route path="mindmaps" element={<MindmapsPage />} />
             <Route path="cours" element={<CoursPage />} />
+            <Route path="suivi" element={<SuiviPage />} />
             <Route path="sessions/entrainement" element={<SessionsPage type="ENTRAINEMENT" />} />
             <Route path="sessions/examens" element={<SessionsPage type="EXAMEN" />} />
             <Route path="labels" element={<LabelsPage />} />
