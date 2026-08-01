@@ -23,7 +23,12 @@ export function AuthLayout({ children }: { children: ReactNode }) {
 
       <main className="flex w-full items-center justify-center px-4 py-10 lg:w-1/2">
         <div className="w-full max-w-md">
-          <Link to="/login" className="mb-8 flex justify-center">
+          {/* Only below `lg`. Above it the navy panel next door is already showing the
+              mark, and rendering it again over the card put two copies of the same logo
+              on one screen — which is what "a second duplicate beside it" was. The
+              breakpoint matches the panel's own `lg:flex` exactly, so precisely one of
+              the two is on screen at any width. */}
+          <Link to="/login" className="mb-8 flex justify-center lg:hidden">
             <Logo variant="full" theme="light" size="lg" />
           </Link>
           <Card className="p-8">{children}</Card>
