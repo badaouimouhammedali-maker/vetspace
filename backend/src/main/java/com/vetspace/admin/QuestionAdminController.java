@@ -1,8 +1,10 @@
 package com.vetspace.admin;
 
 import com.vetspace.admin.dto.ModuleDtos.PublishRequest;
+import com.vetspace.admin.dto.QuestionDtos.ImportDryRunResult;
 import com.vetspace.admin.dto.QuestionDtos.ImportResult;
 import com.vetspace.admin.dto.QuestionDtos.QuestionAdminDto;
+import com.vetspace.admin.dto.QuestionDtos.QuestionImportRow;
 import com.vetspace.admin.dto.QuestionDtos.QuestionRequest;
 import com.vetspace.domain.content.Difficulty;
 import com.vetspace.web.PageResponse;
@@ -80,7 +82,21 @@ public class QuestionAdminController {
     /** Rows are validated together; any failure returns 400 with per-row errors and persists nothing. */
     @PostMapping("/import")
     @ResponseStatus(HttpStatus.CREATED)
-    public ImportResult importQuestions(@RequestBody List<QuestionRequest> rows) {
+    public ImportResult importQuestions(@RequestBody List<QuestionImportRow> rows) {
         return service.importQuestions(rows);
+    }
+
+    /**
+     * Same body, same validation, nothing written: reports what each row resolved to plus
+     * every error at once.
+     *
+     * <p>A separate path rather than {@code /import?dryRun=true} so that "this call cannot
+     * write" is visible in the URL — in an access log, in a proxy rule, in a screenshot of
+     * the network tab — and so the two responses can be different types instead of one
+     * union the client has to narrow.
+     */
+    @PostMapping("/import/dry-run")
+    public ImportDryRunResult dryRunImport(@RequestBody List<QuestionImportRow> rows) {
+        return service.dryRun(rows);
     }
 }

@@ -8,6 +8,7 @@ import {
   adminOverviewSchema,
   adminPackSchema,
   adminSchoolSchema,
+  importDryRunSchema,
   moduleResourceSummarySchema,
   resourceSchema,
   adminSourceExamSchema,
@@ -201,6 +202,12 @@ export const importQuestions = (rows: unknown[]) =>
   api
     .post('/api/admin/questions/import', rows)
     .then((r) => z.object({ imported: z.number(), questionIds: z.array(z.string()) }).parse(r.data));
+
+/** Same body, same validation, writes nothing — a distinct path so that is true by construction. */
+export const dryRunImportQuestions = (rows: unknown[]) =>
+  api
+    .post('/api/admin/questions/import/dry-run', rows)
+    .then((r) => importDryRunSchema.parse(r.data));
 
 // Media ----------------------------------------------------------------
 export const uploadContentImage = (file: File) => {

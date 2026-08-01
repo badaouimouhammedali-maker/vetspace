@@ -17,6 +17,36 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
     int maxPosition(@Param("moduleId") UUID moduleId);
 
     /**
+     * Name-based lookup for the bulk import, so authors can write "Parvovirose" instead of
+     * a UUID. Returns a list, never an Optional: course names are unique to nothing —
+     * "Ostéologie" can exist in several modules and several years — so the caller has to
+     * see every match and refuse an ambiguous one rather than silently import into
+     * whichever row came back first.
+     *
+     * <p>`moduleName` and `studyYear` are optional narrowing: null means "don't filter on
+     * it", which is how one field can disambiguate without the author having to supply all
+     * three. Matching is case-insensitive; the caller trims.
+     *
+     * <p>Two things here are load-bearing rather than style, both because a NULL parameter
+     * gives Postgres nothing to infer a type from — the driver then binds `bytea` and the
+     * statement dies with "function lower(bytea) does not exist", at runtime and only on
+     * the null path. The `cast(...)` pins the type at the `is null` test, and
+     * `moduleNameLower` is pre-lowercased by the caller so the nullable parameter never
+     * sits inside a `lower()` call where it would be untyped again.
+     */
+    @Query("""
+        select c from Course c
+          join c.module m
+        where lower(c.name) = lower(:courseName)
+          and (cast(:moduleNameLower as string) is null or lower(m.name) = :moduleNameLower)
+          and (cast(:studyYear as integer) is null or m.studyYear = :studyYear)
+        order by m.studyYear asc, m.name asc, c.name asc
+        """)
+    List<Course> findByNameForImport(@Param("courseName") String courseName,
+                                      @Param("moduleNameLower") String moduleNameLower,
+                                      @Param("studyYear") Integer studyYear);
+
+    /**
      * The published catalogue of one study year, with each course's published-question
      * count — the denominators of the coverage screen.
      *

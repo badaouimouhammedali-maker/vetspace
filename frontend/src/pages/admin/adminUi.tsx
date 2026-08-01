@@ -79,17 +79,26 @@ export function GhostButton({
   children,
   onClick,
   tone = 'gray',
+  type = 'button',
 }: {
   children: ReactNode;
   onClick?: () => void;
   tone?: 'gray' | 'red';
+  type?: 'button' | 'submit';
 }) {
   // Delegates rather than re-implements: this was the last place in the admin area with
   // its own idea of what a button's radius, weight and transition are.
+  //
+  // `type` defaults to "button", not the HTML default of "submit". Every GhostButton is a
+  // secondary action — Annuler, Fermer, Télécharger — and inside a <form> the HTML default
+  // made all of them submit it: clicking "Annuler" in the JSON import dialog closed the
+  // modal AND fired the import it was cancelling. Pass type="submit" explicitly if a ghost
+  // button is ever genuinely the form's submit.
   return (
     <Button
       variant={tone === 'red' ? 'danger' : 'secondary'}
       size="sm"
+      type={type}
       onClick={onClick}
       {...(tone === 'red'
         ? { className: 'bg-transparent border border-danger text-danger hover:bg-danger/10' }

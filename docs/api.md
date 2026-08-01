@@ -314,11 +314,10 @@ resources, with nested propositions managed as part of the question:
 
 #### `POST /api/admin/questions/import` (ADMIN, TEACHER)
 
-Bulk import. Body: a JSON **array** of question objects (same shape as
-create). Validation is **all-or-nothing**: every row is checked first
-(unknown course/source exam, blank statement, proposition rules) and any
-failure returns `400` with the standard error shape **plus** a per-row
-detail list — nothing is persisted, not even valid rows:
+Bulk import. Body: a JSON **array** of import rows. Validation is
+**all-or-nothing**: every row is checked first and any failure returns `400`
+with the standard error shape **plus** a per-row detail list — nothing is
+persisted, not even valid rows:
 
 ```json
 {
@@ -333,6 +332,76 @@ detail list — nothing is persisted, not even valid rows:
 ```
 
 Success: `201` `{ "imported": N, "questionIds": [ … ] }`.
+
+##### Identifying the course and the exam
+
+A row is the create shape plus name-based alternatives to the UUIDs, so a
+file can be authored by hand:
+
+| field | notes |
+| --- | --- |
+| `courseId` | the original form, still supported unchanged |
+| `courseName` | resolved server-side, case-insensitive, trimmed |
+| `moduleName`, `studyYear` | optional narrowing for `courseName` |
+| `sourceExamId` | the original form |
+| `sourceExamLabel` | resolved the same way |
+
+```json
+[{ "courseName": "Parvovirose",
+   "moduleName": "Maladies infectieuses",
+   "studyYear": 3,
+   "statement": "Concernant la transmission du parvovirus canin :",
+   "sourceExamLabel": "Session normale 2025",
+   "difficulty": "MEDIUM",
+   "published": true,
+   "propositions": [ … ] }]
+```
+
+Rules, all reported as ordinary per-row errors:
+
+- **Zero matches** → `no course named "X"` (echoing any module/year given, so
+  the message says what was actually searched for).
+- **Several matches** → an error, never a guess. `"Ostéologie"` exists in more
+  than one year of a real catalogue, and picking the first would put a whole
+  file into the wrong course silently. The message names the count, every
+  candidate as `module/year`, and the fix:
+  `2 courses named "Parvovirose" — Maladies infectieuses/year 3, Maladies
+  infectieuses/year 4; add moduleName/studyYear or use courseId`.
+- **Both forms for the same field** → rejected, rather than letting the id win.
+  A name that disagrees with its id would otherwise sit unnoticed in a file
+  while every question landed elsewhere.
+- `moduleName` or `studyYear` **without** `courseName` is still the name form,
+  and fails with `courseName: must not be blank (or supply courseId)`.
+
+#### `POST /api/admin/questions/import/dry-run` (ADMIN, TEACHER) → `200`
+
+Same body, same resolution, same validation — **writes nothing**. A separate
+path rather than `?dryRun=true` so that "this call cannot write" is visible in
+an access log and in a proxy rule, and so the two responses can be distinct
+types. The service method is `@Transactional(readOnly = true)`, which makes
+that a property of the transaction rather than a promise about the code.
+
+```json
+{
+  "rowsSubmitted": 3,
+  "wouldImport": 1,
+  "resolved": [
+    { "row": 0, "statement": "…", "courseId": "…", "courseName": "Leptospirose",
+      "moduleName": "Maladies infectieuses", "studyYear": 3,
+      "sourceExamId": null, "sourceExamLabel": null,
+      "difficulty": null, "published": true, "propositionCount": 2 }
+  ],
+  "errors": [
+    { "row": 1, "field": "courseName", "message": "2 courses named \"Parvovirose\" — …" },
+    { "row": 2, "field": "courseName", "message": "no course named \"Trypanosomose\"" }
+  ]
+}
+```
+
+`resolved` echoes the **names** each row resolved to, which is the only way to
+catch a file that is perfectly valid and aimed at the wrong course. Unlike the
+real import it is not all-or-nothing: valid rows are still reported, so the
+author can see how far the file got. An empty array is `400` on both paths.
 
 #### `GET /api/questions/count` (authenticated)
 

@@ -9,6 +9,7 @@ import { apiErrorMessage, apiErrorReference } from '../../lib/api';
 import {
   createQuestion,
   deleteQuestion,
+  dryRunImportQuestions,
   fetchAdminCourses,
   fetchAdminModules,
   fetchAdminQuestions,
@@ -25,9 +26,11 @@ import {
   type AdminCourse,
   type AdminSourceExam,
   type Difficulty,
+  type ImportDryRun,
   type QuestionAdmin,
 } from '../../lib/schemas';
 import { z } from 'zod';
+import { downloadImportSample } from './questionImportSample';
 import {
   AdminHeader,
   AdminToolbar,
@@ -725,6 +728,15 @@ function BulkImportModal({ onClose }: { onClose: () => void }) {
   const [text, setText] = useState('');
   const [rowErrors, setRowErrors] = useState<{ row: number; field: string; message: string }[]>([]);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [dryRun, setDryRun] = useState(true);
+  const [preview, setPreview] = useState<ImportDryRun | null>(null);
+
+  /** Shared by both paths: a fresh submit must not leave the previous run's output on screen. */
+  function clearOutput() {
+    setParseError(null);
+    setRowErrors([]);
+    setPreview(null);
+  }
 
   const run = useMutation({
     mutationFn: (rows: unknown[]) => importQuestions(rows),
@@ -734,8 +746,12 @@ function BulkImportModal({ onClose }: { onClose: () => void }) {
       onClose();
     },
     onError: (e) => {
-      const body = (e as { response?: { data?: unknown } })?.response?.data;
-      const parsed = z.array(importRowErrorSchema).safeParse(body);
+      const body = (e as { response?: { data?: { errors?: unknown } } })?.response?.data;
+      // The handler wraps row errors in {error, message, errors}; older shapes sent the
+      // bare array. Accept both rather than falling back to a generic toast.
+      const parsed = z
+        .array(importRowErrorSchema)
+        .safeParse(Array.isArray(body) ? body : body?.errors);
       if (parsed.success) {
         setRowErrors(parsed.data);
       } else {
@@ -744,10 +760,18 @@ function BulkImportModal({ onClose }: { onClose: () => void }) {
     },
   });
 
+  const validate = useMutation({
+    mutationFn: (rows: unknown[]) => dryRunImportQuestions(rows),
+    onSuccess: (r) => {
+      setPreview(r);
+      setRowErrors(r.errors);
+    },
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Échec de la validation', apiErrorReference(e)),
+  });
+
   function submit(e: FormEvent) {
     e.preventDefault();
-    setParseError(null);
-    setRowErrors([]);
+    clearOutput();
     let rows: unknown;
     try {
       rows = JSON.parse(text);
@@ -759,24 +783,73 @@ function BulkImportModal({ onClose }: { onClose: () => void }) {
       setParseError('Le JSON doit être un tableau de questions.');
       return;
     }
-    run.mutate(rows);
+    if (dryRun) {
+      validate.mutate(rows);
+    } else {
+      run.mutate(rows);
+    }
   }
+
+  const busy = run.isPending || validate.isPending;
 
   return (
     <Modal open onClose={onClose} title="Import JSON de questions">
       <form onSubmit={submit} className="space-y-4">
         <p className="text-sm text-brand-gray">
-          Collez un tableau JSON d'objets question. Toute erreur annule l'import entier et liste les
-          lignes fautives.
+          Collez un tableau JSON d'objets question. Identifiez le cours par son nom (
+          <span className="font-mono text-xs">courseName</span>, avec au besoin{' '}
+          <span className="font-mono text-xs">moduleName</span> et{' '}
+          <span className="font-mono text-xs">studyYear</span> pour lever une ambiguïté) ou par son{' '}
+          <span className="font-mono text-xs">courseId</span> — jamais les deux. Toute erreur annule
+          l'import entier et liste les lignes fautives.
         </p>
+
+        <GhostButton onClick={downloadImportSample}>Télécharger un exemple</GhostButton>
+
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={10}
-          placeholder='[{"courseId":"…","statement":"…","propositions":[…]}]'
+          placeholder='[{"courseName":"Parvovirose","moduleName":"Maladies infectieuses","studyYear":3,"statement":"…","published":true,"propositions":[…]}]'
           className="w-full rounded-lg border border-gray-300 p-2 font-mono text-xs text-brand-navy focus:border-brand-green focus:outline-none"
         />
+
+        <label className="flex items-center gap-2 text-sm font-medium text-brand-navy">
+          <input
+            type="checkbox"
+            checked={dryRun}
+            onChange={(e) => {
+              setDryRun(e.target.checked);
+              clearOutput();
+            }}
+            className="h-4 w-4 rounded border-gray-300 accent-brand-green"
+          />
+          Valider sans importer
+        </label>
+
         {parseError ? <p className="text-sm font-semibold text-danger">{parseError}</p> : null}
+
+        {preview ? (
+          <div className="rounded-lg border border-subtle bg-canvas p-3 text-sm">
+            <p className="font-bold text-brand-navy">
+              {preview.wouldImport}/{preview.rowsSubmitted} ligne(s) seraient importées — rien n'a
+              été enregistré.
+            </p>
+            {preview.resolved.length > 0 ? (
+              <ul className="mt-2 max-h-40 space-y-1 overflow-y-auto text-xs text-brand-gray">
+                {preview.resolved.map((r) => (
+                  <li key={r.row}>
+                    Ligne {r.row + 1} → <span className="font-semibold">{r.courseName}</span> ·{' '}
+                    {r.moduleName} · {r.studyYear}
+                    {r.sourceExamLabel ? ` · ${r.sourceExamLabel}` : ''} ·{' '}
+                    {r.propositionCount} propositions · {r.published ? 'publiée' : 'brouillon'}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ) : null}
+
         {rowErrors.length > 0 ? (
           <div className="max-h-40 overflow-y-auto rounded-lg border border-danger bg-danger/10 p-3 text-sm">
             <p className="mb-1 font-bold text-danger">Erreurs par ligne :</p>
@@ -790,10 +863,11 @@ function BulkImportModal({ onClose }: { onClose: () => void }) {
             </ul>
           </div>
         ) : null}
+
         <div className="flex justify-end gap-2">
           <GhostButton onClick={onClose}>Annuler</GhostButton>
-          <PrimaryButton type="submit" disabled={run.isPending}>
-            Importer
+          <PrimaryButton type="submit" disabled={busy}>
+            {dryRun ? 'Valider' : 'Importer'}
           </PrimaryButton>
         </div>
       </form>

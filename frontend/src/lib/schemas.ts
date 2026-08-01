@@ -563,6 +563,30 @@ export const importRowErrorSchema = z.object({
 });
 export type ImportRowError = z.infer<typeof importRowErrorSchema>;
 
+/** What one row of an import would resolve to — the dry run's readable output. */
+export const importRowPreviewSchema = z.object({
+  row: z.number(),
+  statement: z.string(),
+  courseId: z.string().uuid(),
+  courseName: z.string(),
+  moduleName: z.string(),
+  studyYear: z.number(),
+  sourceExamId: z.string().uuid().nullable(),
+  sourceExamLabel: z.string().nullable(),
+  difficulty: z.enum(['EASY', 'MEDIUM', 'HARD']).nullable(),
+  published: z.boolean(),
+  propositionCount: z.number(),
+});
+export type ImportRowPreview = z.infer<typeof importRowPreviewSchema>;
+
+export const importDryRunSchema = z.object({
+  rowsSubmitted: z.number(),
+  wouldImport: z.number(),
+  resolved: z.array(importRowPreviewSchema),
+  errors: z.array(importRowErrorSchema),
+});
+export type ImportDryRun = z.infer<typeof importDryRunSchema>;
+
 // Overview
 export const registrationSchema = z.object({
   id: z.string().uuid(),
