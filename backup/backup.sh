@@ -50,6 +50,18 @@ WORK=$(mktemp -d)
 trap "rm -rf '$WORK'" EXIT
 DUMP="${WORK}/dump.sql"
 
+echo "[0/5] wait for the database to be reachable"
+# Railway's private network (postgres.railway.internal) takes a couple of seconds to come
+# up inside a new container. A long-lived API never notices; a cron job that connects
+# immediately and exits does — it would fail with "could not translate host name" on a
+# perfectly healthy database, nightly, at 02:00, where nobody is watching.
+ATTEMPT=1
+until pg_isready -d "$DATABASE_URL" -q 2>/dev/null; do
+    [ "$ATTEMPT" -lt 15 ] || fail "database not reachable after ${ATTEMPT} attempts"
+    ATTEMPT=$((ATTEMPT + 1))
+    sleep 2
+done
+
 echo "[1/5] pg_dump"
 # To a file, NOT through a pipe, so the exit status is pg_dump's own.
 # --no-owner/--no-acl: the restore target is a fresh database with a different role name,
