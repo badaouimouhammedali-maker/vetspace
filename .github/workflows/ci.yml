@@ -112,6 +112,95 @@ jobs:
           DB_PASSWORD: vetspace
         run: scripts/config-sanity.sh
 
+  backup:
+    name: Backup (dump -> object storage -> restore into a scratch database)
+    runs-on: ubuntu-latest
+    # The backup only matters on the day it is used, which is the worst possible day to
+    # discover it has rotted. So CI takes a real dump, uploads it to a real S3-compatible
+    # endpoint, restores it into a real database and reads rows back out. A green tick
+    # here means the recovery path executed end to end, not that a script parsed.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: vetspace
+          POSTGRES_USER: vetspace
+          POSTGRES_PASSWORD: vetspace
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U vetspace -d vetspace"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      minio:
+        image: bitnami/minio:latest
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+          MINIO_DEFAULT_BUCKETS: vetspace-backups
+        ports: ['9000:9000']
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      R2_ENDPOINT: http://localhost:9000
+      R2_BACKUP_BUCKET: vetspace-backups
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the backup image
+        run: docker build -t vetspace-backup:ci backup/
+
+      # Something has to exist to be backed up, and it has to be the real schema: the
+      # dump verification asserts on flyway_schema_history and a table count, which is
+      # exactly the check that would catch a dump of the wrong database.
+      - name: Apply migrations
+        working-directory: backend
+        run: ./mvnw -B -q flyway:migrate -Dflyway.url=jdbc:postgresql://localhost:5432/vetspace -Dflyway.user=vetspace -Dflyway.password=vetspace -Dflyway.locations=filesystem:src/main/resources/db/migration
+
+      - name: Take a backup
+        run: |
+          docker run --rm --network host \
+            -e DATABASE_URL="postgres://vetspace:vetspace@localhost:5432/vetspace" \
+            -e R2_ENDPOINT -e R2_BACKUP_BUCKET \
+            -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY \
+            vetspace-backup:ci
+
+      - name: Restore it into a scratch database
+        run: |
+          docker run --rm --network host \
+            -e R2_ENDPOINT -e R2_BACKUP_BUCKET \
+            -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY \
+            -e SCRATCH_ADMIN_URL="postgres://vetspace:vetspace@localhost:5432/postgres" \
+            --entrypoint /usr/local/bin/restore-check.sh vetspace-backup:ci
+
+      # The destructive path deserves its own proof. A backup job that prunes the wrong
+      # objects is worse than one that never prunes at all.
+      - name: Retention deletes only what is past the window
+        run: |
+          docker run --rm --network host \
+            -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_DEFAULT_REGION=auto \
+            --entrypoint sh vetspace-backup:ci -c '
+              echo stale > /tmp/old.gz
+              aws --endpoint-url '"$R2_ENDPOINT"' s3 cp /tmp/old.gz \
+                s3://'"$R2_BACKUP_BUCKET"'/db/vetspace-20200101T000000Z.sql.gz >/dev/null'
+          docker run --rm --network host \
+            -e DATABASE_URL="postgres://vetspace:vetspace@localhost:5432/vetspace" \
+            -e R2_ENDPOINT -e R2_BACKUP_BUCKET \
+            -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY \
+            -e RETENTION_DAYS=30 vetspace-backup:ci
+          REMAINING=$(docker run --rm --network host \
+            -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_DEFAULT_REGION=auto \
+            --entrypoint aws vetspace-backup:ci \
+            --endpoint-url "$R2_ENDPOINT" s3 ls "s3://$R2_BACKUP_BUCKET/db/")
+          echo "$REMAINING"
+          if echo "$REMAINING" | grep -q "vetspace-20200101"; then
+            echo "::error::retention did not prune the stale backup"; exit 1
+          fi
+          if [ "$(echo "$REMAINING" | grep -c 'vetspace-')" -lt 2 ]; then
+            echo "::error::retention pruned backups that were inside the window"; exit 1
+          fi
+
   e2e:
     name: E2E (Playwright vs seeded docker-compose stack)
     runs-on: ubuntu-latest

@@ -45,57 +45,101 @@ test.
 ### 1.2 Scheduled `pg_dump` to R2
 
 The independent copy. Runs as a separate Railway **cron service** so a mistake in the
-API cannot take the backups with it.
+API — a bad deploy, a bad migration, a leaked application credential — cannot take the
+backups with it.
 
-Create a new service in the same project, no HTTP port, with this start command:
+**It lives in this repository, at [`backup/`](../backup).** That is deliberate: the
+previous version of this section was a shell snippet to paste into the Railway dashboard,
+and the result was a runbook that described a system nobody had built. Code in the repo
+is reviewable, versioned, and — see §1.4 — exercised by CI on every push, so it cannot
+quietly stop matching this page.
 
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
+| File | What it is |
+|---|---|
+| `backup/Dockerfile` | `postgres:16-alpine` + `aws-cli`, runs as a non-root user, no HTTP port |
+| `backup/backup.sh` | dump → verify → upload → verify → optional prune |
+| `backup/restore-check.sh` | restore the newest backup into a throwaway database and read rows back |
+| `backup/railway.json` | tells Railway to build the Dockerfile and never restart the job |
 
-STAMP=$(date -u +%Y%m%dT%H%M%SZ)
-FILE="vetspace-${STAMP}.sql.gz"
+#### Create the Railway service (once)
 
-# --no-owner/--no-acl: the restore target is a fresh database with a different role
-# name, and ownership statements would fail every single time.
-pg_dump "$DATABASE_URL" --no-owner --no-acl --format=plain \
-  | gzip -9 > "/tmp/${FILE}"
-
-# R2 is S3-compatible; awscli works against it with an endpoint override.
-aws s3 cp "/tmp/${FILE}" "s3://${R2_BACKUP_BUCKET}/db/${FILE}" \
-  --endpoint-url "${R2_ENDPOINT}"
-
-echo "uploaded ${FILE} ($(du -h "/tmp/${FILE}" | cut -f1))"
-rm -f "/tmp/${FILE}"
-```
-
-Service variables:
+1. New service in the same project, from this repository, **Root Directory** `backup`.
+2. No public networking — it serves nothing.
+3. *Settings* → *Cron Schedule* → `0 2 * * *` (02:00 UTC daily).
+4. Variables:
 
 | Variable | Value |
 |---|---|
 | `DATABASE_URL` | reference the Postgres service's own variable |
 | `R2_ENDPOINT` | `https://<account-id>.r2.cloudflarestorage.com` |
-| `R2_BACKUP_BUCKET` | a bucket **separate** from the media bucket |
+| `R2_BACKUP_BUCKET` | a bucket used for **nothing else** |
 | `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | an R2 token scoped to that bucket only |
-| `AWS_DEFAULT_REGION` | `auto` |
-
-Schedule: Railway service → *Settings* → *Cron Schedule* → `0 2 * * *` (02:00 UTC daily).
+| `RETENTION_DAYS` | *optional.* Unset means **never delete** — see below |
 
 Two things worth doing once, now rather than later:
 
 - **Scope the R2 token to the backup bucket.** A token that can also reach the media
   bucket means one leaked credential loses the backups and the uploads together.
-- **Turn on a bucket lifecycle rule** (R2 → bucket → *Settings* → *Object lifecycle*) to
-  expire objects after 30 days, or the bucket grows forever and the bill with it.
+- **Use a separate bucket.** Same reason, and it keeps "how much am I storing" answerable.
+
+#### What the job refuses to call success
+
+The failure this guards against is not an errored job — that is visible. It is a job
+reporting success while producing a valid gzip of nothing, which is what a plain
+`pg_dump | gzip | aws s3 cp` does when `pg_dump` dies halfway: gzip still exits 0, the
+object still lands, and the first anyone knows is the day someone tries to restore it.
+
+So the dump is written to a file rather than through a pipe (the exit status is
+`pg_dump`'s own), and then it must carry the `PostgreSQL database dump complete` marker,
+mention `flyway_schema_history`, define at least 10 tables, verify as a gzip archive, and
+match its own byte count once read back out of R2. Any of those failing exits non-zero and
+Railway shows the run as failed.
+
+#### Retention
+
+`RETENTION_DAYS` is **off unless you set it**. A backup job that deletes by default is one
+typo in one environment variable away from deleting the thing it exists to protect;
+opting in is a decision made once, on purpose. Pruning reads the timestamp out of the
+object key, so it depends on no clock but the one that wrote it.
+
+#### The Postgres version is load-bearing
+
+`backup/Dockerfile` pins `postgres:16-alpine` to match production, and **when Railway's
+Postgres is upgraded that line moves in the same change.**
+
+It is tempting to run a newer client on the reasoning that `pg_dump` can dump older
+servers but refuses newer ones. That is true for taking the dump and irrelevant to using
+it: `pg_dump` 17 emits `SET transaction_timeout`, which does not exist before 17, so every
+such dump fails on its first statement when restored into a 16 server. `restore-check.sh`
+caught exactly that, which is the entire argument for §1.4. Forgetting to bump fails
+loudly — `pg_dump` refuses a server newer than itself and the job exits non-zero.
 
 ### 1.3 Check it is actually running
 
 ```bash
-aws s3 ls "s3://${R2_BACKUP_BUCKET}/db/" --endpoint-url "${R2_ENDPOINT}" | tail -5
+docker run --rm \
+  -e R2_ENDPOINT -e R2_BACKUP_BUCKET -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY \
+  -e SCRATCH_ADMIN_URL="postgres://…/postgres" \
+  --entrypoint /usr/local/bin/restore-check.sh <the backup image>
 ```
 
-A dump much smaller than yesterday's is the signal to care about — it usually means
-`pg_dump` failed partway and the pipe still produced a valid gzip of nothing.
+This downloads the newest backup, restores it into a uniquely-named scratch database,
+prints the row counts and the Flyway version, asserts no migration is recorded as failed,
+and drops the scratch database again. It writes nothing to the bucket and nothing to the
+database it came from.
+
+A dump much smaller than yesterday's is still worth noticing, but it is no longer the
+primary signal — the job now refuses to upload one.
+
+### 1.4 CI runs the whole thing on every push
+
+The `backup` job in `.github/workflows/ci.yml` builds the image, applies the real
+migrations to a Postgres service, takes a backup into a MinIO service, restores it into a
+scratch database, and separately proves that retention deletes a stale object and keeps a
+recent one. A green tick means the recovery path executed end to end.
+
+A backup you have never restored is a hypothesis. This is the experiment, run continuously
+rather than remembered.
 
 ---
 
