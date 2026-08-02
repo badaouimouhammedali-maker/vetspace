@@ -59,6 +59,7 @@ values.
 | `SEED_ADMIN` | ⚙️ | `true` **once**, then delete | Runs the one-shot admin bootstrap. |
 | `AUTO_VERIFY_EMAILS` | ⚙️ | *(leave unset)* | Dev/e2e only. `true` marks new accounts verified without sending mail. **The prod profile refuses to start with it on.** |
 | `RATE_LIMITS_ENABLED` | ⚙️ | *(leave unset)* | Dev/e2e only. `false` disables every rate limiter. **The prod profile refuses to start with it off.** |
+| `MAX_CONCURRENT_SESSIONS` | ⚙️ | *(leave unset — defaults to 1)* | Anti-sharing. `1` means a new login closes every other session for that account: one subscription, one device. Raise to `2` if legitimate phone-plus-laptop use generates more support than sharing costs — above 1 the least-recently-used session is evicted instead. Values below 1 are clamped to 1, so a typo cannot disable the paywall's only enforcement. No redeploy of the frontend needed. |
 | `DB_POOL_MAX` / `DB_POOL_MIN` | ⚙️ | `10` / `2` | Hikari pool bounds — see §13 before raising. |
 | `COOKIE_SAME_SITE` | ⚙️ | `Lax` | Correct for the proxied same-origin setup in §3. Use `None` only if the SPA calls Railway directly. |
 | `COOKIE_SECURE` | ⚙️ | `true` | Always `true` in production. |

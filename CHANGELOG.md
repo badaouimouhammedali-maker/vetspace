@@ -12,6 +12,39 @@ Nothing has been released publicly yet, so everything to date sits under
 
 ### Added
 
+- **One active session per account.** A new login closes the account's other sessions —
+  one subscription, one device. `MAX_CONCURRENT_SESSIONS` (default 1) loosens the policy
+  without a code change; above 1 the least-recently-used session is evicted instead.
+  Refresh tokens now record the device ("Chrome sur Windows", derived from the
+  User-Agent), the origin IP and last use, and *why* they were revoked — without that
+  last part a device evicted by this policy is indistinguishable from an attacker
+  replaying a stolen token, and both were answered as reuse. The evicted device gets
+  `401 SESSION_SUPERSEDED` and a screen that says so in words, distinct from an ordinary
+  expiry, because it is the one case where the right next step may be to change your
+  password. Both auth pages warn about the rule up front rather than letting it be
+  discovered by being logged out. Eviction is **not** instant: the evicted device keeps
+  working until its access token expires, up to 15 minutes. Admins get logins and
+  distinct-IP counts over 7 days per student — the sharing signal — plus "Révoquer la
+  session active", which ends sessions without disabling the account.
+
+- **Per-course coverage.** Students could see how one session went but not how much of a
+  course they had worked through. `/app/suivi` reports, per course of their year, how
+  many published questions exist, how many they have seen, answered and got right, and
+  sorts by weakest précision or least covered — the two questions a revision plan is made
+  of. Everything is counted per distinct question across every session, so a question
+  answered right in a later session corrects an earlier miss; that makes this précision
+  deliberately different from the per-session score, and both the API docs and the UI say
+  so. The dashboard gains a compact "3 cours à réviser" card.
+
+- **Question import by name.** Import rows may identify their target as
+  `{"courseName": "Parvovirose", "moduleName": "…", "studyYear": 3}` instead of a UUID,
+  with `sourceExamLabel` likewise; the UUID form still works unchanged. An ambiguous name
+  is an error naming every candidate, never a guess — "Ostéologie" exists in more than one
+  year of a real catalogue and picking the first would silently fill the wrong course.
+  Supplying both an id and a name for the same field is refused rather than resolved by
+  precedence. Plus a dry run that reports what each row *would* become and writes nothing,
+  and a downloadable sample file whose validity is asserted by a test.
+
 - **Free study-resource library.** Study material — PDFs and images attached to a module
   — is now free to any logged-in student, while the QCM bank stays behind the
   subscription. Students get `/app/cours`: year selector defaulting to their own year,
