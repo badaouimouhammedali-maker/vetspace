@@ -145,7 +145,7 @@ class EmailVerificationIntegrationTest {
 
     @Test
     void loginIsRefusedUntilTheAddressIsVerified() {
-        assertThatThrownBy(() -> authService.login(user.getEmail(), PASSWORD))
+        assertThatThrownBy(() -> authService.login(user.getEmail(), PASSWORD, DeviceContext.unknown()))
             .isInstanceOf(ResponseStatusException.class)
             .satisfies(e -> {
                 ResponseStatusException ex = (ResponseStatusException) e;
@@ -164,7 +164,7 @@ class EmailVerificationIntegrationTest {
 
         assertThat(userRepository.findById(user.getId()).orElseThrow().isEmailVerified()).isTrue();
         // Login now succeeds.
-        assertThat(authService.login(user.getEmail(), PASSWORD).accessToken()).isNotBlank();
+        assertThat(authService.login(user.getEmail(), PASSWORD, DeviceContext.unknown()).accessToken()).isNotBlank();
     }
 
     @Test

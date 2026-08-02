@@ -80,7 +80,7 @@ class AccountLockoutIntegrationTest {
     /** Attempts a login and returns the failure message, or null when it succeeded. */
     private String attempt(String password) {
         try {
-            authService.login(user.getEmail(), password);
+            authService.login(user.getEmail(), password, DeviceContext.unknown());
             return null;
         } catch (ResponseStatusException e) {
             return e.getReason();
@@ -156,7 +156,7 @@ class AccountLockoutIntegrationTest {
 
         String unknownAccount;
         try {
-            authService.login("no-such-user-" + UUID.randomUUID() + "@vetspace.dz", "whatever");
+            authService.login("no-such-user-" + UUID.randomUUID() + "@vetspace.dz", "whatever", DeviceContext.unknown());
             unknownAccount = null;
         } catch (ResponseStatusException e) {
             unknownAccount = e.getReason();

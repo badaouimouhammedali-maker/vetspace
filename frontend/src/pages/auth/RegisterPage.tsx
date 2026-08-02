@@ -200,6 +200,13 @@ export function RegisterPage() {
 
         {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
 
+        {/* Stated at sign-up, not discovered later: the one-device rule is part of what
+            someone is agreeing to, and finding out by being logged out is not "told". */}
+        <p className="flex items-start gap-2 text-xs text-brand-gray">
+          <span aria-hidden>ℹ️</span>
+          <span>{t('register.singleDeviceNotice')}</span>
+        </p>
+
         <SubmitButton loading={loading}>{t('register.submit')}</SubmitButton>
       </form>
 

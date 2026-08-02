@@ -1,5 +1,6 @@
 package com.vetspace.auth;
 
+import com.vetspace.domain.user.RevocationReason;
 import com.vetspace.domain.user.PasswordResetToken;
 import com.vetspace.domain.user.User;
 import com.vetspace.mail.AppMailSender;
@@ -93,6 +94,6 @@ public class PasswordResetService {
         token.setUsedAt(Instant.now());
         passwordResetTokenRepository.save(token);
 
-        refreshTokenService.revokeAllForUser(user.getId());
+        refreshTokenService.revokeAllForUser(user.getId(), RevocationReason.PASSWORD_CHANGE);
     }
 }

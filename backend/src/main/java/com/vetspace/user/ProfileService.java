@@ -1,5 +1,6 @@
 package com.vetspace.user;
 
+import com.vetspace.domain.user.RevocationReason;
 import com.vetspace.auth.RefreshTokenService;
 import com.vetspace.domain.user.User;
 import com.vetspace.domain.user.UserStatus;
@@ -100,7 +101,7 @@ public class ProfileService {
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
         // Other devices' refresh tokens die with the old password.
-        refreshTokenService.revokeAllForUser(userId);
+        refreshTokenService.revokeAllForUser(userId, RevocationReason.PASSWORD_CHANGE);
     }
 
     /**
@@ -118,7 +119,7 @@ public class ProfileService {
         noteRepository.deleteAll(noteRepository.findByUserId(userId));
         labelRepository.deleteAll(labelRepository.findByUserId(userId));
         passwordResetTokenRepository.deleteByUserId(userId);
-        refreshTokenService.revokeAllForUser(userId);
+        refreshTokenService.revokeAllForUser(userId, RevocationReason.PASSWORD_CHANGE);
 
         String token = UUID.randomUUID().toString();
         user.setEmail("deleted-" + token + "@anonymized.invalid");

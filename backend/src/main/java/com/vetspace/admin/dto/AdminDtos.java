@@ -37,9 +37,26 @@ public final class AdminDtos {
                                    String schoolName, Integer studyYear, Instant createdAt) {
     }
 
+    /**
+     * @param logins7d      distinct refresh-token FAMILIES created in the last 7 days —
+     *                      one per login. Counting tokens would report a single studious
+     *                      afternoon as ~30 logins, since a family rotates every 15 min
+     * @param distinctIps7d distinct origin addresses over the same window, across
+     *                      rotations too. Together these are the sharing signal: a normal
+     *                      student is a handful of logins from one or two addresses; an
+     *                      account doing the rounds of a class group is neither
+     * @param activeSessions live families right now — 1 under the default policy, 0 when
+     *                      nobody is signed in
+     */
     public record AdminUserDto(UUID id, String username, String email, String fullName, Role role,
                                 UserStatus status, String schoolName, Integer studyYear,
-                                long activeSubscriptions, Instant createdAt) {
+                                long activeSubscriptions, Instant createdAt,
+                                long logins7d, long distinctIps7d, long activeSessions,
+                                String lastDeviceLabel, Instant lastSeenAt) {
+    }
+
+    /** Result of "Révoquer la session active": how many live families were closed. */
+    public record RevokeSessionsResponse(int revokedSessions) {
     }
 
     public record UpdateUserStatusRequest(@NotNull UserStatus status) {

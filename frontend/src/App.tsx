@@ -5,7 +5,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { useToast } from './components/ToastProvider';
 import { t } from './i18n/fr';
-import { API_EVENTS } from './lib/api';
+import { API_EVENTS, SUPERSEDED_FLAG } from './lib/api';
 
 // Route-level code splitting: each page group is a lazy chunk, so the initial
 // download is just the shell + landing. Named exports are adapted to default.
@@ -68,11 +68,21 @@ function ApiEventBridge() {
       toast('error', t('api.sessionExpired'));
       navigate('/login');
     };
+    /**
+     * Deliberately NOT a toast: a toast disappears, and the student needs to still be
+     * reading this when they decide whether to sign in again or change their password.
+     * The flag is carried in router state so the login screen renders it in place.
+     */
+    const onSessionSuperseded = () => {
+      navigate('/login', { state: { [SUPERSEDED_FLAG]: true } });
+    };
     window.addEventListener(API_EVENTS.subscriptionRequired, onSubscriptionRequired);
     window.addEventListener(API_EVENTS.sessionExpired, onSessionExpired);
+    window.addEventListener(API_EVENTS.sessionSuperseded, onSessionSuperseded);
     return () => {
       window.removeEventListener(API_EVENTS.subscriptionRequired, onSubscriptionRequired);
       window.removeEventListener(API_EVENTS.sessionExpired, onSessionExpired);
+      window.removeEventListener(API_EVENTS.sessionSuperseded, onSessionSuperseded);
     };
   }, [navigate, toast]);
 

@@ -1,6 +1,7 @@
 package com.vetspace.admin;
 
 import com.vetspace.admin.dto.AdminDtos.AdminUserDto;
+import com.vetspace.admin.dto.AdminDtos.RevokeSessionsResponse;
 import com.vetspace.admin.dto.AdminDtos.UpdateUserStatusRequest;
 import com.vetspace.web.PageResponse;
 import com.vetspace.web.Paging;
@@ -12,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,6 +35,18 @@ public class AdminUserController {
                                               @RequestParam(defaultValue = "0") int page,
                                               @RequestParam(defaultValue = "20") int size) {
         return PageResponse.of(service.search(query, Paging.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))));
+    }
+
+    /**
+     * "Révoquer la session active" — ends every live session without disabling the
+     * account, so the student can immediately sign in again on the device they actually
+     * own. The answer to "someone else is using my login"; disabling is the answer to
+     * fraud, and they are deliberately different buttons.
+     */
+    @PostMapping("/{id}/revoke-sessions")
+    @PreAuthorize("hasRole('ADMIN')")
+    public RevokeSessionsResponse revokeSessions(@PathVariable UUID id) {
+        return service.revokeSessions(id);
     }
 
     /** Enable/disable a student. ADMIN only; an admin cannot change their own status. */

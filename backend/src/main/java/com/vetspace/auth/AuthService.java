@@ -3,6 +3,7 @@ package com.vetspace.auth;
 import com.vetspace.auth.dto.RegisterRequest;
 import com.vetspace.auth.dto.RegisterResponse;
 import com.vetspace.domain.school.School;
+import com.vetspace.domain.user.RevocationReason;
 import com.vetspace.domain.user.Role;
 import com.vetspace.domain.user.User;
 import com.vetspace.domain.user.UserStatus;
@@ -117,7 +118,7 @@ public class AuthService {
     public static final String EMAIL_NOT_VERIFIED = "EMAIL_NOT_VERIFIED";
 
     @Transactional
-    public LoginResult login(String email, String password) {
+    public LoginResult login(String email, String password, DeviceContext device) {
         User user = userRepository.findByEmailIgnoreCase(email).orElse(null);
         if (user == null || user.getStatus() != UserStatus.ACTIVE) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, INVALID_CREDENTIALS);
@@ -139,7 +140,9 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, EMAIL_NOT_VERIFIED);
         }
         String accessToken = jwtService.generateAccessToken(user);
-        RefreshTokenService.IssuedRefreshToken issued = refreshTokenService.issueNewFamily(user);
+        // Enforces the concurrent-session policy: at the default of 1, this closes every
+        // other device before handing out the new family.
+        RefreshTokenService.IssuedRefreshToken issued = refreshTokenService.issueNewFamily(user, device);
         return new LoginResult(accessToken, JwtService.ACCESS_TOKEN_TTL, issued.rawValue());
     }
 
@@ -154,12 +157,16 @@ public class AuthService {
             String accessToken = jwtService.generateAccessToken(user);
             return new LoginResult(accessToken, JwtService.ACCESS_TOKEN_TTL, rotated.issued().rawValue());
         }
+        if (result instanceof RefreshTokenService.RotationResult.Superseded) {
+            // Distinct from every other 401 here: the SPA renders a specific screen for it.
+            throw new SessionSupersededException();
+        }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
     }
 
     public void logout(String rawRefreshToken) {
         if (rawRefreshToken != null && !rawRefreshToken.isBlank()) {
-            refreshTokenService.revokeToken(rawRefreshToken);
+            refreshTokenService.revokeToken(rawRefreshToken, RevocationReason.LOGOUT);
         }
     }
 

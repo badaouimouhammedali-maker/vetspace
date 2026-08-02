@@ -127,6 +127,17 @@ export const fr = {
   // Erreurs API génériques
   'api.rateLimited': 'Trop de tentatives. Réessayez plus tard.',
   'api.sessionExpired': 'Votre session a expiré. Merci de vous reconnecter.',
+  // Un seul appareil à la fois. Volontairement distinct de l'expiration ordinaire :
+  // c'est le seul cas où la bonne réaction peut être de changer son mot de passe.
+  'api.sessionSuperseded':
+    'Votre session a été fermée car votre compte a été utilisé sur un autre appareil. Un seul appareil à la fois est autorisé.',
+  'api.sessionSupersededTitle': 'Session fermée',
+  'api.sessionSupersededHint':
+    "Si ce n'était pas vous, reconnectez-vous puis changez votre mot de passe depuis votre profil.",
+  'auth.singleDeviceNotice':
+    'Un seul appareil à la fois : vous connecter ici fermera vos autres sessions.',
+  'register.singleDeviceNotice':
+    'À savoir : un seul appareil à la fois. Vous connecter ailleurs fermera automatiquement votre session en cours.',
 
   // Navigation latérale
   'nav.accueil': 'Accueil',

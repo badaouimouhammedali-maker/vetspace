@@ -138,16 +138,50 @@ Response body:
 Send the access token as `Authorization: Bearer <token>` on subsequent
 requests. It expires after 15 minutes.
 
+**A successful login closes the account's other sessions.** One paid
+subscription, one device. The policy is `MAX_CONCURRENT_SESSIONS`
+(default `1`); above 1 only the excess is evicted, **least-recently-used
+first**, so the device someone is actively working on is the last to go.
+Values below 1 are clamped to 1 — a typo must not disable the paywall's
+only enforcement. Eviction happens before the new family is issued, or at
+max=1 it would revoke the token it just handed out.
+
+The login request's `User-Agent` and origin IP are recorded against the
+new family (`device_label` — "Chrome sur Windows" — and `created_ip`).
+Both are derived server-side and are **analytics only**: `X-Forwarded-For`
+is client-controlled, so nothing about access depends on it.
+
 #### `POST /api/auth/refresh`
 No body — reads the `refresh_token` cookie. Rotates it: the old token is
 revoked and a new one issued (new cookie, same shape as login's), along
-with a fresh access token.
+with a fresh access token. Rotation also touches `last_used_at`, which is
+what "least recently used" is ordered by.
 
-- Presenting an unknown, expired, or **already-rotated** token returns
-  `401`. Reusing an already-rotated token additionally revokes every token
-  descended from that same login (rotation "family"), signing that whole
-  session lineage out even if the attacker also has a copy of the latest
-  token.
+A revoked token is not one situation but several, and they are answered
+differently — `refresh_tokens.revoked_reason` records which:
+
+| reason | on replay | why |
+| --- | --- | --- |
+| `ROTATED` (or null, pre-V11) | `401`, **family burned** | genuine reuse: the token had a successor, so someone is replaying a spent one |
+| `SUPERSEDED` | `401` `SESSION_SUPERSEDED` | evicted by a newer login; the anti-sharing policy working as intended |
+| `LOGOUT`, `PASSWORD_CHANGE`, `ADMIN` | `401` ordinary | ended deliberately; raising a reuse alarm over the user's own click would be noise |
+
+```json
+{ "error": "SESSION_SUPERSEDED",
+  "message": "Session closed by a newer sign-in on another device",
+  "timestamp": "…" }
+```
+
+The SPA routes on the `error` code, not the message: it renders a distinct
+screen ("votre compte a été utilisé sur un autre appareil") instead of the
+generic "session expirée", because that is the one case where the right
+next step may be to change your password rather than sign in again.
+
+**Eviction is not instant.** The evicted device keeps working until its
+access token expires — up to 15 minutes — because access tokens are
+verified by signature alone and nothing checks the family per request. See
+"Immediate eviction" in the changelog discussion for what closing that
+window would cost.
 
 #### `POST /api/auth/logout`
 No body — reads the `refresh_token` cookie, revokes it, and clears the
@@ -764,7 +798,31 @@ subject, body, createdAt}], …}`. Replies happen out-of-band by email.
 - `GET /api/admin/users?query=&page=&size=` (ADMIN/TEACHER) — student
   search (blank query = all), paged, newest first: `{content: [{id,
   username, email, fullName, role, status, schoolName?, studyYear?,
-  activeSubscriptions, createdAt}], …}`.
+  activeSubscriptions, createdAt, logins7d, distinctIps7d,
+  activeSessions, lastDeviceLabel?, lastSeenAt?}], …}`.
+
+  The last five are the **account-sharing signal**:
+
+  - `logins7d` — distinct refresh-token *families* created in the last 7
+    days. Families, not tokens: a family rotates every 15 minutes, so
+    counting tokens would report one studious afternoon as ~30 logins.
+  - `distinctIps7d` — distinct origin addresses over the same window,
+    counted across rotations too, since an account genuinely being passed
+    around changes address mid-family.
+  - `activeSessions` / `lastDeviceLabel` / `lastSeenAt` — who is signed in
+    right now, and on what.
+
+  Neither number means much alone. Twenty logins from one address is a
+  diligent student on one laptop; six logins from six addresses is an
+  account doing the rounds of a class group. The UI highlights above two
+  distinct IPs as a prompt to look — never as an automatic action.
+- `POST /api/admin/users/{id}/revoke-sessions` **(ADMIN only)** →
+  `{revokedSessions: N}` — ends every live session **without** disabling
+  the account, so the student can sign in again immediately. The answer to
+  "someone else is using my login"; disabling is the answer to fraud, and
+  they are deliberately different buttons. Revoked with reason `ADMIN`, so
+  the student sees an ordinary expiry rather than the "used on another
+  device" screen — which would be untrue.
 - `PATCH /api/admin/users/{id}/status` **(ADMIN only)** `{status:
   ACTIVE|DISABLED}` — enable/disable a student; disabling revokes their
   live refresh tokens so access ends immediately (a `DISABLED` account

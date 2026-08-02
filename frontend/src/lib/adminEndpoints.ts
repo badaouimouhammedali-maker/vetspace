@@ -253,6 +253,12 @@ export const searchAdminUsers = (query: string, page: number) => {
 };
 export const updateUserStatus = (id: string, status: UserStatus) =>
   api.patch(`/api/admin/users/${id}/status`, { status }).then((r) => adminUserSchema.parse(r.data));
+
+/** Ends every live session of a student without disabling the account. */
+export const revokeUserSessions = (id: string) =>
+  api
+    .post(`/api/admin/users/${id}/revoke-sessions`)
+    .then((r) => z.object({ revokedSessions: z.number() }).parse(r.data));
 export const fetchSubscriptionAudit = (email: string) =>
   apiGet(`/api/admin/subscriptions?email=${encodeURIComponent(email)}`, z.array(subscriptionAuditSchema));
 

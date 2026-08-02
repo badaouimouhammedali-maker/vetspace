@@ -85,6 +85,12 @@ app:
     # Marks new registrations verified immediately and skips the email. Dev/e2e only —
     # ProductionConfigValidator has no say here, so never set it in a real deployment.
     auto-verify-emails: ${AUTO_VERIFY_EMAILS:false}
+    # Anti-sharing. 1 = a new login closes every other session for that account, which is
+    # the point: one subscription, one device. Above 1 the policy loosens to "keep the N
+    # most recently used" and evicts least-recently-used, so raising it is an env change
+    # rather than a code change. Values below 1 are clamped to 1 — a typo should not
+    # accidentally disable the paywall's only enforcement.
+    max-concurrent-sessions: ${MAX_CONCURRENT_SESSIONS:1}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000}
   jwt:

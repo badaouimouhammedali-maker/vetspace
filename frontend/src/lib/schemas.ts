@@ -632,6 +632,17 @@ export const adminUserSchema = z.object({
   studyYear: z.number().nullable(),
   activeSubscriptions: z.number(),
   createdAt: z.string(),
+  /**
+   * The account-sharing signal, over the last 7 days. `logins7d` counts distinct
+   * refresh-token families (one per login), not tokens — a family rotates every 15
+   * minutes, so counting tokens would report one studious afternoon as ~30 logins.
+   * Many logins from many addresses is the pattern worth looking at.
+   */
+  logins7d: z.number(),
+  distinctIps7d: z.number(),
+  activeSessions: z.number(),
+  lastDeviceLabel: z.string().nullable(),
+  lastSeenAt: z.string().nullable(),
 });
 export type AdminUser = z.infer<typeof adminUserSchema>;
 

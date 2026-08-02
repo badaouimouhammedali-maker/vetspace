@@ -150,6 +150,17 @@ public class GlobalExceptionHandler {
             .body(new ApiError("SUBSCRIPTION_REQUIRED", ex.getMessage(), Instant.now()));
     }
 
+    /**
+     * The anti-sharing policy closed this session. A machine-readable code, like
+     * SUBSCRIPTION_REQUIRED, because the SPA routes on it — a generic 401 would show the
+     * ordinary "session expirée" toast and leave the student with no idea why.
+     */
+    @ExceptionHandler(com.vetspace.auth.SessionSupersededException.class)
+    public ResponseEntity<ApiError> handleSessionSuperseded(com.vetspace.auth.SessionSupersededException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(new ApiError(com.vetspace.auth.SessionSupersededException.CODE, ex.getMessage(), Instant.now()));
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiError> handleAccessDenied(AccessDeniedException ex) {
         // Must not fall through to the generic handler: method-security denials surface here,

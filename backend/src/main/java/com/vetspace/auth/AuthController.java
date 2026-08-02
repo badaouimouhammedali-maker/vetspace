@@ -8,6 +8,7 @@ import com.vetspace.auth.dto.RegisterResponse;
 import com.vetspace.auth.dto.ResendVerificationRequest;
 import com.vetspace.auth.dto.ResetPasswordRequest;
 import com.vetspace.auth.dto.VerifyEmailRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -44,9 +45,16 @@ public class AuthController {
         return authService.register(request);
     }
 
+    /**
+     * The HttpServletRequest is here only to derive the device label and origin IP that
+     * get stored with the refresh-token family — never taken from the body, where a
+     * client could dress its session up as someone else's device in the admin list.
+     */
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        AuthService.LoginResult result = authService.login(request.email(), request.password());
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request,
+                                                HttpServletRequest httpRequest) {
+        AuthService.LoginResult result =
+            authService.login(request.email(), request.password(), DeviceContext.from(httpRequest));
         return withRefreshCookie(result);
     }
 

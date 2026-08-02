@@ -14,7 +14,8 @@ import org.springframework.http.ResponseCookie;
 class RefreshCookieAttributesTest {
 
     private RefreshTokenService serviceWith(String sameSite, boolean secure) {
-        return new RefreshTokenService(null, null, sameSite, secure);
+        // The concurrent-session limit plays no part in cookie construction; 1 is the default.
+        return new RefreshTokenService(null, null, sameSite, secure, 1);
     }
 
     @Test

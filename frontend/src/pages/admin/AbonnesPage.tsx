@@ -8,6 +8,7 @@ import { apiErrorMessage, apiErrorReference } from '../../lib/api';
 import {
   fetchSubscriptionAudit,
   searchAdminUsers,
+  revokeUserSessions,
   updateUserStatus,
 } from '../../lib/adminEndpoints';
 import type { AdminUser } from '../../lib/schemas';
@@ -34,6 +35,20 @@ export function AbonnesPage() {
   const users = useQuery({
     queryKey: ['admin', 'users', query, page],
     queryFn: () => searchAdminUsers(query, page),
+  });
+
+  const revoke = useMutation({
+    mutationFn: (id: string) => revokeUserSessions(id),
+    onSuccess: (r) => {
+      qc.invalidateQueries({ queryKey: ['admin', 'users'] });
+      toast(
+        'success',
+        r.revokedSessions === 0
+          ? 'Aucune session active à fermer.'
+          : `${r.revokedSessions} session(s) fermée(s).`,
+      );
+    },
+    onError: (e) => toast('error', apiErrorMessage(e) ?? 'Erreur', apiErrorReference(e)),
   });
 
   const toggle = useMutation({
@@ -92,6 +107,16 @@ export function AbonnesPage() {
                 <th className="px-4 py-3 font-semibold">E-mail</th>
                 <th className="px-4 py-3 font-semibold">École / Année</th>
                 <th className="px-4 py-3 font-semibold">Abo. actifs</th>
+                {/* The sharing signal. Two numbers side by side because neither means
+                    much alone: 20 logins from one address is a diligent student on one
+                    laptop; 6 logins from 6 addresses is an account doing the rounds. */}
+                <th className="px-4 py-3 font-semibold" title="Connexions sur les 7 derniers jours">
+                  Connexions 7j
+                </th>
+                <th className="px-4 py-3 font-semibold" title="Adresses IP distinctes sur les 7 derniers jours">
+                  IP distinctes
+                </th>
+                <th className="px-4 py-3 font-semibold">Appareil actuel</th>
                 <th className="px-4 py-3 font-semibold">État</th>
                 <th className="px-4 py-3" />
               </tr>
@@ -108,6 +133,28 @@ export function AbonnesPage() {
                     {u.schoolName ?? '—'} {u.studyYear ? `· A${u.studyYear}` : ''}
                   </td>
                   <td className="px-4 py-3 text-brand-gray">{u.activeSubscriptions}</td>
+                  <td className="px-4 py-3 tabular-nums text-brand-gray">{u.logins7d}</td>
+                  <td className="px-4 py-3 tabular-nums">
+                    {/* Highlighted past 2, which is roughly "phone + laptop, one network".
+                        A hint to look, never an accusation and never an automatic action. */}
+                    <span className={u.distinctIps7d > 2 ? 'font-bold text-warning' : 'text-brand-gray'}>
+                      {u.distinctIps7d}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-brand-gray">
+                    {u.activeSessions === 0 ? (
+                      'Hors ligne'
+                    ) : (
+                      <>
+                        <div>{u.lastDeviceLabel ?? 'Appareil inconnu'}</div>
+                        {u.lastSeenAt ? (
+                          <div className="text-[11px]">
+                            {new Date(u.lastSeenAt).toLocaleString('fr-FR')}
+                          </div>
+                        ) : null}
+                      </>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     {u.status === 'ACTIVE' ? (
                       <StatusBadge tone="green">Actif</StatusBadge>
@@ -118,6 +165,21 @@ export function AbonnesPage() {
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-2">
                       <GhostButton onClick={() => setAuditFor(u)}>Abonnements</GhostButton>
+                      {isAdmin && u.activeSessions > 0 ? (
+                        <GhostButton
+                          onClick={() => {
+                            if (
+                              confirm(
+                                `Fermer la session active de ${u.fullName} ? Le compte reste actif : l'étudiant pourra se reconnecter immédiatement.`,
+                              )
+                            ) {
+                              revoke.mutate(u.id);
+                            }
+                          }}
+                        >
+                          Révoquer la session active
+                        </GhostButton>
+                      ) : null}
                       {isAdmin ? (
                         <GhostButton
                           tone={u.status === 'ACTIVE' ? 'red' : 'gray'}

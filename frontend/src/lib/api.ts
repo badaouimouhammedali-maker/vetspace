@@ -67,9 +67,32 @@ uploadApi.interceptors.request.use(attachBearer);
 export const API_EVENTS = {
   subscriptionRequired: 'vetspace:subscription-required',
   sessionExpired: 'vetspace:session-expired',
+  /**
+   * Distinct from sessionExpired on purpose: the account was signed into somewhere else
+   * and only one device is allowed. Showing the generic "session expirée" for this reads
+   * as the app logging you out at random — and hides the one case where the right
+   * reaction is to change your password.
+   */
+  sessionSuperseded: 'vetspace:session-superseded',
 } as const;
 
+/** Marker the login screen reads to decide which explanation to render. */
+export const SUPERSEDED_FLAG = 'vetspace:superseded';
+
 let refreshInFlight: Promise<string | null> | null = null;
+
+/**
+ * Whether the last failed refresh was a supersession rather than a plain expiry.
+ *
+ * <p>`singleFlightRefresh` can only answer "token or null", so without this the
+ * interceptor would fire the generic sessionExpired toast on top of the specific
+ * superseded one and the student would get two contradictory messages.
+ */
+let lastRefreshSuperseded = false;
+
+export function wasLastRefreshSuperseded(): boolean {
+  return lastRefreshSuperseded;
+}
 
 /**
  * Un seul refresh à la fois : tous les appels concurrents (401 simultanés,
@@ -86,10 +109,24 @@ export async function singleFlightRefresh(): Promise<string | null> {
     )
     .then((response) => {
       setAccessToken(response.data.accessToken);
+      lastRefreshSuperseded = false;
       return response.data.accessToken;
     })
-    .catch(() => {
+    .catch((error: unknown) => {
       setAccessToken(null);
+      // The refresh call is the ONLY place the server can tell us the session was closed
+      // by a newer login — every other request just sees a 401. Read the code here or
+      // lose it: the interceptor below only learns that refresh returned null.
+      const body = axios.isAxiosError(error)
+        ? apiErrorSchema.safeParse(error.response?.data)
+        : null;
+      // Assigned on EVERY failure, not only the superseded one: the flag describes the
+      // LAST refresh. Leaving a stale `true` behind would suppress the generic expiry
+      // message for an unrelated failure later in the same page's life.
+      lastRefreshSuperseded = Boolean(body?.success && body.data.error === 'SESSION_SUPERSEDED');
+      if (lastRefreshSuperseded) {
+        window.dispatchEvent(new CustomEvent(API_EVENTS.sessionSuperseded));
+      }
       return null;
     })
     .finally(() => {
@@ -129,7 +166,10 @@ function installAuthHandling(instance: AxiosInstance): void {
         config._retried = true;
         return instance.request(config);
       }
-      window.dispatchEvent(new CustomEvent(API_EVENTS.sessionExpired));
+      // Not both: singleFlightRefresh already announced the specific reason.
+      if (!lastRefreshSuperseded) {
+        window.dispatchEvent(new CustomEvent(API_EVENTS.sessionExpired));
+      }
     }
     return Promise.reject(error);
   },
