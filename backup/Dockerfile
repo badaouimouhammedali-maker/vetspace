@@ -16,7 +16,7 @@
 # line moves in the same change. The failure mode of forgetting is loud — pg_dump refuses
 # a server newer than itself and the job exits non-zero — which is the right direction for
 # a mistake to fail in.
-ARG PG_MAJOR_VERSION=16
+ARG PG_MAJOR_VERSION=18
 FROM postgres:${PG_MAJOR_VERSION}-alpine
 
 # aws-cli from Alpine's signed package repository rather than a binary curled from the
