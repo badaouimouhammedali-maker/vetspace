@@ -13,7 +13,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "brand:icons": "node scripts/generate-brand-assets.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.59.0",
@@ -46,6 +47,7 @@
     "jsdom": "^25.0.1",
     "postcss": "^8.4.47",
     "prettier": "^3.3.3",
+    "sharp": "^0.35.3",
     "tailwindcss": "^3.4.13",
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.8.1",

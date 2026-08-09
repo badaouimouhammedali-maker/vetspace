@@ -2,7 +2,13 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/brand/logo.svg" />
+    <!-- favicon.svg is the square-canvas mark; favicon.ico (16/32/48) is the fallback
+         for browsers that ignore SVG icons. apple-touch-icon is opaque on purpose —
+         iOS masks it to a rounded rect and paints any transparency black. All three
+         are generated from the vector masters by `npm run brand:icons`. -->
+    <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg" />
+    <link rel="alternate icon" href="/brand/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/brand/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VetSpace</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />

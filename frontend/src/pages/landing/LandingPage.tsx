@@ -30,7 +30,12 @@ export function LandingPage() {
           property="og:description"
           content="QCM corrigés, annales d'examens et MindMaps pour préparer vos examens vétérinaires sereinement."
         />
-        <meta property="og:image" content="/brand/logo.svg" />
+        {/* Raster, not the SVG that used to sit here: no major crawler renders SVG for
+            og:image, so the card was blank everywhere it mattered. 1200x630 is the ratio
+            Facebook, LinkedIn and X all crop against. */}
+        <meta property="og:image" content="/brand/og-image.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta name="theme-color" content="#12355B" />
       </Helmet>
 
