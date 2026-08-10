@@ -27,11 +27,11 @@ export function ForgotPasswordPage() {
 
   return (
     <AuthLayout>
-      <h1 className="text-h1 text-brand-navy">{t('forgot.title')}</h1>
-      <p className="mt-1.5 text-body text-gray-500">{t('forgot.subtitle')}</p>
+      <h1 className="text-h1 text-ink">{t('forgot.title')}</h1>
+      <p className="mt-1.5 text-body text-ink-muted">{t('forgot.subtitle')}</p>
 
       {sent ? (
-        <p className="mt-6 rounded-lg bg-brand-green/10 p-4 text-sm font-medium text-brand-green">
+        <p className="mt-6 rounded-lg bg-success/10 p-4 text-sm font-medium text-success-text">
           {t('forgot.sent')}
         </p>
       ) : (
@@ -52,7 +52,7 @@ export function ForgotPasswordPage() {
       )}
 
       <p className="mt-6 text-center text-sm">
-        <Link to="/login" className="font-semibold text-brand-green hover:underline">
+        <Link to="/login" className="font-semibold text-accent hover:underline">
           {t('forgot.backToLogin')}
         </Link>
       </p>

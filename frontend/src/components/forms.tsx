@@ -15,11 +15,11 @@ import { Button } from './Button';
  * shows for keyboard users only rather than on every click.
  */
 const FIELD_BASE =
-  'w-full rounded-md border bg-surface px-3.5 py-2.5 text-body text-gray-900 ' +
-  'placeholder-gray-400 outline-none transition-colors duration-150 ' +
-  'disabled:cursor-not-allowed disabled:bg-gray-100';
+  'w-full rounded-md border bg-surface px-3.5 py-2.5 text-body text-ink ' +
+  'placeholder-ink-muted outline-none transition-colors duration-150 ' +
+  'disabled:cursor-not-allowed disabled:bg-ink/10';
 
-const FIELD_DEFAULT = 'border-gray-300 focus:border-brand-green';
+const FIELD_DEFAULT = 'border-subtle focus:border-accent';
 /** Invalid fields carry the danger colour, so the error is visible before it is read. */
 const FIELD_ERROR = 'border-danger focus:border-danger';
 
@@ -38,7 +38,7 @@ interface FieldProps {
 export function Field({ label, htmlFor, error, hint, children }: FieldProps) {
   return (
     <div className="space-y-1.5">
-      <label htmlFor={htmlFor} className="block text-caption font-semibold text-brand-navy">
+      <label htmlFor={htmlFor} className="block text-caption font-semibold text-ink">
         {label}
       </label>
       {children}
@@ -47,7 +47,7 @@ export function Field({ label, htmlFor, error, hint, children }: FieldProps) {
       {error ? (
         <p className="text-caption font-medium text-danger">{error}</p>
       ) : hint ? (
-        <p className="text-caption text-gray-500">{hint}</p>
+        <p className="text-caption text-ink-muted">{hint}</p>
       ) : null}
     </div>
   );
@@ -92,7 +92,7 @@ export function PasswordInput({
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
-        className="absolute inset-y-0 right-0 rounded-md px-3 text-caption font-semibold text-gray-500 transition-colors duration-150 hover:text-brand-navy"
+        className="absolute inset-y-0 right-0 rounded-md px-3 text-caption font-semibold text-ink-muted transition-colors duration-150 hover:text-ink"
         aria-label={visible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
       >
         {visible ? 'Masquer' : 'Afficher'}

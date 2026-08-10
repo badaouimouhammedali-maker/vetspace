@@ -6,7 +6,7 @@ import type { SignalStatus } from '../../lib/schemas';
 
 const STATUS_STYLES: Record<SignalStatus, string> = {
   OPEN: 'bg-warning/10 text-warning',
-  RESOLVED: 'bg-brand-green/15 text-brand-green',
+  RESOLVED: 'bg-success/10 text-success-text',
   REJECTED: 'bg-danger/10 text-danger',
 };
 
@@ -15,7 +15,7 @@ export function SignalsPage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-h1 text-brand-navy dark:text-white">
+      <h1 className="text-h1 text-ink dark:text-white">
         {t('signals.title')}
       </h1>
 
@@ -28,7 +28,7 @@ export function SignalsPage() {
           {signals.data?.map((signal) => (
             <div key={signal.id} className="rounded-lg bg-surface p-5 shadow-card">
               <div className="flex flex-wrap items-start justify-between gap-2">
-                <p className="min-w-0 flex-1 font-semibold text-brand-navy">
+                <p className="min-w-0 flex-1 font-semibold text-ink">
                   {signal.questionStatement}
                 </p>
                 <span
@@ -37,16 +37,16 @@ export function SignalsPage() {
                   {t(`signals.status${signal.status}` as TranslationKey)}
                 </span>
               </div>
-              <p className="mt-2 text-sm text-brand-gray">{signal.message}</p>
+              <p className="mt-2 text-sm text-ink-muted">{signal.message}</p>
               {signal.adminReply ? (
-                <div className="mt-3 rounded-lg bg-brand-green/5 p-3">
-                  <p className="text-xs font-bold uppercase tracking-wide text-brand-green">
+                <div className="mt-3 rounded-lg bg-accent/5 p-3">
+                  <p className="text-xs font-bold uppercase tracking-wide text-accent">
                     {t('signals.adminReply')}
                   </p>
-                  <p className="mt-1 text-sm text-brand-navy">{signal.adminReply}</p>
+                  <p className="mt-1 text-sm text-ink">{signal.adminReply}</p>
                 </div>
               ) : null}
-              <p className="mt-3 text-xs text-brand-gray">
+              <p className="mt-3 text-xs text-ink-muted">
                 {new Date(signal.createdAt).toLocaleDateString('fr-FR')}
               </p>
             </div>

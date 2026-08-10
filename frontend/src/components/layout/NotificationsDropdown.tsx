@@ -77,7 +77,7 @@ export function NotificationsDropdown({ unreadCount }: { unreadCount: number }) 
         aria-label={t('nav.notifications')}
         aria-expanded={dropdown.open}
         aria-haspopup="dialog"
-        className="relative flex h-9 w-9 items-center justify-center rounded-md text-lg text-white/80 transition-colors duration-150 hover:bg-white/10 hover:text-white"
+        className="relative flex h-9 w-9 items-center justify-center rounded-md text-lg text-on-navy-muted transition-colors duration-150 hover:bg-on-navy/6 hover:text-white"
       >
         🔔
         <NotificationBadge count={unreadCount} />
@@ -87,9 +87,9 @@ export function NotificationsDropdown({ unreadCount }: { unreadCount: number }) 
         <div
           role="dialog"
           aria-label={t('notifs.title')}
-          className="absolute right-0 mt-2 w-[min(24rem,calc(100vw-1.5rem))] animate-toast-in rounded-lg bg-surface shadow-pop ring-1 ring-black/5"
+          className="absolute right-0 mt-2 w-[min(24rem,calc(100vw-1.5rem))] animate-toast-in rounded-lg bg-surface shadow-pop ring-1 ring-ink/5"
         >
-          <p className="border-b border-subtle px-4 py-3 text-sm font-bold text-brand-navy">
+          <p className="border-b border-subtle px-4 py-3 text-sm font-bold text-ink">
             {t('notifs.title')}
           </p>
 
@@ -97,11 +97,11 @@ export function NotificationsDropdown({ unreadCount }: { unreadCount: number }) 
             {notifications.isLoading ? (
               <div className="space-y-2 p-3" aria-hidden>
                 {[0, 1, 2].map((i) => (
-                  <div key={i} className="h-14 animate-pulse rounded-md bg-gray-100" />
+                  <div key={i} className="h-14 animate-pulse rounded-md bg-ink/10" />
                 ))}
               </div>
             ) : (notifications.data?.length ?? 0) === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-brand-gray">
+              <p className="px-4 py-8 text-center text-sm text-ink-muted">
                 {t('notifs.empty')}
               </p>
             ) : (
@@ -110,7 +110,7 @@ export function NotificationsDropdown({ unreadCount }: { unreadCount: number }) 
                   <li
                     key={notification.id}
                     className={`group flex items-start gap-3 px-4 py-3 ${
-                      notification.read ? '' : 'bg-brand-green/5'
+                      notification.read ? '' : 'bg-accent/5'
                     }`}
                   >
                     <span className="mt-0.5 text-lg" aria-hidden>
@@ -119,19 +119,19 @@ export function NotificationsDropdown({ unreadCount }: { unreadCount: number }) 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         {!notification.read ? (
-                          <span className="h-2 w-2 shrink-0 rounded-full bg-brand-green" />
+                          <span className="h-2 w-2 shrink-0 rounded-full bg-accent" />
                         ) : null}
-                        <p className="truncate text-sm font-bold text-brand-navy">
+                        <p className="truncate text-sm font-bold text-ink">
                           {notification.title}
                         </p>
-                        <span className="ml-auto shrink-0 text-xs text-brand-gray">
+                        <span className="ml-auto shrink-0 text-xs text-ink-muted">
                           {relativeDate(notification.createdAt)}
                         </span>
                       </div>
-                      <p className="mt-0.5 line-clamp-3 text-sm text-brand-gray">
+                      <p className="mt-0.5 line-clamp-3 text-sm text-ink-muted">
                         {notification.body}
                       </p>
-                      <p className="mt-1 text-[10px] font-bold uppercase text-brand-gray/70">
+                      <p className="mt-1 text-[10px] font-bold uppercase text-ink-muted/70">
                         {t(`notifs.kind${notification.kind}` as TranslationKey)}
                       </p>
                     </div>
@@ -139,7 +139,7 @@ export function NotificationsDropdown({ unreadCount }: { unreadCount: number }) 
                       type="button"
                       onClick={() => remove.mutate(notification.id)}
                       aria-label={t('notifs.delete')}
-                      className="shrink-0 rounded-md p-1 text-sm text-gray-400 opacity-0 transition hover:bg-danger/10 hover:text-danger focus-visible:opacity-100 group-hover:opacity-100"
+                      className="shrink-0 rounded-md p-1 text-sm text-ink-muted opacity-0 transition hover:bg-danger/10 hover:text-danger focus-visible:opacity-100 group-hover:opacity-100"
                     >
                       🗑️
                     </button>
@@ -152,7 +152,7 @@ export function NotificationsDropdown({ unreadCount }: { unreadCount: number }) 
           <Link
             to="/app/notifications"
             onClick={() => dropdown.setOpen(false)}
-            className="block border-t border-subtle px-4 py-2.5 text-center text-sm font-semibold text-brand-green hover:bg-gray-50"
+            className="block border-t border-subtle px-4 py-2.5 text-center text-sm font-semibold text-accent hover:bg-accent/6"
           >
             {t('notifs.viewAll')}
           </Link>

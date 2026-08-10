@@ -8,7 +8,7 @@ import { Card } from './Card';
  * space, so the load reads as filling in rather than reflowing.
  */
 export function Skeleton({ className = '' }: { className?: string }) {
-  return <div className={`animate-pulse rounded-md bg-gray-200 ${className}`} />;
+  return <div className={`animate-pulse rounded-md bg-ink/10 ${className}`} />;
 }
 
 /** Stat row + two panels — the dashboard's shape. */

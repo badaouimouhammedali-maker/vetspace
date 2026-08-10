@@ -50,7 +50,7 @@ export function SourcesPage() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 text-left text-xs uppercase text-brand-gray">
+              <tr className="border-b border-subtle text-left text-xs uppercase text-ink-muted">
                 <th className="px-4 py-3 font-semibold">Libellé</th>
                 <th className="px-4 py-3 font-semibold">Année</th>
                 <th className="px-4 py-3 font-semibold">Type</th>
@@ -59,9 +59,9 @@ export function SourcesPage() {
             </thead>
             <tbody>
               {sources.data!.map((s) => (
-                <tr key={s.id} className="border-b border-gray-50 last:border-0">
-                  <td className="px-4 py-3 font-semibold text-brand-navy">{s.label}</td>
-                  <td className="px-4 py-3 text-brand-gray">{s.year}</td>
+                <tr key={s.id} className="border-b border-subtle last:border-0">
+                  <td className="px-4 py-3 font-semibold text-ink">{s.label}</td>
+                  <td className="px-4 py-3 text-ink-muted">{s.year}</td>
                   <td className="px-4 py-3">
                     <StatusBadge tone={s.examType === 'EXAMEN' ? 'navy' : 'gray'}>
                       {s.examType === 'EXAMEN' ? 'Examen' : 'Entraînement'}

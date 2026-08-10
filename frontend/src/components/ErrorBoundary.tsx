@@ -48,18 +48,18 @@ export class ErrorBoundary extends Component<Props, State> {
     return (
       <div
         role="alert"
-        className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-6 text-center"
+        className="flex min-h-screen flex-col items-center justify-center bg-canvas px-6 text-center"
       >
         <div className="w-full max-w-md rounded-lg bg-surface p-8 shadow-card">
-          <p className="text-h1 text-brand-navy">{t('common.appName')}</p>
+          <p className="text-h1 text-ink">{t('common.appName')}</p>
 
-          <h1 className="mt-6 text-h2 text-brand-navy">{t('error.title')}</h1>
-          <p className="mt-2 text-sm text-brand-gray">{t('error.body')}</p>
+          <h1 className="mt-6 text-h2 text-ink">{t('error.title')}</h1>
+          <p className="mt-2 text-sm text-ink-muted">{t('error.body')}</p>
 
           <button
             type="button"
             onClick={this.handleReload}
-            className="mt-6 w-full rounded-lg bg-brand-green px-4 py-2.5 font-semibold text-white hover:bg-brand-green-hover"
+            className="mt-6 w-full rounded-lg bg-accent px-4 py-2.5 font-semibold text-white hover:bg-accent-hover"
           >
             {t('error.reload')}
           </button>
@@ -69,7 +69,7 @@ export class ErrorBoundary extends Component<Props, State> {
             information leak — for a student in production, so they ship only in dev.
           */}
           {import.meta.env.DEV ? (
-            <pre className="mt-6 max-h-48 overflow-auto rounded-lg bg-slate-100 p-3 text-left text-xs text-slate-700">
+            <pre className="mt-6 max-h-48 overflow-auto rounded-lg bg-ink/10 p-3 text-left text-xs text-ink">
               {this.props.scope ? `[${this.props.scope}] ` : ''}
               {error.message}
               {error.stack ? `\n\n${error.stack}` : ''}

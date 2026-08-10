@@ -5,6 +5,7 @@ import { Field, SubmitButton, TextInput } from '../../components/forms';
 import { Button, Disclosure, EmptyState, ListSkeleton, Modal, Skeleton } from '../../components/ui';
 import { useToast } from '../../components/ToastProvider';
 import { t } from '../../i18n/fr';
+import { DEFAULT_THEME } from '../../lib/theme';
 import { apiErrorMessage, apiErrorReference } from '../../lib/api';
 import {
   createLabel,
@@ -25,12 +26,12 @@ function LabelQuestions({ labelId }: { labelId: string }) {
     return <Skeleton className="mt-2 h-16" />;
   }
   if ((questions.data?.length ?? 0) === 0) {
-    return <p className="mt-2 text-sm text-brand-gray">{t('labels.noQuestions')}</p>;
+    return <p className="mt-2 text-sm text-ink-muted">{t('labels.noQuestions')}</p>;
   }
   return (
     <ul className="mt-2 space-y-1">
       {questions.data?.map((question) => (
-        <li key={question.id} className="truncate rounded-lg bg-canvas px-3 py-2 text-sm text-brand-navy">
+        <li key={question.id} className="truncate rounded-lg bg-canvas px-3 py-2 text-sm text-ink">
           {question.statement}
         </li>
       ))}
@@ -46,7 +47,7 @@ export function LabelsPage() {
 
   const [dialog, setDialog] = useState<{ mode: 'create' | 'edit'; label?: Label } | null>(null);
   const [name, setName] = useState('');
-  const [color, setColor] = useState('#0F766E');
+  const [color, setColor] = useState<string>(DEFAULT_THEME.primary);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Label | null>(null);
@@ -55,7 +56,7 @@ export function LabelsPage() {
 
   function openCreate() {
     setName('');
-    setColor('#0F766E');
+    setColor(DEFAULT_THEME.primary);
     setError(null);
     setDialog({ mode: 'create' });
   }
@@ -96,7 +97,7 @@ export function LabelsPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-h1 text-brand-navy dark:text-white">
+        <h1 className="text-h1 text-ink dark:text-white">
           {t('labels.title')}
         </h1>
         <Button variant="primary" size="md"
@@ -132,7 +133,7 @@ export function LabelsPage() {
                     style={{ backgroundColor: label.color }}
                   />
                   {label.name}
-                  <span className="text-caption font-normal text-gray-500">
+                  <span className="text-caption font-normal text-ink-muted">
                     {label.questionCount} {t('labels.questionCount')}
                   </span>
                 </Disclosure>
@@ -149,7 +150,7 @@ export function LabelsPage() {
                   >
                     ✎
                   </Button>
-                  <Button variant="ghost" size="sm" className="text-gray-500 hover:bg-danger/10 hover:text-danger"
+                  <Button variant="ghost" size="sm" className="text-ink-muted hover:bg-danger/10 hover:text-danger"
                     onClick={() => setDeleteTarget(label)}
                     aria-label={t('sessions.delete')}
                     
@@ -193,7 +194,7 @@ export function LabelsPage() {
               type="color"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              className="h-11 w-full cursor-pointer rounded-lg border border-gray-300"
+              className="h-11 w-full cursor-pointer rounded-lg border border-subtle"
             />
           </Field>
           {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
@@ -207,7 +208,7 @@ export function LabelsPage() {
         onClose={() => setDeleteTarget(null)}
         title={t('sessions.delete')}
       >
-        <p className="text-sm text-brand-gray">{t('labels.deleteConfirm')}</p>
+        <p className="text-sm text-ink-muted">{t('labels.deleteConfirm')}</p>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="secondary" size="md"
             onClick={() => setDeleteTarget(null)}

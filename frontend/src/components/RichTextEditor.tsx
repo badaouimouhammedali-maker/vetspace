@@ -2,7 +2,11 @@ import { useEffect, useRef } from 'react';
 import { t } from '../i18n/fr';
 import { sanitizeHtml } from '../lib/sanitize';
 
-const COLORS = ['#0F766E', '#12355B', '#DC2626', '#CA8A04'];
+// Les seuls hex hors du fichier de jetons, et volontairement : ces valeurs sont
+// sérialisées dans le HTML des explications stocké en base, pas appliquées via CSS.
+// Une variable CSS ici produirait du contenu qui change de couleur avec le thème du
+// lecteur. Elles reprennent --accent, --text-primary, --danger et --warning.
+const COLORS = ['#0F766E', '#17324D', '#B42318', '#B54708'];
 
 /**
  * Éditeur riche minimal basé sur contentEditable + document.execCommand.
@@ -52,8 +56,8 @@ export function RichTextEditor({
   }
 
   return (
-    <div className="rounded-lg border border-gray-300 focus-within:border-brand-green focus-within:ring-2 focus-within:ring-brand-green/20">
-      <div className="flex flex-wrap items-center gap-1 border-b border-gray-200 p-1.5">
+    <div className="rounded-lg border border-subtle focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20">
+      <div className="flex flex-wrap items-center gap-1 border-b border-subtle p-1.5">
         <ToolbarButton label={t('notes.bold')} onClick={() => cmd('bold')}>
           <b>G</b>
         </ToolbarButton>
@@ -66,7 +70,7 @@ export function RichTextEditor({
         <ToolbarButton label={t('notes.numberedList')} onClick={() => cmd('insertOrderedList')}>
           1.
         </ToolbarButton>
-        <span className="mx-1 h-5 w-px bg-gray-200" />
+        <span className="mx-1 h-5 w-px bg-ink/10" />
         {COLORS.map((color) => (
           <button
             key={color}
@@ -86,7 +90,7 @@ export function RichTextEditor({
         aria-multiline="true"
         onInput={emit}
         onBlur={emit}
-        className="min-h-[140px] px-3 py-2 text-sm text-gray-800 outline-none [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+        className="min-h-[140px] px-3 py-2 text-sm text-ink outline-none [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
       />
     </div>
   );
@@ -108,7 +112,7 @@ function ToolbarButton({
       title={label}
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
-      className="min-w-8 rounded px-2 py-1 text-sm font-semibold text-brand-navy transition hover:bg-gray-100"
+      className="min-w-8 rounded px-2 py-1 text-sm font-semibold text-ink transition hover:bg-accent/6"
     >
       {children}
     </button>

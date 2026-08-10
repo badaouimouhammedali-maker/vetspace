@@ -57,3 +57,37 @@ Two production incidents came from the same place, so these are worth stating pl
 `og:image` is set client-side by react-helmet-async and is a root-relative path. Crawlers
 that do not execute JavaScript will not see it, and some require an absolute URL. Fixing
 that properly needs SSR or prerendering, which the SPA does not have today.
+
+## Open decisions
+
+Two colour questions the token migration surfaced and deliberately did not answer. Both
+need an owner rather than a patch.
+
+### The mark's green is not `--accent`
+
+`logo.svg`, `icon.svg` and `favicon.svg` are `#006b5a`. The interface accent is
+`#0F766E`. They sit side by side in the sidebar, the auth panel and the landing header,
+close enough to read as a mistake rather than a distinction — the mark looks like a
+slightly-off version of the button next to it.
+
+Pick one, and write the choice down here:
+
+- **The mark adopts `--accent`.** Regenerate the vector masters at `#0F766E` and re-run
+  `npm run brand:icons`. Changes the logo, so it is a brand decision, not a frontend one.
+- **The gap is intentional.** Say why (a deeper green for print or embroidery, say), and
+  note that the two greens are never meant to match. That closes the question for the
+  next person who notices.
+
+Until then the mark is left exactly as-is: the colour pass deliberately did not touch it.
+
+### Quiz score colour should key off the pass threshold
+
+The end-of-session score (`PlayPage`, the 44px figure) uses `--accent`. `--success`
+would be wrong as a blanket rule — painting a 30% green reads as praise — and
+`--accent` is wrong in the other direction, since emerald means "interact with this"
+everywhere else and the score is not interactive.
+
+The honest version keys the colour off the pass threshold: `--success-text` at or above
+it, `--warning` or `--danger` below, with the threshold owned in one place the way
+`PrecisionChip` already owns its bands. That is conditional logic and a pedagogical
+decision about what counts as a pass, so it was out of scope for a colour pass.

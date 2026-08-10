@@ -17,10 +17,12 @@ const BASE =
   'transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed';
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: 'bg-brand-green text-white hover:bg-brand-green-hover',
-  // Navy outline: the "second choice" next to a green primary, still clearly a button.
-  secondary: 'border border-brand-navy/25 bg-surface text-brand-navy hover:bg-brand-navy/5',
-  ghost: 'text-brand-navy hover:bg-brand-navy/5',
+  primary: 'bg-accent text-white hover:bg-accent-hover active:bg-accent-pressed',
+  // Outlined: the "second choice" next to an accent primary, still clearly a button.
+  // The border is the same hairline as every card and input, so the button sits in the
+  // same line-weight family as the rest of the surface.
+  secondary: 'border border-subtle bg-surface text-ink hover:border-strong hover:bg-accent/6',
+  ghost: 'text-ink hover:bg-accent/6',
   danger: 'bg-danger text-white hover:bg-danger/90',
 };
 

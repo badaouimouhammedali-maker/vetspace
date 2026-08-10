@@ -194,8 +194,8 @@ export function PlayPage() {
   if (play.isError || !play.data) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-canvas">
-        <p className="text-brand-gray">{t('play.notFound')}</p>
-        <Link to="/app" className="font-semibold text-brand-green hover:underline">
+        <p className="text-ink-muted">{t('play.notFound')}</p>
+        <Link to="/app" className="font-semibold text-accent hover:underline">
           {t('common.back')}
         </Link>
       </div>
@@ -213,13 +213,13 @@ export function PlayPage() {
       <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-canvas p-6">
         <Logo variant="full" theme="light" size="lg" />
         <Card className="w-full max-w-md text-center">
-          <h1 className="text-h1 text-brand-navy">{t('play.scoreTitle')}</h1>
-          <p className="mt-6 text-caption font-medium text-brand-gray">{t('play.yourScore')}</p>
-          <p className="text-[44px] font-bold leading-tight tabular-nums text-brand-green">
+          <h1 className="text-h1 text-ink">{t('play.scoreTitle')}</h1>
+          <p className="mt-6 text-caption font-medium text-ink-muted">{t('play.yourScore')}</p>
+          <p className="text-[44px] font-bold leading-tight tabular-nums text-accent">
             {score != null ? `${score}%` : '—'}
           </p>
           <div className="mt-8">
-            <p className="mb-2 text-caption font-medium text-brand-gray">{t('play.ratePrompt')}</p>
+            <p className="mb-2 text-caption font-medium text-ink-muted">{t('play.ratePrompt')}</p>
             <div className="flex justify-center">
               <EmojiRating value={result?.rating ?? null} onChange={(r) => rate.mutate(r)} />
             </div>
@@ -262,8 +262,8 @@ export function PlayPage() {
   return (
     <div className="flex min-h-screen bg-canvas">
       {/* Rail gauche : questions + chronomètres */}
-      <aside className="flex w-44 shrink-0 flex-col border-r border-gray-200 bg-surface lg:w-56">
-        <Link to="/app" className="flex justify-center border-b border-gray-100 py-4">
+      <aside className="flex w-44 shrink-0 flex-col border-r border-subtle bg-surface lg:w-56">
+        <Link to="/app" className="flex justify-center border-b border-subtle py-4">
           <Logo variant="full" theme="light" size="sm" />
         </Link>
         <nav className="flex-1 space-y-1 overflow-y-auto p-3">
@@ -272,12 +272,12 @@ export function PlayPage() {
             const mark =
               st.state === 'ANSWERED' ? (
                 st.isCorrect ? (
-                  <span className="font-bold text-brand-green">✓</span>
+                  <span className="font-bold text-success-text">✓</span>
                 ) : (
                   <span className="font-bold text-danger">✗</span>
                 )
               ) : st.state === 'CONSULTED' ? (
-                <span className="font-bold text-gray-400">👁</span>
+                <span className="font-bold text-ink-muted">👁</span>
               ) : null;
             return (
               <SelectableRow
@@ -294,7 +294,7 @@ export function PlayPage() {
             );
           })}
         </nav>
-        <div className="sticky bottom-0 space-y-1 border-t border-gray-100 bg-surface p-4 text-xs font-semibold text-brand-navy">
+        <div className="sticky bottom-0 space-y-1 border-t border-subtle bg-surface p-4 text-xs font-semibold text-ink">
           <p>
             {t('play.sessionTimer')} : ⏱ {formatSeconds(sessionSeconds)}
           </p>
@@ -309,19 +309,19 @@ export function PlayPage() {
         <div className="mx-auto max-w-3xl px-6 py-8">
           {/* Progression */}
           <div className="mb-6 flex items-center gap-3">
-            <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-200">
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-ink/10">
               <div
-                className="h-full rounded-full bg-brand-green transition-all"
+                className="h-full rounded-full bg-accent transition-all"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <span className="text-sm font-bold text-brand-navy">{Math.round(progress)}%</span>
+            <span className="text-sm font-bold text-ink">{Math.round(progress)}%</span>
           </div>
 
           {current ? (
             <>
               <div className="flex items-start justify-between gap-3">
-                <h1 className="text-lg font-bold leading-relaxed text-brand-navy">
+                <h1 className="text-lg font-bold leading-relaxed text-ink">
                   {current.question.statement}
                 </h1>
                 <Button
@@ -330,7 +330,7 @@ export function PlayPage() {
                   onClick={() => setSignalOpen(true)}
                   aria-label={t('signals.report')}
                   title={t('signals.report')}
-                  className="mt-1 shrink-0 text-gray-500 hover:border-danger hover:text-danger"
+                  className="mt-1 shrink-0 text-ink-muted hover:border-danger hover:text-danger"
                 >
                   🚩
                 </Button>
@@ -363,8 +363,8 @@ export function PlayPage() {
                       ? 'border-subtle border-l-4 border-l-success bg-success/10'
                       : 'border-subtle border-l-4 border-l-danger bg-danger/10'
                     : isSelected
-                      ? 'border-brand-green bg-brand-green/10'
-                      : 'border-subtle bg-surface hover:bg-gray-50';
+                      ? 'border-accent bg-accent/10'
+                      : 'border-subtle bg-surface hover:bg-accent/6';
                   return (
                     <div
                       key={proposition.id}
@@ -380,12 +380,12 @@ export function PlayPage() {
                       >
                         <span
                           className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                            isSelected ? 'bg-brand-green text-white' : 'bg-gray-100 text-brand-navy'
+                            isSelected ? 'bg-accent text-white' : 'bg-ink/10 text-ink'
                           }`}
                         >
                           {proposition.letter}
                         </span>
-                        <span className="flex-1 pt-0.5 text-body text-gray-800">
+                        <span className="flex-1 pt-0.5 text-body text-ink">
                           {proposition.text}
                         </span>
                         {showCorrection && correctionRow ? (
@@ -398,7 +398,7 @@ export function PlayPage() {
                         <div className="border-t border-subtle px-4 py-3">
                           <SafeHtml
                             html={correctionRow.explanationHtml}
-                            className="prose-sm text-sm text-gray-700 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                            className="prose-sm text-sm text-ink [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
                           />
                           {correctionRow.explanationImages.map((src) => (
                             <PlainButton key={src} onClick={() => setLightbox(src)} className="mt-2">
@@ -485,7 +485,7 @@ export function PlayPage() {
 
       {/* Confirmation de fin */}
       <Modal open={confirmSubmit} onClose={() => setConfirmSubmit(false)} title={t('play.submit')}>
-        <p className="text-sm text-brand-gray">{t('play.submitConfirm')}</p>
+        <p className="text-sm text-ink-muted">{t('play.submitConfirm')}</p>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="secondary" size="md"
             onClick={() => setConfirmSubmit(false)}

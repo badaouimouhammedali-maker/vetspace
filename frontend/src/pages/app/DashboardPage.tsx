@@ -30,13 +30,13 @@ function StatCard({ label, value, icon }: { label: string; value: number; icon: 
   return (
     <Card padding="sm" className="h-full transition-shadow duration-150 hover:shadow-pop">
       <div className="flex items-center gap-4">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-brand-green/10 text-xl">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-accent/10 text-xl">
           {icon}
         </span>
         <div className="min-w-0">
           {/* tabular-nums so a row of stat cards does not jitter as values change. */}
-          <p className="text-h1 tabular-nums text-brand-navy">{value}</p>
-          <p className="text-caption text-gray-500">{label}</p>
+          <p className="text-h1 tabular-nums text-ink">{value}</p>
+          <p className="text-caption text-ink-muted">{label}</p>
         </div>
       </div>
     </Card>
@@ -120,12 +120,12 @@ export function DashboardPage() {
             <div className="flex items-center gap-5">
               <Donut percent={lastProgress} size={84} />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-bold text-brand-navy">{last.title}</p>
-                <p className="mt-1 text-sm text-brand-gray">
+                <p className="truncate font-bold text-ink">{last.title}</p>
+                <p className="mt-1 text-sm text-ink-muted">
                   {last.juste + last.fausse + last.consulte}/{last.totalQuestions}{' '}
                   {t('sessions.questions')} · ⏱ {formatSeconds(last.totalSeconds)}
                 </p>
-                <p className="text-sm text-brand-gray">
+                <p className="text-sm text-ink-muted">
                   {t('sessions.score')} : {last.precisionPercent}%
                 </p>
               </div>
@@ -157,8 +157,8 @@ export function DashboardPage() {
           ) : subscription ? (
             <div className="flex h-full flex-col justify-between gap-4">
               <div>
-                <p className="text-lg font-bold text-brand-green">{subscription.packName}</p>
-                <p className="mt-1 text-sm text-brand-gray">
+                <p className="text-lg font-bold text-accent">{subscription.packName}</p>
+                <p className="mt-1 text-sm text-ink-muted">
                   {t('home.expiresOn')}{' '}
                   {new Date(subscription.endsAt).toLocaleDateString('fr-FR')}
                 </p>
@@ -186,15 +186,15 @@ export function DashboardPage() {
         {coverage.isLoading ? (
           <Skeleton className="h-24" />
         ) : toRevise.length === 0 ? (
-          <p className="text-sm text-brand-gray">{t('home.toReviseEmpty')}</p>
+          <p className="text-sm text-ink-muted">{t('home.toReviseEmpty')}</p>
         ) : (
           <ul className="divide-y divide-subtle">
             {toRevise.map((course) => (
               <li key={course.courseId} className="flex items-center gap-3 py-2.5">
-                <span className="min-w-0 flex-1 truncate text-sm font-semibold text-brand-navy">
+                <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">
                   {course.courseName}
                 </span>
-                <span className="shrink-0 text-xs tabular-nums text-brand-gray">
+                <span className="shrink-0 text-xs tabular-nums text-ink-muted">
                   {course.correctQuestions}/{course.answeredQuestions}
                 </span>
                 <PrecisionChip percent={course.precisionPercent} />
@@ -217,14 +217,14 @@ export function DashboardPage() {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-ink/10" />
                 <XAxis dataKey="date" tick={{ fontSize: 12 }} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey={t('home.juste')} fill="#0F766E" radius={[4, 4, 0, 0]} />
-                <Bar dataKey={t('home.fausse')} fill="#DC2626" radius={[4, 4, 0, 0]} />
-                <Bar dataKey={t('home.consultees')} fill="#6B7280" radius={[4, 4, 0, 0]} />
+                <Bar dataKey={t('home.juste')} className="fill-success" radius={[4, 4, 0, 0]} />
+                <Bar dataKey={t('home.fausse')} className="fill-danger" radius={[4, 4, 0, 0]} />
+                <Bar dataKey={t('home.consultees')} className="fill-ink-muted" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

@@ -32,12 +32,12 @@ function CourseBreakdown({ sessionId }: { sessionId: string }) {
   }
   return (
     <div className="bg-canvas p-3">
-      <p className="mb-2 text-xs font-bold uppercase tracking-wide text-brand-gray">
+      <p className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-muted">
         {t('stats.byCourse')}
       </p>
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-caption text-gray-500">
+          <tr className="text-left text-caption text-ink-muted">
             <th className="py-1">{t('stats.course')}</th>
             <th className="py-1 text-right">{t('stats.juste')}</th>
             <th className="py-1 text-right">{t('stats.fausse')}</th>
@@ -49,10 +49,10 @@ function CourseBreakdown({ sessionId }: { sessionId: string }) {
         <tbody>
           {(courses.data ?? []).map((course) => (
             <tr key={course.courseId} className="border-t border-subtle">
-              <td className="py-1.5 font-medium text-brand-navy">{course.courseName}</td>
-              <td className="py-1.5 text-right tabular-nums text-success">{course.juste}</td>
+              <td className="py-1.5 font-medium text-ink">{course.courseName}</td>
+              <td className="py-1.5 text-right tabular-nums text-success-text">{course.juste}</td>
               <td className="py-1.5 text-right tabular-nums text-danger">{course.fausse}</td>
-              <td className="py-1.5 text-right tabular-nums text-gray-500">{course.consulte}</td>
+              <td className="py-1.5 text-right tabular-nums text-ink-muted">{course.consulte}</td>
               <td className="py-1.5 text-right tabular-nums">{formatSeconds(course.totalSeconds)}</td>
               <td className="py-1.5 text-right">
                 <PrecisionChip percent={course.precisionPercent} />
@@ -75,7 +75,7 @@ function StatsTable({ rows }: { rows: SessionStats[] }) {
           of five numbers into a guessing game.
         */}
         <thead className="sticky top-0 z-10 bg-surface">
-          <tr className="border-b border-subtle text-left text-caption font-bold uppercase tracking-wide text-gray-500">
+          <tr className="border-b border-subtle text-left text-caption font-bold uppercase tracking-wide text-ink-muted">
             <th className="px-4 py-3">{t('stats.session')}</th>
             <th className="px-4 py-3 text-right">{t('stats.time')}</th>
             <th className="px-4 py-3 text-right">{t('stats.avgPerQuestion')}</th>
@@ -95,12 +95,12 @@ function StatsTable({ rows }: { rows: SessionStats[] }) {
                   onClick={() => setExpanded(open ? null : row.id)}
                   // Zebra striping on the odd rows; hover wins over the stripe so the
                   // pointer target stays obvious.
-                  className="cursor-pointer border-b border-subtle odd:bg-gray-50/50 hover:bg-brand-green/5"
+                  className="cursor-pointer border-b border-subtle odd:bg-canvas hover:bg-accent/6"
                 >
-                  <td className="px-4 py-3 font-semibold text-brand-navy">
-                    <span className="mr-1.5 inline-block text-brand-gray">{open ? '▾' : '▸'}</span>
+                  <td className="px-4 py-3 font-semibold text-ink">
+                    <span className="mr-1.5 inline-block text-ink-muted">{open ? '▾' : '▸'}</span>
                     {row.title}
-                    <span className="ml-2 block text-xs font-normal text-brand-gray">
+                    <span className="ml-2 block text-xs font-normal text-ink-muted">
                       {new Date(row.startedAt).toLocaleDateString('fr-FR')}
                     </span>
                   </td>
@@ -110,13 +110,13 @@ function StatsTable({ rows }: { rows: SessionStats[] }) {
                     {formatSeconds(Math.round(row.avgSecondsPerQuestion))}
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums">{row.totalQuestions}</td>
-                  <td className="px-4 py-3 text-right font-semibold tabular-nums text-success">
+                  <td className="px-4 py-3 text-right font-semibold tabular-nums text-success-text">
                     {row.juste}
                   </td>
                   <td className="px-4 py-3 text-right font-semibold tabular-nums text-danger">
                     {row.fausse}
                   </td>
-                  <td className="px-4 py-3 text-right tabular-nums text-gray-500">{row.consulte}</td>
+                  <td className="px-4 py-3 text-right tabular-nums text-ink-muted">{row.consulte}</td>
                   <td className="px-4 py-3 text-right">
                     <PrecisionChip percent={row.precisionPercent} />
                   </td>
@@ -151,14 +151,14 @@ function StatsChart({ rows }: { rows: SessionStats[] }) {
     <div className="h-80 rounded-lg bg-surface p-6 shadow-card">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+          <CartesianGrid strokeDasharray="3 3" className="stroke-ink/10" />
           <XAxis dataKey="name" tick={{ fontSize: 12 }} />
           <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
           <Tooltip />
           <Legend />
-          <Bar dataKey={t('stats.juste')} fill="#0F766E" radius={[4, 4, 0, 0]} />
-          <Bar dataKey={t('stats.fausse')} fill="#DC2626" radius={[4, 4, 0, 0]} />
-          <Bar dataKey={t('stats.consulte')} fill="#6B7280" radius={[4, 4, 0, 0]} />
+          <Bar dataKey={t('stats.juste')} className="fill-success" radius={[4, 4, 0, 0]} />
+          <Bar dataKey={t('stats.fausse')} className="fill-danger" radius={[4, 4, 0, 0]} />
+          <Bar dataKey={t('stats.consulte')} className="fill-ink-muted" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -176,19 +176,19 @@ export function StatsPage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-h1 text-brand-navy dark:text-white">{t('stats.title')}</h1>
+      <h1 className="text-h1 text-ink dark:text-white">{t('stats.title')}</h1>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <select
           value={type}
           onChange={(e) => setType(e.target.value as SessionType)}
           aria-label={t('stats.typeFilter')}
-          className="rounded-lg border border-gray-300 bg-surface px-3.5 py-2 text-sm font-semibold text-brand-navy outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
+          className="rounded-lg border border-subtle bg-surface px-3.5 py-2 text-sm font-semibold text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         >
           <option value="ENTRAINEMENT">{t('builder.typeEntrainement')}</option>
           <option value="EXAMEN">{t('builder.typeExamen')}</option>
         </select>
-        <div className="inline-flex rounded-lg border border-gray-300 p-0.5">
+        <div className="inline-flex rounded-lg border border-subtle p-0.5">
           {(['table', 'chart'] as const).map((mode) => (
             <SegmentToggle key={mode} selected={view === mode} onClick={() => setView(mode)}>
               {mode === 'table' ? t('stats.viewTable') : t('stats.viewChart')}

@@ -34,10 +34,10 @@ export function EmptyState({
       <span className={compact ? 'text-body' : 'text-3xl'} aria-hidden="true">
         {icon}
       </span>
-      <p className={compact ? 'text-caption font-semibold text-gray-500' : 'text-h2 text-brand-navy'}>
+      <p className={compact ? 'text-caption font-semibold text-ink-muted' : 'text-h2 text-ink'}>
         {title}
       </p>
-      {caption ? <p className="max-w-sm text-body text-gray-500">{caption}</p> : null}
+      {caption ? <p className="max-w-sm text-body text-ink-muted">{caption}</p> : null}
       {action ? <div className="mt-2">{action}</div> : null}
     </div>
   );

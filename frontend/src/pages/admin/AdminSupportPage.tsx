@@ -34,15 +34,15 @@ export function AdminSupportPage() {
           {inbox.data!.content.map((m) => (
             <Card key={m.id}>
               <div className="mb-1 flex items-center justify-between gap-2">
-                <span className="text-sm font-bold text-brand-navy">{m.subject}</span>
-                <span className="text-xs text-brand-gray">
+                <span className="text-sm font-bold text-ink">{m.subject}</span>
+                <span className="text-xs text-ink-muted">
                   {new Date(m.createdAt).toLocaleString('fr-FR')}
                 </span>
               </div>
-              <p className="mb-2 whitespace-pre-wrap text-sm text-brand-gray">{m.body}</p>
-              <p className="text-xs text-brand-gray">
+              <p className="mb-2 whitespace-pre-wrap text-sm text-ink-muted">{m.body}</p>
+              <p className="text-xs text-ink-muted">
                 De <strong>{m.fullName}</strong> ·{' '}
-                <a href={`mailto:${m.userEmail}`} className="text-brand-green hover:underline">
+                <a href={`mailto:${m.userEmail}`} className="text-accent hover:underline">
                   {m.userEmail}
                 </a>
               </p>

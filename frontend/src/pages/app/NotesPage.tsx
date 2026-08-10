@@ -60,7 +60,7 @@ export function NotesPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-h1 text-brand-navy dark:text-white">
+        <h1 className="text-h1 text-ink dark:text-white">
           {t('notes.title')}
         </h1>
         <Button variant="primary" size="md"
@@ -88,7 +88,7 @@ export function NotesPage() {
           {notes.data?.map((note) => (
             <div key={note.id} className="flex flex-col rounded-lg bg-surface p-5 shadow-card">
               <div className="flex items-start justify-between gap-2">
-                <h2 className="font-bold text-brand-navy">{note.title}</h2>
+                <h2 className="font-bold text-ink">{note.title}</h2>
                 <div className="flex shrink-0 gap-1.5">
                   <Button variant="secondary" size="md"
                     onClick={() => openEdit(note)}
@@ -96,7 +96,7 @@ export function NotesPage() {
                   >
                     ✎
                   </Button>
-                  <Button variant="ghost" size="sm" className="text-gray-500 hover:bg-danger/10 hover:text-danger"
+                  <Button variant="ghost" size="sm" className="text-ink-muted hover:bg-danger/10 hover:text-danger"
                     onClick={() => setDeleteTarget(note)}
                     aria-label={t('sessions.delete')}
                     
@@ -107,9 +107,9 @@ export function NotesPage() {
               </div>
               <SafeHtml
                 html={note.contentHtml}
-                className="mt-2 flex-1 text-sm text-gray-700 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+                className="mt-2 flex-1 text-sm text-ink [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
               />
-              <p className="mt-3 text-xs text-brand-gray">
+              <p className="mt-3 text-xs text-ink-muted">
                 {new Date(note.updatedAt).toLocaleDateString('fr-FR')}
               </p>
             </div>
@@ -141,13 +141,13 @@ export function NotesPage() {
             />
           </Field>
           <div>
-            <span className="mb-1.5 block text-sm font-semibold text-brand-navy">
+            <span className="mb-1.5 block text-sm font-semibold text-ink">
               {t('notes.content')}
             </span>
             <RichTextEditor value={contentHtml} onChange={setContentHtml} />
           </div>
           <div>
-            <span className="mb-1.5 block text-sm font-semibold text-brand-navy">
+            <span className="mb-1.5 block text-sm font-semibold text-ink">
               {t('builder.courses')}
             </span>
             <CoursePicker courseId={courseId} onCourse={setCourseId} />
@@ -162,7 +162,7 @@ export function NotesPage() {
         onClose={() => setDeleteTarget(null)}
         title={t('sessions.delete')}
       >
-        <p className="text-sm text-brand-gray">{t('notes.deleteConfirm')}</p>
+        <p className="text-sm text-ink-muted">{t('notes.deleteConfirm')}</p>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="secondary" size="md"
             onClick={() => setDeleteTarget(null)}

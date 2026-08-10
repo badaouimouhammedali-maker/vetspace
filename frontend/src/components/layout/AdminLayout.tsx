@@ -65,14 +65,14 @@ export function AdminLayout() {
         <span className="block truncate text-caption font-semibold text-white">
           {user?.firstName} {user?.lastName}
         </span>
-        <span className="block truncate text-caption text-white/50">{t('admin.console')}</span>
+        <span className="block truncate text-caption text-on-navy-muted">{t('admin.console')}</span>
       </span>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-canvas">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 bg-brand-navy lg:block">
+      <aside className="on-navy fixed inset-y-0 left-0 z-30 hidden w-64 bg-brand-navy lg:block">
         <Sidebar sections={NAV_SECTIONS} homeTo="/admin" footer={userBlock} />
       </aside>
 
@@ -80,7 +80,7 @@ export function AdminLayout() {
         <div className="fixed inset-0 z-40 lg:hidden" onClick={() => drawer.setOpen(false)}>
           <div className="absolute inset-0 bg-brand-navy/50 backdrop-blur-sm" />
           <aside
-            className="absolute inset-y-0 left-0 w-64 bg-brand-navy shadow-pop"
+            className="on-navy absolute inset-y-0 left-0 w-64 bg-brand-navy shadow-pop"
             onClick={(e) => e.stopPropagation()}
           >
             <Sidebar
@@ -108,7 +108,7 @@ export function AdminLayout() {
             <>
               <NavLink
                 to="/app"
-                className="rounded-md px-3 py-1.5 text-body font-semibold text-white/80 transition-colors duration-150 hover:bg-white/10 hover:text-white"
+                className="rounded-md px-3 py-1.5 text-body font-semibold text-on-navy-muted transition-colors duration-150 hover:bg-on-navy/6 hover:text-white"
               >
                 {t('admin.backToApp')}
               </NavLink>
@@ -124,7 +124,7 @@ export function AdminLayout() {
                 </button>
                 {menu.open ? (
                   <DropdownPanel>
-                    <p className="truncate px-3 py-2 text-caption font-bold text-brand-navy">
+                    <p className="truncate px-3 py-2 text-caption font-bold text-ink">
                       {user?.firstName} {user?.lastName}
                     </p>
                     <DropdownItem onClick={onLogout} danger>

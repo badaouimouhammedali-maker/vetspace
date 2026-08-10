@@ -37,7 +37,7 @@ export function NotificationsPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-h1 text-brand-navy dark:text-white">
+        <h1 className="text-h1 text-ink dark:text-white">
           {t('notifs.title')}
         </h1>
         {(notifications.data?.length ?? 0) > 0 ? (
@@ -63,7 +63,7 @@ export function NotificationsPage() {
               className={`flex items-start gap-3 rounded-lg p-4 shadow-subtle ring-1 transition ${
                 notification.read
                   ? 'bg-surface ring-subtle'
-                  : 'bg-brand-green/5 ring-brand-green/30'
+                  : 'bg-accent/5 ring-accent/30'
               }`}
             >
               <span className="text-xl" aria-hidden>
@@ -72,15 +72,15 @@ export function NotificationsPage() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   {!notification.read ? (
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-brand-green" />
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-accent" />
                   ) : null}
-                  <p className="font-bold text-brand-navy">{notification.title}</p>
-                  <span className="ml-auto shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase text-brand-gray">
+                  <p className="font-bold text-ink">{notification.title}</p>
+                  <span className="ml-auto shrink-0 rounded-full bg-ink/10 px-2 py-0.5 text-[10px] font-bold uppercase text-ink-muted">
                     {t(`notifs.kind${notification.kind}` as TranslationKey)}
                   </span>
                 </div>
-                <p className="mt-1 text-sm text-brand-gray">{notification.body}</p>
-                <p className="mt-1 text-xs text-brand-gray">{relativeDate(notification.createdAt)}</p>
+                <p className="mt-1 text-sm text-ink-muted">{notification.body}</p>
+                <p className="mt-1 text-xs text-ink-muted">{relativeDate(notification.createdAt)}</p>
               </div>
               <Button
                 variant="ghost"
@@ -90,7 +90,7 @@ export function NotificationsPage() {
                   remove.mutate(notification.id);
                 }}
                 aria-label={t('notifs.delete')}
-                className="shrink-0 text-gray-500 hover:bg-danger/10 hover:text-danger"
+                className="shrink-0 text-ink-muted hover:bg-danger/10 hover:text-danger"
               >
                 🗑️
               </Button>

@@ -37,8 +37,8 @@ export function SidebarLink({
       className={({ isActive }) =>
         `relative flex h-10 items-center gap-3 rounded-md px-3 text-body font-semibold transition-colors duration-150 ${
           isActive
-            ? 'bg-brand-green/15 text-white before:absolute before:left-0 before:h-5 before:w-1 before:rounded-r-sm before:bg-brand-green'
-            : 'text-gray-300 hover:bg-white/5 hover:text-white'
+            ? 'bg-accent/18 text-white before:absolute before:left-0 before:h-5 before:w-1 before:rounded-r-sm before:bg-success'
+            : 'text-on-navy-muted hover:bg-on-navy/6 hover:text-white'
         }`
       }
     >
@@ -73,9 +73,9 @@ export function Sidebar({
         {sections.map((section, index) => (
           <div
             key={section.label}
-            className={index > 0 ? 'mt-6 border-t border-white/10 pt-4' : ''}
+            className={index > 0 ? 'mt-6 border-t border-on-navy/10 pt-4' : ''}
           >
-            <p className="px-3 pb-2 text-caption font-bold uppercase tracking-wide text-white/40">
+            <p className="px-3 pb-2 text-caption font-bold uppercase tracking-wide text-on-navy-muted">
               {t(section.label)}
             </p>
             <div className="space-y-1">
@@ -87,7 +87,7 @@ export function Sidebar({
         ))}
       </nav>
 
-      {footer ? <div className="shrink-0 border-t border-white/10 p-3">{footer}</div> : null}
+      {footer ? <div className="shrink-0 border-t border-on-navy/10 p-3">{footer}</div> : null}
     </div>
   );
 }
@@ -105,7 +105,7 @@ export function Avatar({
   const dimensions = size === 'sm' ? 'h-8 w-8 text-caption' : 'h-9 w-9 text-body';
   return (
     <span
-      className={`flex ${dimensions} shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-green font-bold text-white`}
+      className={`flex ${dimensions} shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent font-bold text-white`}
     >
       {photoUrl ? <img src={photoUrl} alt="" className="h-full w-full object-cover" /> : initials}
     </span>
@@ -132,7 +132,7 @@ export function PageContainer({ children }: { children: ReactNode }) {
 /** Topbar shell: h-16 with a subtle bottom border. */
 export function Topbar({ left, right }: { left?: ReactNode; right: ReactNode }) {
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-white/10 bg-brand-navy px-4 lg:px-6">
+    <header className="on-navy sticky top-0 z-20 flex h-16 items-center justify-between border-b border-on-navy/10 bg-brand-navy px-4 lg:px-6">
       <div className="flex items-center gap-2">{left}</div>
       <div className="flex items-center gap-2">{right}</div>
     </header>
@@ -156,7 +156,7 @@ export function TopbarIconButton({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className={`flex h-9 w-9 items-center justify-center rounded-md text-lg text-white/80 transition-colors duration-150 hover:bg-white/10 hover:text-white ${className}`}
+      className={`flex h-9 w-9 items-center justify-center rounded-md text-lg text-on-navy-muted transition-colors duration-150 hover:bg-on-navy/6 hover:text-white ${className}`}
     >
       {children}
     </button>
@@ -168,7 +168,7 @@ export function DropdownPanel({ children }: { children: ReactNode }) {
   return (
     <div
       role="menu"
-      className="absolute right-0 mt-2 w-56 animate-toast-in rounded-lg bg-surface p-1.5 shadow-pop ring-1 ring-black/5"
+      className="absolute right-0 mt-2 w-56 animate-toast-in rounded-lg bg-surface p-1.5 shadow-pop ring-1 ring-ink/5"
     >
       {children}
     </div>
@@ -187,7 +187,7 @@ export function DropdownItem({
   children: ReactNode;
 }) {
   const classes = `block w-full rounded-md px-3 py-2 text-left text-body font-medium transition-colors duration-150 ${
-    danger ? 'text-danger hover:bg-danger/10' : 'text-gray-600 hover:bg-gray-100 hover:text-brand-navy'
+    danger ? 'text-danger hover:bg-danger/10' : 'text-ink hover:bg-accent/6 hover:text-ink'
   }`;
   if (to) {
     return (

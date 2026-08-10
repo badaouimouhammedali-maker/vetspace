@@ -14,6 +14,7 @@ import {
   TopbarIconButton,
   type NavSection,
 } from './Shell';
+import { tokenFor } from '../../test/tokens';
 
 const wrap = (ui: React.ReactNode, route = '/app') =>
   render(<MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>);
@@ -27,9 +28,11 @@ describe('SidebarLink', () => {
   it('marks the active route with the green bar, not a solid fill', () => {
     wrap(<SidebarLink item={{ to: '/app', label: 'nav.accueil', icon: '🏠', end: true }} />, '/app');
     const link = screen.getByRole('link');
-    // A filled row would compete with the primary button for "the thing to click".
-    expect(link.className).toContain('bg-brand-green/15');
-    expect(link.className).toContain('before:bg-brand-green');
+    // A filled row would compete with the primary button for "the thing to click", so
+    // the fill is the accent at 18% and the indicator carries the "you are here" green.
+    const indicator = link.className.split(/\s+/).filter((c) => c.startsWith('before:'));
+    expect(tokenFor(link, 'bg')).toEqual({ token: '--accent', alpha: 18 });
+    expect(tokenFor(indicator.join(' '), 'bg')).toEqual({ token: '--success', alpha: null });
   });
 
   it('leaves an inactive route unhighlighted', () => {
@@ -37,7 +40,13 @@ describe('SidebarLink', () => {
       <SidebarLink item={{ to: '/app/mindmaps', label: 'nav.mindmaps', icon: '🧠' }} />,
       '/app',
     );
-    expect(screen.getByRole('link').className).not.toContain('bg-brand-green/15');
+    // Au repos, aucun fond : seulement une teinte au survol. On filtre donc les
+    // variantes, sinon `hover:bg-on-navy/6` ferait passer la ligne pour remplie.
+    const resting = screen
+      .getByRole('link')
+      .className.split(/\s+/)
+      .filter((c) => !c.includes(':'));
+    expect(tokenFor(resting.join(' '), 'bg')).toBeNull();
   });
 
   it('calls onNavigate — the mobile drawer relies on this to close itself', async () => {
@@ -159,7 +168,7 @@ describe('Dropdown', () => {
 
   it('tints a destructive item', () => {
     render(<DropdownItem danger>Supprimer</DropdownItem>);
-    expect(screen.getByRole('menuitem').className).toContain('text-danger');
+    expect(tokenFor(screen.getByRole('menuitem'), 'text')).toEqual({ token: '--danger', alpha: null });
   });
 });
 

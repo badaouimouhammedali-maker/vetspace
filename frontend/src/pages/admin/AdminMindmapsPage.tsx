@@ -69,14 +69,14 @@ export function AdminMindmapsPage() {
                 className="h-40 w-full rounded-lg object-cover ring-1 ring-subtle"
               />
               <div className="flex items-start justify-between gap-2">
-                <span className="text-sm font-bold text-brand-navy">{m.title}</span>
+                <span className="text-sm font-bold text-ink">{m.title}</span>
                 {m.published ? (
                   <StatusBadge tone="green">Publié</StatusBadge>
                 ) : (
                   <StatusBadge tone="gray">Brouillon</StatusBadge>
                 )}
               </div>
-              <span className="text-xs text-brand-gray">{courseName(m.courseId)}</span>
+              <span className="text-xs text-ink-muted">{courseName(m.courseId)}</span>
               <div className="flex flex-wrap gap-2">
                 <GhostButton onClick={() => pub.mutate({ id: m.id, published: !m.published })}>
                   {m.published ? 'Dépublier' : 'Publier'}
@@ -230,19 +230,19 @@ function MindmapModal({
                 upload.mutate(file);
               }
             }}
-            className="block w-full text-sm text-brand-gray file:mr-3 file:rounded-lg file:border-0 file:bg-brand-green file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white"
+            className="block w-full text-sm text-ink-muted file:mr-3 file:rounded-lg file:border-0 file:bg-accent file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white"
           />
         </Field>
-        {uploading ? <p className="text-xs text-brand-gray">Téléversement…</p> : null}
+        {uploading ? <p className="text-xs text-ink-muted">Téléversement…</p> : null}
         {imageUrl ? (
           <img src={imageUrl} alt="" className="h-32 rounded-lg object-cover ring-1 ring-subtle" />
         ) : null}
-        <label className="flex items-center gap-2 text-sm font-semibold text-brand-gray">
+        <label className="flex items-center gap-2 text-sm font-semibold text-ink-muted">
           <input
             type="checkbox"
             checked={published}
             onChange={(e) => setPublished(e.target.checked)}
-            className="h-4 w-4 accent-brand-green"
+            className="h-4 w-4 accent-accent"
           />
           Publié
         </label>

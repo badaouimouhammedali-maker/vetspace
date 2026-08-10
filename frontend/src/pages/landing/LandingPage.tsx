@@ -16,7 +16,7 @@ const NAV = [
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-surface font-sans text-brand-navy">
+    <div className="min-h-screen bg-surface font-sans text-ink">
       <Helmet>
         <html lang="fr" />
         <title>VetSpace — La plateforme de QCM des étudiants vétérinaires</title>
@@ -59,23 +59,23 @@ export function LandingPage() {
 function Header() {
   const [open, setOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-40 bg-brand-navy text-white shadow-subtle">
+    <header className="on-navy sticky top-0 z-40 bg-brand-navy text-white shadow-subtle">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 lg:px-8">
         <a href="#accueil" className="flex items-center gap-2">
           <Logo variant="full" theme="dark" size="md" />
         </a>
         <nav className="hidden items-center gap-7 text-sm font-semibold md:flex">
           {NAV.map((n) => (
-            <a key={n.href} href={n.href} className="text-white/80 transition hover:text-white">
+            <a key={n.href} href={n.href} className="text-on-navy-muted transition hover:text-white">
               {n.label}
             </a>
           ))}
-          <Link to="/login" className="text-white/80 transition hover:text-white">
+          <Link to="/login" className="text-on-navy-muted transition hover:text-white">
             Connexion
           </Link>
           <Link
             to="/register"
-            className="rounded-lg bg-brand-green px-4 py-2 font-bold text-white transition hover:bg-brand-green-hover"
+            className="rounded-lg bg-accent px-4 py-2 font-bold text-white transition hover:bg-accent-hover"
           >
             S'inscrire
           </Link>
@@ -92,26 +92,26 @@ function Header() {
         </Button>
       </div>
       {open ? (
-        <nav className="space-y-1 border-t border-white/10 px-4 pb-4 md:hidden">
+        <nav className="space-y-1 border-t border-on-navy/10 px-4 pb-4 md:hidden">
           {NAV.map((n) => (
             <a
               key={n.href}
               href={n.href}
               onClick={() => setOpen(false)}
-              className="block rounded-lg px-3 py-2 text-sm font-semibold text-white/80 hover:bg-surface/10"
+              className="block rounded-lg px-3 py-2 text-sm font-semibold text-on-navy-muted hover:bg-on-navy/6"
             >
               {n.label}
             </a>
           ))}
           <Link
             to="/login"
-            className="block rounded-lg px-3 py-2 text-sm font-semibold text-white/80 hover:bg-surface/10"
+            className="block rounded-lg px-3 py-2 text-sm font-semibold text-on-navy-muted hover:bg-on-navy/6"
           >
             Connexion
           </Link>
           <Link
             to="/register"
-            className="mt-1 block rounded-lg bg-brand-green px-3 py-2 text-center text-sm font-bold text-white"
+            className="mt-1 block rounded-lg bg-accent px-3 py-2 text-center text-sm font-bold text-white"
           >
             S'inscrire
           </Link>
@@ -154,9 +154,9 @@ function Counter({ target, label }: { target: number; label: string }) {
     <div className="text-center">
       <div className="text-display text-white sm:text-4xl">
         {value.toLocaleString('fr-FR')}
-        <span className="text-brand-green">+</span>
+        <span className="text-accent-on-dark">+</span>
       </div>
-      <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-white/60">
+      <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-on-navy-muted">
         {label}
       </div>
     </div>
@@ -169,36 +169,36 @@ function Hero() {
   return (
     <section
       id="accueil"
-      className="scroll-mt-16 bg-gradient-to-br from-brand-navy to-[#0c2542] px-4 pb-16 pt-16 text-white lg:px-8 lg:pt-24"
+      className="on-navy scroll-mt-16 bg-gradient-to-br from-brand-navy to-brand-navy-deep px-4 pb-16 pt-16 text-white lg:px-8 lg:pt-24"
     >
       <div className="mx-auto max-w-4xl text-center">
-        <span className="inline-block rounded-full bg-surface/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white/80">
+        <span className="inline-block rounded-full bg-on-navy/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-on-navy-muted">
           La plateforme de QCM des étudiants vétérinaires
         </span>
         <h1 className="mt-6 text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
           Réussissez vos examens vétérinaires,{' '}
-          <span className="text-brand-green">une question à la fois.</span>
+          <span className="text-accent-on-dark">une question à la fois.</span>
         </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg text-white/70">
+        <p className="mx-auto mt-6 max-w-2xl text-lg text-on-navy-muted">
           Des milliers de QCM corrigés, des annales d'examens et des MindMaps, avec un suivi de
           progression détaillé — pour réviser efficacement et aborder vos épreuves en confiance.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             to="/register"
-            className="w-full rounded-xl bg-brand-green px-6 py-3 text-center font-bold text-white transition hover:bg-brand-green-hover sm:w-auto"
+            className="w-full rounded-xl bg-accent px-6 py-3 text-center font-bold text-white transition hover:bg-accent-hover active:bg-accent-pressed sm:w-auto"
           >
             S'inscrire gratuitement
           </Link>
           <Link
             to="/login"
-            className="w-full rounded-xl border border-white/30 px-6 py-3 text-center font-bold text-white transition hover:bg-surface/10 sm:w-auto"
+            className="w-full rounded-xl border border-subtle/40 px-6 py-3 text-center font-bold text-white transition hover:bg-on-navy/8 sm:w-auto"
           >
             Se connecter
           </Link>
         </div>
       </div>
-      <div className="mx-auto mt-14 grid max-w-3xl grid-cols-3 gap-4 rounded-lg border border-white/10 bg-surface/5 px-4 py-6 sm:gap-8">
+      <div className="mx-auto mt-14 grid max-w-3xl grid-cols-3 gap-4 rounded-lg border border-on-navy/10 bg-on-navy/5 px-4 py-6 sm:gap-8">
         <Counter target={s.questions} label="Questions" />
         <Counter target={s.examens} label="Examens" />
         <Counter target={s.mindmaps} label="MindMaps" />
@@ -259,8 +259,8 @@ function Features() {
               }`}
             >
               <div className="flex-1">
-                <h3 className="text-h1 text-brand-navy">{f.title}</h3>
-                <p className="mt-3 text-brand-gray">{f.body}</p>
+                <h3 className="text-h1 text-ink">{f.title}</h3>
+                <p className="mt-3 text-ink-muted">{f.body}</p>
               </div>
               <div className="w-full flex-1">
                 <img
@@ -327,18 +327,18 @@ function Specs() {
               key={c.title}
               className={`rounded-lg p-6 ring-1 ${
                 c.accent
-                  ? 'bg-brand-green text-white ring-brand-green'
-                  : 'bg-surface text-brand-navy ring-subtle'
+                  ? 'bg-accent text-white ring-accent'
+                  : 'bg-surface text-ink ring-subtle'
               }`}
             >
               <div className="text-3xl" aria-hidden>
                 {c.icon}
               </div>
               <h3 className="mt-3 flex items-center gap-2 text-lg font-bold">
-                <span className={c.accent ? 'text-white' : 'text-brand-green'}>✓</span>
+                <span className={c.accent ? 'text-white' : 'text-accent'}>✓</span>
                 {c.title}
               </h3>
-              <p className={`mt-2 text-sm ${c.accent ? 'text-white/85' : 'text-brand-gray'}`}>
+              <p className={`mt-2 text-sm ${c.accent ? 'text-white' : 'text-ink-muted'}`}>
                 {c.body}
               </p>
             </div>
@@ -376,7 +376,7 @@ function Pricing() {
             <CardGridSkeleton count={3} />
           </div>
         ) : sorted.length === 0 ? (
-          <p className="mt-10 text-center text-brand-gray">
+          <p className="mt-10 text-center text-ink-muted">
             Les offres seront bientôt disponibles. Créez votre compte pour être prévenu.
           </p>
         ) : (
@@ -384,25 +384,25 @@ function Pricing() {
             {sorted.map((p) => (
               <div
                 key={p.id}
-                className="flex flex-col rounded-lg border border-gray-100 bg-surface p-6 shadow-subtle"
+                className="flex flex-col rounded-lg border border-subtle bg-surface p-6 shadow-subtle"
               >
-                <h4 className="text-base font-bold text-brand-navy">{p.name}</h4>
-                <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+                <h4 className="text-base font-bold text-ink">{p.name}</h4>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-ink-muted">
                   {p.studyYear == null ? 'Toutes les années' : `Année ${p.studyYear}`} ·{' '}
                   {p.academicYear}
                 </p>
                 <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-display text-brand-green">
+                  <span className="text-display text-accent">
                     {p.priceDa.toLocaleString('fr-FR')}
                   </span>
-                  <span className="font-semibold text-brand-gray">DA</span>
+                  <span className="font-semibold text-ink-muted">DA</span>
                 </div>
-                <p className="mt-1 text-sm text-brand-gray">
+                <p className="mt-1 text-sm text-ink-muted">
                   Jusqu'à la fin de l'année universitaire
                 </p>
                 <Link
                   to="/register"
-                  className="mt-5 rounded-lg bg-brand-green px-4 py-2.5 text-center text-sm font-bold text-white transition hover:bg-brand-green-hover"
+                  className="mt-5 rounded-lg bg-accent px-4 py-2.5 text-center text-sm font-bold text-white transition hover:bg-accent-hover"
                 >
                   Choisir ce pack
                 </Link>
@@ -410,7 +410,7 @@ function Pricing() {
             ))}
           </div>
         )}
-        <p className="mt-8 text-center text-sm text-brand-gray">
+        <p className="mt-8 text-center text-sm text-ink-muted">
           Paiement par codes d'activation (CCP / BaridiMob). Un code = un abonnement à activer
           depuis votre compte.
         </p>
@@ -462,7 +462,7 @@ function Faq() {
             return (
               <div
                 key={item.q}
-                className="overflow-hidden rounded-xl border border-gray-100 bg-surface"
+                className="overflow-hidden rounded-xl border border-subtle bg-surface"
               >
                 <Disclosure
                   open={isOpen}
@@ -471,7 +471,7 @@ function Faq() {
                 >
                   {item.q}
                 </Disclosure>
-                {isOpen ? <p className="px-5 pb-5 text-sm text-brand-gray">{item.a}</p> : null}
+                {isOpen ? <p className="px-5 pb-5 text-sm text-ink-muted">{item.a}</p> : null}
               </div>
             );
           })}
@@ -487,18 +487,18 @@ function Faq() {
 
 function Footer() {
   return (
-    <footer className="bg-brand-navy px-4 py-12 text-white lg:px-8">
+    <footer className="on-navy bg-brand-navy px-4 py-12 text-white lg:px-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 md:flex-row md:items-start md:justify-between">
         <div className="max-w-sm">
           <Logo variant="full" theme="dark" size="md" />
-          <p className="mt-3 text-sm text-white/60">
+          <p className="mt-3 text-sm text-on-navy-muted">
             La plateforme de QCM des étudiants vétérinaires. Révisez, progressez, réussissez.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-8 text-sm">
           <div>
             <h4 className="font-bold text-white">Contact</h4>
-            <ul className="mt-3 space-y-2 text-white/70">
+            <ul className="mt-3 space-y-2 text-on-navy-muted">
               <li>
                 <a href="mailto:support@vetspace.local" className="hover:text-white">
                   support@vetspace.local
@@ -513,7 +513,7 @@ function Footer() {
           </div>
           <div>
             <h4 className="font-bold text-white">Suivez-nous</h4>
-            <ul className="mt-3 space-y-2 text-white/70">
+            <ul className="mt-3 space-y-2 text-on-navy-muted">
               <li>
                 <a
                   href="https://www.instagram.com"
@@ -538,7 +538,7 @@ function Footer() {
           </div>
         </div>
       </div>
-      <div className="mx-auto mt-10 max-w-6xl border-t border-white/10 pt-6 text-center text-xs text-white/40">
+      <div className="mx-auto mt-10 max-w-6xl border-t border-on-navy/10 pt-6 text-center text-xs text-on-navy-muted">
         © {new Date().getFullYear()} VetSpace. Tous droits réservés.
       </div>
     </footer>
@@ -558,11 +558,11 @@ function SectionHeading({
 }) {
   return (
     <div className="mx-auto max-w-2xl text-center">
-      <span className="text-xs font-bold uppercase tracking-widest text-brand-green">
+      <span className="text-xs font-bold uppercase tracking-widest text-accent">
         {eyebrow}
       </span>
-      <h2 className="mt-2 text-display text-brand-navy sm:text-4xl">{title}</h2>
-      {subtitle ? <p className="mt-3 text-brand-gray">{subtitle}</p> : null}
+      <h2 className="mt-2 text-display text-ink sm:text-4xl">{title}</h2>
+      {subtitle ? <p className="mt-3 text-ink-muted">{subtitle}</p> : null}
     </div>
   );
 }

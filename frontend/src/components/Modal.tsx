@@ -101,12 +101,12 @@ export function Modal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-5 flex items-start justify-between gap-4">
-          <h2 className="text-h2 text-brand-navy">{title}</h2>
+          <h2 className="text-h2 text-ink">{title}</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label={t('play.close')}
-            className="-mr-1 -mt-1 rounded-md px-2 py-1 text-xl leading-none text-gray-400 transition-colors duration-150 hover:bg-gray-100 hover:text-brand-navy"
+            className="-mr-1 -mt-1 rounded-md px-2 py-1 text-xl leading-none text-ink-muted transition-colors duration-150 hover:bg-accent/6 hover:text-ink"
           >
             ×
           </button>

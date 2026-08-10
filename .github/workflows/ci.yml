@@ -35,7 +35,7 @@ jobs:
           if-no-files-found: ignore
 
   frontend:
-    name: Frontend (lint + test + build + audit)
+    name: Frontend (lint + palette + test + build + audit)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -51,6 +51,12 @@ jobs:
       - name: Lint
         working-directory: frontend
         run: npm run lint
+      # Every UI colour must resolve to a token in src/index.css. Tailwind's default
+      # palette stays available for third-party components; this forbids *our* code
+      # from using it, which is the same constraint with a smaller blast radius.
+      - name: Palette guard (no bare hex, no off-palette Tailwind classes)
+        working-directory: frontend
+        run: npm run check:palette
       - name: Unit tests + coverage gate (>=60% lines on lib/auth/components)
         working-directory: frontend
         run: npm run test:coverage

@@ -71,20 +71,20 @@ export function SignalementsPage() {
             <Card key={s.id}>
               <div className="mb-2 flex items-start justify-between gap-3">
                 <StatusBadge tone={STATUS_TONE[s.status]}>{STATUS_LABEL[s.status]}</StatusBadge>
-                <span className="text-xs text-brand-gray">
+                <span className="text-xs text-ink-muted">
                   {new Date(s.createdAt).toLocaleString('fr-FR')}
                 </span>
               </div>
-              <p className="mb-1 text-xs font-semibold uppercase text-brand-gray">Question</p>
-              <p className="mb-3 rounded-lg bg-canvas p-3 text-sm text-brand-navy">
+              <p className="mb-1 text-xs font-semibold uppercase text-ink-muted">Question</p>
+              <p className="mb-3 rounded-lg bg-canvas p-3 text-sm text-ink">
                 {s.questionStatement}
               </p>
-              <p className="mb-1 text-xs font-semibold uppercase text-brand-gray">
+              <p className="mb-1 text-xs font-semibold uppercase text-ink-muted">
                 Message de {s.userEmail}
               </p>
-              <p className="mb-3 text-sm text-brand-gray">{s.message}</p>
+              <p className="mb-3 text-sm text-ink-muted">{s.message}</p>
               {s.adminReply ? (
-                <p className="mb-3 rounded-lg border-l-4 border-brand-green bg-success/10 p-3 text-sm text-brand-navy">
+                <p className="mb-3 rounded-lg border-l-4 border-accent bg-success/10 p-3 text-sm text-ink">
                   <strong>Réponse :</strong> {s.adminReply}
                 </p>
               ) : null}
@@ -153,13 +153,13 @@ function ReplyModal({
         }}
         className="space-y-4"
       >
-        <label className="block text-sm font-semibold text-brand-gray">
+        <label className="block text-sm font-semibold text-ink-muted">
           Réponse à l'étudiant (facultatif)
           <textarea
             value={reply}
             onChange={(e) => setReply(e.target.value)}
             rows={4}
-            className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm text-brand-navy focus:border-brand-green focus:outline-none"
+            className="mt-1 w-full rounded-lg border border-subtle p-2 text-sm text-ink focus:border-accent"
           />
         </label>
         <div className="flex justify-end gap-2">

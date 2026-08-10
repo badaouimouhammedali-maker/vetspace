@@ -6,7 +6,13 @@ import { BrowserRouter } from 'react-router-dom';
 import { App } from './App';
 import { AuthProvider } from './auth/AuthContext';
 import { ToastProvider } from './components/ToastProvider';
+import { applyCachedTheme } from './lib/theme';
 import './index.css';
+
+// Avant le premier rendu, pas dans un effet : le thème de l'utilisateur n'arrive qu'après
+// le rafraîchissement du jeton et /users/me, et un compte personnalisé afficherait sinon
+// la palette par défaut pendant deux allers-retours réseau avant de basculer.
+applyCachedTheme();
 
 const queryClient = new QueryClient({
   defaultOptions: {

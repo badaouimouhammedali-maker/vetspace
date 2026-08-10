@@ -60,7 +60,7 @@ export function AdminNotificationsPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
-          <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-brand-gray">
+          <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-ink-muted">
             Nouvelle diffusion
           </h2>
           <form
@@ -91,14 +91,14 @@ export function AdminNotificationsPage() {
                 onChange={(e) => setTitle(e.target.value)}
               />
             </Field>
-            <label className="block text-sm font-semibold text-brand-gray">
+            <label className="block text-sm font-semibold text-ink-muted">
               Message
               <textarea
                 required
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 rows={4}
-                className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm text-brand-navy focus:border-brand-green focus:outline-none"
+                className="mt-1 w-full rounded-lg border border-subtle p-2 text-sm text-ink focus:border-accent"
               />
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -131,7 +131,7 @@ export function AdminNotificationsPage() {
                 </Select>
               </Field>
             </div>
-            <p className="text-xs text-brand-gray">
+            <p className="text-xs text-ink-muted">
               Laisser « Toutes » cible l'ensemble des étudiants.
             </p>
             <PrimaryButton type="submit" disabled={send.isPending}>
@@ -141,7 +141,7 @@ export function AdminNotificationsPage() {
         </Card>
 
         <div>
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-gray">
+          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-ink-muted">
             Historique
           </h2>
           {history.isLoading ? (
@@ -155,11 +155,11 @@ export function AdminNotificationsPage() {
               {history.data!.map((n) => (
                 <Card key={n.id}>
                   <div className="mb-1 flex items-center justify-between gap-2">
-                    <span className="text-sm font-bold text-brand-navy">{n.title}</span>
+                    <span className="text-sm font-bold text-ink">{n.title}</span>
                     <StatusBadge tone="navy">{n.kind}</StatusBadge>
                   </div>
-                  <p className="mb-2 text-sm text-brand-gray">{n.body}</p>
-                  <p className="text-xs text-brand-gray">
+                  <p className="mb-2 text-sm text-ink-muted">{n.body}</p>
+                  <p className="text-xs text-ink-muted">
                     Cible : {n.schoolName ?? 'Toutes écoles'}
                     {n.studyYear ? ` · Année ${n.studyYear}` : ' · Toutes années'} ·{' '}
                     {new Date(n.createdAt).toLocaleDateString('fr-FR')}

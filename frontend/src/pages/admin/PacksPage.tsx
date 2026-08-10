@@ -54,7 +54,7 @@ export function PacksPage() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 text-left text-xs uppercase text-brand-gray">
+              <tr className="border-b border-subtle text-left text-xs uppercase text-ink-muted">
                 <th className="px-4 py-3 font-semibold">Nom</th>
                 <th className="px-4 py-3 font-semibold">Année</th>
                 <th className="px-4 py-3 font-semibold">Prix</th>
@@ -65,18 +65,18 @@ export function PacksPage() {
             </thead>
             <tbody>
               {packs.data!.map((p) => (
-                <tr key={p.id} className="border-b border-gray-50 last:border-0">
-                  <td className="px-4 py-3 font-semibold text-brand-navy">
+                <tr key={p.id} className="border-b border-subtle last:border-0">
+                  <td className="px-4 py-3 font-semibold text-ink">
                     {p.name}
-                    <span className="ml-1 text-xs font-normal text-brand-gray">
+                    <span className="ml-1 text-xs font-normal text-ink-muted">
                       {p.academicYear}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-brand-gray">
+                  <td className="px-4 py-3 text-ink-muted">
                     {p.studyYear == null ? 'Toutes' : `A${p.studyYear}`}
                   </td>
-                  <td className="px-4 py-3 text-brand-gray">{p.priceDa} DA</td>
-                  <td className="px-4 py-3 text-brand-gray">
+                  <td className="px-4 py-3 text-ink-muted">{p.priceDa} DA</td>
+                  <td className="px-4 py-3 text-ink-muted">
                     {new Date(p.expiresAt).toLocaleDateString('fr-FR')}
                   </td>
                   <td className="px-4 py-3">
@@ -156,7 +156,7 @@ function CodesSection({ packs }: { packs: AdminPack[] }) {
 
   return (
     <div>
-      <h2 className="mb-3 text-lg font-bold text-brand-navy">Codes d'activation</h2>
+      <h2 className="mb-3 text-lg font-bold text-ink">Codes d'activation</h2>
       <div className="mb-3 flex flex-wrap gap-3">
         <Select
           value={packId}
@@ -190,7 +190,7 @@ function CodesSection({ packs }: { packs: AdminPack[] }) {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 text-left text-xs uppercase text-brand-gray">
+              <tr className="border-b border-subtle text-left text-xs uppercase text-ink-muted">
                 <th className="px-4 py-3 font-semibold">Pack</th>
                 <th className="px-4 py-3 font-semibold">Utilisations</th>
                 <th className="px-4 py-3 font-semibold">État</th>
@@ -200,15 +200,15 @@ function CodesSection({ packs }: { packs: AdminPack[] }) {
             </thead>
             <tbody>
               {rows.map((c) => (
-                <tr key={c.id} className="border-b border-gray-50 last:border-0">
-                  <td className="px-4 py-3 font-semibold text-brand-navy">{c.packName}</td>
-                  <td className="px-4 py-3 text-brand-gray">
+                <tr key={c.id} className="border-b border-subtle last:border-0">
+                  <td className="px-4 py-3 font-semibold text-ink">{c.packName}</td>
+                  <td className="px-4 py-3 text-ink-muted">
                     {c.usedCount} / {c.maxUses}
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge tone={statusTone[c.status]}>{c.status}</StatusBadge>
                   </td>
-                  <td className="px-4 py-3 text-brand-gray">
+                  <td className="px-4 py-3 text-ink-muted">
                     {new Date(c.createdAt).toLocaleDateString('fr-FR')}
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -328,12 +328,12 @@ function PackModal({
             onChange={(e) => setExpiresAt(e.target.value)}
           />
         </Field>
-        <label className="flex items-center gap-2 text-sm font-semibold text-brand-gray">
+        <label className="flex items-center gap-2 text-sm font-semibold text-ink-muted">
           <input
             type="checkbox"
             checked={active}
             onChange={(e) => setActive(e.target.checked)}
-            className="h-4 w-4 accent-brand-green"
+            className="h-4 w-4 accent-accent"
           />
           Actif
         </label>
@@ -385,7 +385,7 @@ function GenerateModal({ pack, onClose }: { pack: AdminPack; onClose: () => void
             ⚠️ Ces codes ne s'affichent <strong>qu'une seule fois</strong>. Téléchargez-les
             maintenant — ils ne pourront plus être récupérés en clair.
           </div>
-          <div className="max-h-48 overflow-y-auto rounded-lg bg-gray-900 p-3 font-mono text-xs text-success">
+          <div className="max-h-48 overflow-y-auto rounded-lg bg-brand-navy-deep p-3 font-mono text-xs text-accent-on-dark">
             {result.codes.map((c) => (
               <div key={c}>{c}</div>
             ))}

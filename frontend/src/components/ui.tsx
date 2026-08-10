@@ -33,7 +33,7 @@ export function Donut({
   percent,
   size = 72,
   stroke = 8,
-  color = 'rgb(var(--color-primary))',
+  color,
   label,
 }: {
   percent: number;
@@ -52,7 +52,7 @@ export function Donut({
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="#E5E7EB"
+        className="stroke-ink/10"
         strokeWidth={stroke}
       />
       <circle
@@ -60,7 +60,9 @@ export function Donut({
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke={color}
+        // La couleur par défaut passe par une classe, pas par l'attribut `stroke` : les
+        // attributs de présentation SVG ne résolvent pas `var()` de façon fiable.
+        {...(color ? { stroke: color } : { className: 'stroke-accent' })}
         strokeWidth={stroke}
         strokeLinecap="round"
         strokeDasharray={circumference}
@@ -72,7 +74,7 @@ export function Donut({
         y="50%"
         dominantBaseline="central"
         textAnchor="middle"
-        className="fill-brand-navy text-xs font-bold"
+        className="fill-ink text-xs font-bold"
       >
         {label ?? `${Math.round(clamped)}%`}
       </text>

@@ -38,9 +38,9 @@ const DISMISS_MS = 5000;
 
 /** Soft fill + strong text, matching Badge — a toast is a notification, not a banner ad. */
 const KIND_CLASSES: Record<ToastKind, string> = {
-  success: 'bg-success/10 text-success border-success/20',
+  success: 'bg-success/10 text-success-text border-success/20',
   error: 'bg-danger/10 text-danger border-danger/20',
-  info: 'bg-brand-navy/5 text-brand-navy border-brand-navy/15',
+  info: 'bg-brand-navy/5 text-ink border-brand-navy/15',
 };
 
 const KIND_ICONS: Record<ToastKind, string> = {

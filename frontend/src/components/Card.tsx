@@ -52,8 +52,8 @@ export function SectionHeader({
   return (
     <div className={`mb-4 flex items-start justify-between gap-4 ${className}`}>
       <div>
-        <h2 className="text-h2 text-brand-navy">{title}</h2>
-        {caption ? <p className="mt-0.5 text-caption text-gray-500">{caption}</p> : null}
+        <h2 className="text-h2 text-ink">{title}</h2>
+        {caption ? <p className="mt-0.5 text-caption text-ink-muted">{caption}</p> : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
     </div>
@@ -76,8 +76,8 @@ export function PageHeader({
   return (
     <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
-        <h1 className="text-display text-brand-navy">{title}</h1>
-        {caption ? <p className="mt-1 text-body text-gray-500">{caption}</p> : null}
+        <h1 className="text-display text-ink">{title}</h1>
+        {caption ? <p className="mt-1 text-body text-ink-muted">{caption}</p> : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
     </div>

@@ -2,12 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  The palette. This block is the single source of truth: no colour should exist
+  anywhere else in the codebase that is not one of these tokens.
+
+  Stored as space-separated RGB channels (not hex) so Tailwind's opacity modifiers
+  (`bg-accent/10`) resolve against them. Tints are always derived by opacity from a
+  token here — never written as a new hex.
+
+  Three of these are user-themeable at runtime (--accent, --brand-navy,
+  --text-secondary, from the pickers in the profile page). The tokens derived from
+  them — hover/pressed/on-dark/navy-deep/text-primary — are recomputed in lib/theme.ts
+  only when the user has actually customised. A default user reads the exact hexes
+  below, which is why they are stated here rather than computed.
+*/
 :root {
-  /* RGB channels (not hex) so Tailwind's `/opacity` modifiers work on these vars.
-     Defaults are the brand; the user's saved theme overrides them at runtime. */
-  --color-primary: 15 118 110; /* #0F766E */
-  --color-secondary: 18 53 91; /* #12355B */
-  --color-tertiary: 107 114 128; /* #6B7280 */
+  /* Navy: the dominant brand surface — sidebar, topbar, hero. */
+  --brand-navy: 18 53 91; /* #12355B */
+  --brand-navy-deep: 13 42 71; /* #0D2A47 — header vs sidebar separation only */
+
+  /* Emerald: "interact with this". Never used as text on navy — see --accent-on-dark. */
+  --accent: 15 118 110; /* #0F766E — 5.5:1 on white */
+  --accent-hover: 17 94 89; /* #115E59 */
+  --accent-pressed: 19 78 74; /* #134E4A */
+  --accent-on-dark: 61 191 176; /* #3DBFB0 — 5.5:1 on navy; the accent itself is 2.3:1 */
+
+  /* Fresh green: "this went well". Sparingly. */
+  --success: 34 160 107; /* #22A06B — fills, bars, icons, badges. 3.3:1: never body text */
+  --success-text: 14 122 82; /* #0E7A52 — 5.4:1 on white; all green text lives here */
+
+  /* Surfaces and lines. */
+  --bg-app: 248 250 249; /* #F8FAF9 */
+  --bg-card: 255 255 255; /* #FFFFFF */
+  --border: 226 232 240; /* #E2E8F0 */
+  --border-strong: 203 213 225; /* #CBD5E1 — hover/focus borders only */
+
+  /* Type. */
+  --text-primary: 23 50 77; /* #17324D — 12.6:1 on --bg-app */
+  --text-secondary: 100 116 139; /* #64748B — 4.5:1; body text only, never ≤12px */
+  --text-on-navy: 255 255 255;
+  --text-on-navy-muted: 203 213 225; /* #CBD5E1 — 8.4:1 on navy */
+
+  /* Semantic states. Deliberately NOT themeable: a user's chosen accent must never be
+     able to make "danger" look like "success". */
+  --danger: 180 35 24; /* #B42318 — 6.6:1 on white */
+  --warning: 181 71 7; /* #B54708 — 5.4:1 on white */
+
+  /* The favourite star. Not --warning: that amber means "careful", and a starred
+     session is a good thing. Named for its role so it cannot drift to a raw yellow. */
+  --star: 245 179 1; /* #F5B301 */
 }
 
 html {
@@ -15,16 +58,24 @@ html {
 }
 
 body {
-  @apply bg-canvas font-sans text-body text-gray-900 antialiased;
+  @apply bg-canvas font-sans text-body text-ink antialiased;
 }
 
 /* One focus treatment for the whole app, on :focus-visible only — so it shows for
    keyboard users and not on every mouse click. Global rather than per-component:
    a component that forgets it becomes a keyboard trap. */
 *:focus-visible {
-  outline: 2px solid rgb(var(--color-primary));
+  outline: 2px solid rgb(var(--accent));
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* The accent ring is 2.3:1 on navy — invisible exactly where focus matters most (the
+   sidebar). `.on-navy` marks the navy chrome so its descendants switch to the lighter
+   accent. It sets nothing but the ring colour, so it cannot affect layout. */
+.on-navy :focus-visible,
+.on-navy:focus-visible {
+  outline-color: rgb(var(--accent-on-dark));
 }
 
 /* Some elements still paint a UA ring on plain :focus. */
@@ -33,15 +84,15 @@ body {
 }
 
 ::selection {
-  background: rgb(var(--color-primary) / 0.18);
-  color: rgb(var(--color-secondary));
+  background: rgb(var(--accent) / 0.18);
+  color: rgb(var(--text-primary));
 }
 
 /* Scrollbar inside the navy sidebar. A default light scrollbar on a dark panel is one
    of the more obvious "unfinished" tells in an otherwise tidy shell. */
 .sidebar-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+  scrollbar-color: rgb(var(--text-on-navy) / 0.2) transparent;
 }
 
 .sidebar-scroll::-webkit-scrollbar {
@@ -53,12 +104,12 @@ body {
 }
 
 .sidebar-scroll::-webkit-scrollbar-thumb {
-  background: rgb(255 255 255 / 0.16);
+  background: rgb(var(--text-on-navy) / 0.16);
   border-radius: 9999px;
 }
 
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgb(255 255 255 / 0.28);
+  background: rgb(var(--text-on-navy) / 0.28);
 }
 
 /* Respect the OS "reduce motion" setting by zeroing every transition and animation,

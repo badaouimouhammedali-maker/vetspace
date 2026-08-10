@@ -50,8 +50,8 @@ function SessionCard({
     <Card padding="sm" className="flex h-full flex-col">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate font-semibold text-brand-navy">{session.title}</p>
-          <p className="mt-0.5 text-caption text-gray-500">
+          <p className="truncate font-semibold text-ink">{session.title}</p>
+          <p className="mt-0.5 text-caption text-ink-muted">
             {new Date(session.startedAt).toLocaleDateString('fr-FR', {
               day: '2-digit',
               month: 'long',
@@ -64,7 +64,7 @@ function SessionCard({
           aria-label="Favori"
           aria-pressed={session.favorite}
           className={`text-xl transition-transform duration-150 hover:scale-110 active:scale-95 ${
-            session.favorite ? 'text-star' : 'text-gray-300 hover:text-star'
+            session.favorite ? 'text-star' : 'text-ink/25 hover:text-star'
           }`}
         >
           ★
@@ -73,13 +73,13 @@ function SessionCard({
 
       <div className="mt-4 flex items-center gap-4">
         <Donut percent={progress} size={72} />
-        <div className="flex-1 space-y-0.5 text-caption text-gray-500">
+        <div className="flex-1 space-y-0.5 text-caption text-ink-muted">
           <p className="tabular-nums">
             {session.answeredCount}/{session.questionCount} {t('sessions.questions')}
           </p>
           <p className="tabular-nums">⏱ {formatSeconds(session.totalSeconds)}</p>
           {session.score != null ? (
-            <p className="font-semibold tabular-nums text-brand-navy">
+            <p className="font-semibold tabular-nums text-ink">
               {t('sessions.score')} : {session.score}%
             </p>
           ) : null}
@@ -107,7 +107,7 @@ function SessionCard({
             onClick={() => onDelete(session)}
             aria-label={t('sessions.delete')}
             title={t('sessions.delete')}
-            className="text-gray-500 hover:bg-danger/10 hover:text-danger"
+            className="text-ink-muted hover:bg-danger/10 hover:text-danger"
           >
             🗑️
           </Button>
@@ -172,7 +172,7 @@ export function SessionsPage({ type }: { type: SessionType }) {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-h1 text-brand-navy dark:text-white">{title}</h1>
+        <h1 className="text-h1 text-ink dark:text-white">{title}</h1>
         <Button variant="primary" size="md"
           onClick={() => setBuilderOpen(true)}
         >
@@ -242,7 +242,7 @@ export function SessionsPage({ type }: { type: SessionType }) {
         onClose={() => setDeleteTarget(null)}
         title={t('sessions.delete')}
       >
-        <p className="text-sm text-brand-gray">{t('sessions.deleteConfirm')}</p>
+        <p className="text-sm text-ink-muted">{t('sessions.deleteConfirm')}</p>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="secondary" size="md"
             onClick={() => setDeleteTarget(null)}

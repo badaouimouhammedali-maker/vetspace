@@ -132,15 +132,15 @@ export function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
-      <h1 className="text-h1 text-brand-navy dark:text-white">
+      <h1 className="text-h1 text-ink dark:text-white">
         {t('profile.title')}
       </h1>
 
       {/* Photo */}
       <section className="rounded-lg bg-surface p-6 shadow-card">
-        <h2 className="mb-4 text-base font-bold text-brand-navy">{t('profile.photo')}</h2>
+        <h2 className="mb-4 text-base font-bold text-ink">{t('profile.photo')}</h2>
         <div className="flex items-center gap-4">
-          <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-brand-green text-h1 text-white">
+          <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-accent text-h1 text-white">
             {user?.photoUrl ? (
               <img src={user.photoUrl} alt="" className="h-full w-full object-cover" />
             ) : (
@@ -165,7 +165,7 @@ export function ProfilePage() {
 
       {/* Infos personnelles */}
       <section className="rounded-lg bg-surface p-6 shadow-card">
-        <h2 className="mb-4 text-base font-bold text-brand-navy">{t('profile.info')}</h2>
+        <h2 className="mb-4 text-base font-bold text-ink">{t('profile.info')}</h2>
         <form
           onSubmit={(e: FormEvent) => {
             e.preventDefault();
@@ -220,7 +220,7 @@ export function ProfilePage() {
 
       {/* Thème */}
       <section className="rounded-lg bg-surface p-6 shadow-card">
-        <h2 className="mb-4 text-base font-bold text-brand-navy">{t('profile.theme')}</h2>
+        <h2 className="mb-4 text-base font-bold text-ink">{t('profile.theme')}</h2>
         <div className="flex flex-wrap items-end gap-5">
           {(
             [
@@ -230,12 +230,12 @@ export function ProfilePage() {
             ] as const
           ).map(([key, label]) => (
             <label key={key} className="flex flex-col items-center gap-1.5">
-              <span className="text-xs font-semibold text-brand-navy">{label}</span>
+              <span className="text-xs font-semibold text-ink">{label}</span>
               <input
                 type="color"
                 value={theme[key]}
                 onChange={(e) => updateThemeColor(key, e.target.value)}
-                className="h-11 w-16 cursor-pointer rounded-lg border border-gray-300"
+                className="h-11 w-16 cursor-pointer rounded-lg border border-subtle"
               />
             </label>
           ))}
@@ -254,7 +254,7 @@ export function ProfilePage() {
 
       {/* Mot de passe */}
       <section className="rounded-lg bg-surface p-6 shadow-card">
-        <h2 className="mb-4 text-base font-bold text-brand-navy">{t('profile.password')}</h2>
+        <h2 className="mb-4 text-base font-bold text-ink">{t('profile.password')}</h2>
         <Button variant="secondary" size="md"
           onClick={() => {
             setPwError(null);
@@ -313,7 +313,7 @@ export function ProfilePage() {
 
       {/* Suppression — première confirmation */}
       <Modal open={delStep === 1} onClose={() => setDelStep(0)} title={t('profile.deleteAccount')}>
-        <p className="text-sm text-brand-gray">{t('profile.deleteConfirm1')}</p>
+        <p className="text-sm text-ink-muted">{t('profile.deleteConfirm1')}</p>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="secondary" size="md"
             onClick={() => setDelStep(0)}
@@ -338,7 +338,7 @@ export function ProfilePage() {
           }}
           className="space-y-4"
         >
-          <p className="text-sm text-brand-gray">{t('profile.deleteConfirm2')}</p>
+          <p className="text-sm text-ink-muted">{t('profile.deleteConfirm2')}</p>
           <Field label={t('profile.deletePassword')} htmlFor="del-pw" error={delError ?? undefined}>
             <PasswordInput
               id="del-pw"

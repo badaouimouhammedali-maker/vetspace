@@ -8,9 +8,9 @@ export type BadgeTone = 'neutral' | 'brand' | 'success' | 'warning' | 'danger';
  * `bg-red-500` badges were doing.
  */
 const TONES: Record<BadgeTone, string> = {
-  neutral: 'bg-gray-100 text-gray-700',
-  brand: 'bg-brand-green/10 text-brand-green',
-  success: 'bg-success/10 text-success',
+  neutral: 'bg-ink/10 text-ink',
+  brand: 'bg-accent/10 text-accent',
+  success: 'bg-success/10 text-success-text',
   warning: 'bg-warning/10 text-warning',
   danger: 'bg-danger/10 text-danger',
 };

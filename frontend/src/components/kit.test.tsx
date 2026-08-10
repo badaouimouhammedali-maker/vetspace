@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { Badge, PrecisionChip } from './Badge';
+import { tokenFor } from '../test/tokens';
 import { Card, PageHeader, SectionHeader } from './Card';
 import { EmptyState } from './EmptyState';
 import {
@@ -64,30 +65,35 @@ describe('headers', () => {
 });
 
 describe('Badge', () => {
+  // On assied l'assertion sur le jeton résolu, pas sur le nom de classe : un renommage
+  // de classe ne doit pas casser le test, mais repointer un ton vers une autre couleur
+  // doit le casser.
   it.each([
-    ['success', 'bg-success/10'],
-    ['warning', 'bg-warning/10'],
-    ['danger', 'bg-danger/10'],
-    ['brand', 'bg-brand-green/10'],
-    ['neutral', 'bg-gray-100'],
-  ])('tone %s is a soft fill, so badges never compete with buttons', (tone, expected) => {
+    ['success', '--success'],
+    ['warning', '--warning'],
+    ['danger', '--danger'],
+    ['brand', '--accent'],
+    ['neutral', '--text-primary'],
+  ])('tone %s is a soft 10%% fill, so badges never compete with buttons', (tone, token) => {
     render(<Badge tone={tone as 'success'}>x</Badge>);
-    expect(screen.getByText('x').className).toContain(expected);
+    expect(tokenFor(screen.getByText('x'), 'bg')).toEqual({ token, alpha: 10 });
   });
 });
 
 describe('PrecisionChip', () => {
   // The thresholds live in one place so "what counts as good" is answered once.
   it.each([
-    [100, 'text-success'],
-    [70, 'text-success'],
-    [69, 'text-warning'],
-    [40, 'text-warning'],
-    [39, 'text-danger'],
-    [0, 'text-danger'],
-  ])('%i%% uses %s', (percent, expected) => {
+    // Le vert de texte est --success-text (5,4:1), jamais --success (3,3:1) : c'est
+    // l'invariant que ce test protège, plus encore que le seuil lui-même.
+    [100, '--success-text'],
+    [70, '--success-text'],
+    [69, '--warning'],
+    [40, '--warning'],
+    [39, '--danger'],
+    [0, '--danger'],
+  ])('%i%% labels with %s', (percent, token) => {
     render(<PrecisionChip percent={percent} />);
-    expect(screen.getByText(`${percent}%`).className).toContain(expected);
+    expect(tokenFor(screen.getByText(`${percent}%`), 'text')).toEqual({ token, alpha: null });
   });
 
   it('rounds rather than showing a long decimal', () => {

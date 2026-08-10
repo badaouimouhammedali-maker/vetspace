@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { apiGet, apiPost, apiPostVoid, setAccessToken, singleFlightRefresh } from '../lib/api';
-import { applyTheme as applyThemeVars } from '../lib/theme';
+import { applyTheme as applyThemeVars, cacheTheme } from '../lib/theme';
 import {
   loginResponseSchema,
   meSchema,
@@ -44,9 +44,14 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-/** Applique le thème personnalisé de l'utilisateur aux variables CSS globales. */
+/**
+ * Applique le thème personnalisé de l'utilisateur aux variables CSS globales, et le
+ * mémorise pour que le prochain démarrage le rejoue avant le premier rendu plutôt
+ * qu'après deux allers-retours réseau.
+ */
 function applyTheme(user: Me | null): void {
   applyThemeVars(user?.theme ?? null);
+  cacheTheme(user?.theme ?? null);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {

@@ -5,44 +5,70 @@ export default {
   theme: {
     extend: {
       colors: {
-        // brand.green/navy/gray are var-backed so the whole app restyles when the
-        // user changes their theme; defaults (in index.css) are the brand colors.
-        // `<alpha-value>` lets Tailwind opacity modifiers (bg-brand-green/10) work.
+        // Every colour resolves to a token in index.css — there are no hexes here.
+        // `<alpha-value>` lets Tailwind opacity modifiers (bg-accent/10) work, which is
+        // how all tints are made: there is no "light accent" colour, only accent/10.
+
+        // Emerald — "interact with this".
+        accent: 'rgb(var(--accent) / <alpha-value>)',
+        'accent-hover': 'rgb(var(--accent-hover) / <alpha-value>)',
+        'accent-pressed': 'rgb(var(--accent-pressed) / <alpha-value>)',
+        // Required for emerald text/links/icons on navy: the accent itself is 2.3:1
+        // there. Using `text-accent` on a navy surface is a bug, not a style choice.
+        'accent-on-dark': 'rgb(var(--accent-on-dark) / <alpha-value>)',
+
         brand: {
-          green: 'rgb(var(--color-primary) / <alpha-value>)',
-          'green-hover': '#0B5D57',
-          navy: 'rgb(var(--color-secondary) / <alpha-value>)',
-          gray: 'rgb(var(--color-tertiary) / <alpha-value>)',
+          navy: 'rgb(var(--brand-navy) / <alpha-value>)',
+          'navy-deep': 'rgb(var(--brand-navy-deep) / <alpha-value>)',
         },
-        primary: 'rgb(var(--color-primary) / <alpha-value>)',
-        secondary: 'rgb(var(--color-secondary) / <alpha-value>)',
-        tertiary: 'rgb(var(--color-tertiary) / <alpha-value>)',
 
         // Surfaces. Named rather than raw white/gray-50 so "what sits on what" is
         // stated in the markup: bg-canvas is the page, bg-surface is the thing on it.
-        surface: '#FFFFFF',
-        canvas: '#F9FAFB',
+        surface: 'rgb(var(--bg-card) / <alpha-value>)',
+        canvas: 'rgb(var(--bg-app) / <alpha-value>)',
 
-        // Semantic status trio. Deliberately NOT theme-var-backed: a user's chosen
-        // accent must never be able to make "danger" look like "success". Use the
-        // colour for text/border and `/10` for the soft fill (bg-danger/10).
-        success: '#0F8A5F',
-        warning: '#B45309',
-        danger: '#DC2626',
-        // The favourite star. Not `warning` — that amber means "careful", and a starred
-        // session is a good thing. Named for its role so it cannot drift back to a raw
-        // `text-yellow-400`.
-        star: '#F5B301',
+        // Type. `ink` rather than `text-primary` so the class reads `text-ink` instead
+        // of the stuttering `text-text-primary`.
+        ink: 'rgb(var(--text-primary) / <alpha-value>)',
+        'ink-muted': 'rgb(var(--text-secondary) / <alpha-value>)',
+        'on-navy': 'rgb(var(--text-on-navy) / <alpha-value>)',
+        'on-navy-muted': 'rgb(var(--text-on-navy-muted) / <alpha-value>)',
+
+        // Fresh green — "this went well". `success` is a fill/bar/icon colour only
+        // (3.3:1 on white); any green *text* must use `success-text` (5.4:1).
+        success: 'rgb(var(--success) / <alpha-value>)',
+        'success-text': 'rgb(var(--success-text) / <alpha-value>)',
+
+        // Semantic states. Deliberately NOT theme-var-backed: a user's chosen accent
+        // must never be able to make "danger" look like "success". Use the colour for
+        // text/border and `/10` for the soft fill (bg-danger/10).
+        warning: 'rgb(var(--warning) / <alpha-value>)',
+        danger: 'rgb(var(--danger) / <alpha-value>)',
+        star: 'rgb(var(--star) / <alpha-value>)',
       },
       borderColor: {
-        // Only `border-subtle`, not a full colour — so it cannot be used as a fill.
-        subtle: 'rgb(229 231 235 / 0.7)',
+        // Preflight gives every element `border-color: #e5e7eb`, so any `border` written
+        // without a colour class silently paints Tailwind's grey instead of ours. Making
+        // the token the default closes that hole rather than relying on call sites.
+        DEFAULT: 'rgb(var(--border) / <alpha-value>)',
+        // Only `border-subtle`/`border-strong`, not full colours — so they cannot be
+        // used as fills. `strong` is for hover and focus borders only.
+        subtle: 'rgb(var(--border) / <alpha-value>)',
+        strong: 'rgb(var(--border-strong) / <alpha-value>)',
       },
       // Hairlines that must not affect layout — image frames, inset outlines — use a
       // ring rather than a border. Same colour as `border-subtle` so the two read as one
       // line weight wherever they meet.
       ringColor: {
-        subtle: 'rgb(229 231 235 / 0.7)',
+        subtle: 'rgb(var(--border) / <alpha-value>)',
+      },
+      // The charter's tint ladder. Tailwind's default opacity scale jumps 5 → 10 → 20,
+      // so the 6% hover and 18% active-nav tints would otherwise have to be written as
+      // arbitrary values at every call site.
+      opacity: {
+        6: '0.06',
+        8: '0.08',
+        18: '0.18',
       },
       borderRadius: {
         sm: '6px',
@@ -53,9 +79,9 @@ export default {
       boxShadow: {
         // Navy-tinted rather than neutral black: a pure-black shadow over this warm
         // grey canvas reads as dirt.
-        subtle: '0 1px 2px rgb(18 53 91 / 0.06)',
-        card: '0 1px 3px rgb(18 53 91 / 0.08), 0 4px 12px rgb(18 53 91 / 0.05)',
-        pop: '0 8px 30px rgb(18 53 91 / 0.12)',
+        subtle: '0 1px 2px rgb(var(--brand-navy) / 0.06)',
+        card: '0 1px 3px rgb(var(--brand-navy) / 0.08), 0 4px 12px rgb(var(--brand-navy) / 0.05)',
+        pop: '0 8px 30px rgb(var(--brand-navy) / 0.12)',
       },
       fontSize: {
         // Weight and tracking baked into the scale, so a heading cannot be

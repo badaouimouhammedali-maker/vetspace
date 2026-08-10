@@ -90,8 +90,8 @@ export function RegisterPage() {
 
   return (
     <AuthLayout>
-      <h1 className="text-h1 text-brand-navy">{t('register.title')}</h1>
-      <p className="mt-1.5 text-body text-gray-500">{t('register.subtitle')}</p>
+      <h1 className="text-h1 text-ink">{t('register.title')}</h1>
+      <p className="mt-1.5 text-body text-ink-muted">{t('register.subtitle')}</p>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-5" noValidate>
         <div className="grid grid-cols-2 gap-3">
@@ -184,7 +184,7 @@ export function RegisterPage() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </Field>
-        <p className="-mt-2 text-xs text-brand-gray">{t('register.passwordHint')}</p>
+        <p className="-mt-2 text-xs text-ink-muted">{t('register.passwordHint')}</p>
 
         <Field label={t('register.passwordConfirm')} htmlFor="passwordConfirm">
           <PasswordInput
@@ -202,7 +202,7 @@ export function RegisterPage() {
 
         {/* Stated at sign-up, not discovered later: the one-device rule is part of what
             someone is agreeing to, and finding out by being logged out is not "told". */}
-        <p className="flex items-start gap-2 text-xs text-brand-gray">
+        <p className="flex items-start gap-2 text-xs text-ink-muted">
           <span aria-hidden>ℹ️</span>
           <span>{t('register.singleDeviceNotice')}</span>
         </p>
@@ -210,9 +210,9 @@ export function RegisterPage() {
         <SubmitButton loading={loading}>{t('register.submit')}</SubmitButton>
       </form>
 
-      <p className="mt-6 text-center text-sm text-brand-gray">
+      <p className="mt-6 text-center text-sm text-ink-muted">
         {t('register.hasAccount')}{' '}
-        <Link to="/login" className="font-semibold text-brand-green hover:underline">
+        <Link to="/login" className="font-semibold text-accent hover:underline">
           {t('register.loginLink')}
         </Link>
       </p>

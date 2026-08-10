@@ -102,7 +102,7 @@ export function AbonnesPage() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 text-left text-xs uppercase text-brand-gray">
+              <tr className="border-b border-subtle text-left text-xs uppercase text-ink-muted">
                 <th className="px-4 py-3 font-semibold">Étudiant</th>
                 <th className="px-4 py-3 font-semibold">E-mail</th>
                 <th className="px-4 py-3 font-semibold">École / Année</th>
@@ -123,25 +123,25 @@ export function AbonnesPage() {
             </thead>
             <tbody>
               {users.data!.content.map((u) => (
-                <tr key={u.id} className="border-b border-gray-50 last:border-0">
+                <tr key={u.id} className="border-b border-subtle last:border-0">
                   <td className="px-4 py-3">
-                    <div className="font-semibold text-brand-navy">{u.fullName}</div>
-                    <div className="text-xs text-brand-gray">@{u.username}</div>
+                    <div className="font-semibold text-ink">{u.fullName}</div>
+                    <div className="text-xs text-ink-muted">@{u.username}</div>
                   </td>
-                  <td className="px-4 py-3 text-brand-gray">{u.email}</td>
-                  <td className="px-4 py-3 text-brand-gray">
+                  <td className="px-4 py-3 text-ink-muted">{u.email}</td>
+                  <td className="px-4 py-3 text-ink-muted">
                     {u.schoolName ?? '—'} {u.studyYear ? `· A${u.studyYear}` : ''}
                   </td>
-                  <td className="px-4 py-3 text-brand-gray">{u.activeSubscriptions}</td>
-                  <td className="px-4 py-3 tabular-nums text-brand-gray">{u.logins7d}</td>
+                  <td className="px-4 py-3 text-ink-muted">{u.activeSubscriptions}</td>
+                  <td className="px-4 py-3 tabular-nums text-ink-muted">{u.logins7d}</td>
                   <td className="px-4 py-3 tabular-nums">
                     {/* Highlighted past 2, which is roughly "phone + laptop, one network".
                         A hint to look, never an accusation and never an automatic action. */}
-                    <span className={u.distinctIps7d > 2 ? 'font-bold text-warning' : 'text-brand-gray'}>
+                    <span className={u.distinctIps7d > 2 ? 'font-bold text-warning' : 'text-ink-muted'}>
                       {u.distinctIps7d}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-xs text-brand-gray">
+                  <td className="px-4 py-3 text-xs text-ink-muted">
                     {u.activeSessions === 0 ? (
                       'Hors ligne'
                     ) : (
@@ -229,8 +229,8 @@ function AuditModal({ user, onClose }: { user: AdminUser; onClose: () => void })
         <ul className="space-y-2">
           {audit.data!.map((s) => (
             <li key={s.id} className="rounded-lg bg-canvas p-3 text-sm">
-              <div className="font-semibold text-brand-navy">{s.packName}</div>
-              <div className="text-xs text-brand-gray">
+              <div className="font-semibold text-ink">{s.packName}</div>
+              <div className="text-xs text-ink-muted">
                 Du {new Date(s.startsAt).toLocaleDateString('fr-FR')} au{' '}
                 {new Date(s.endsAt).toLocaleDateString('fr-FR')}
               </div>

@@ -117,11 +117,11 @@ export function StatusBadge({
   children: ReactNode;
 }) {
   const tones: Record<string, string> = {
-    green: 'bg-success/10 text-success',
-    gray: 'bg-gray-100 text-gray-700',
+    green: 'bg-success/10 text-success-text',
+    gray: 'bg-ink/10 text-ink',
     red: 'bg-danger/10 text-danger',
-    amber: 'bg-amber-100 text-amber-800',
-    navy: 'bg-blue-100 text-blue-800',
+    amber: 'bg-warning/10 text-warning',
+    navy: 'bg-brand-navy/10 text-brand-navy',
   };
   return (
     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold ${tones[tone]}`}>
@@ -147,7 +147,7 @@ export function Pager({
       <Button variant="secondary" size="sm" onClick={() => onPage(page - 1)} disabled={page <= 0}>
         ← Précédent
       </Button>
-      <span className="text-brand-gray">
+      <span className="text-ink-muted">
         Page {page + 1} / {totalPages}
       </span>
       <Button

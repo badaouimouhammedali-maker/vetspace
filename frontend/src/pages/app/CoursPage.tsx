@@ -25,12 +25,12 @@ function PdfModal({ url, title, onClose }: { url: string; title: string; onClose
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3 border-b border-subtle px-4 py-3">
-          <span className="min-w-0 flex-1 truncate text-sm font-bold text-brand-navy">{title}</span>
+          <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink">{title}</span>
           <a
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="shrink-0 rounded-md px-3 py-1.5 text-sm font-semibold text-brand-green hover:bg-brand-green/10"
+            className="shrink-0 rounded-md px-3 py-1.5 text-sm font-semibold text-accent hover:bg-accent/10"
           >
             {t('cours.download')}
           </a>
@@ -38,7 +38,7 @@ function PdfModal({ url, title, onClose }: { url: string; title: string; onClose
             ×
           </Button>
         </div>
-        <iframe src={url} title={title} className="min-h-0 flex-1 bg-gray-100" />
+        <iframe src={url} title={title} className="min-h-0 flex-1 bg-canvas" />
       </div>
     </div>
   );
@@ -92,8 +92,8 @@ export function CoursPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-h1 text-brand-navy dark:text-white">{t('cours.title')}</h1>
-        <p className="mt-1 text-body text-gray-500">{t('cours.subtitle')}</p>
+        <h1 className="text-h1 text-ink dark:text-white">{t('cours.title')}</h1>
+        <p className="mt-1 text-body text-ink-muted">{t('cours.subtitle')}</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -137,13 +137,13 @@ export function CoursPage() {
                   setOpenModules((o) => ({ ...o, [group.moduleId]: !isOpen(group.moduleId) }))
                 }
                 aria-expanded={isOpen(group.moduleId)}
-                className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-gray-50"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-accent/6"
               >
-                <span className="text-brand-gray" aria-hidden>
+                <span className="text-ink-muted" aria-hidden>
                   {isOpen(group.moduleId) ? '▾' : '▸'}
                 </span>
-                <span className="flex-1 font-bold text-brand-navy">{group.moduleName}</span>
-                <span className="text-xs font-semibold text-brand-gray">
+                <span className="flex-1 font-bold text-ink">{group.moduleName}</span>
+                <span className="text-xs font-semibold text-ink-muted">
                   {group.resources.length} {group.resources.length > 1 ? t('cours.files') : t('cours.file')}
                 </span>
               </button>
@@ -154,11 +154,11 @@ export function CoursPage() {
                     <li key={r.id} className="flex items-center gap-3 px-4 py-3">
                       <TypeIcon resource={r} />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold text-brand-navy">{r.title}</p>
+                        <p className="truncate text-sm font-semibold text-ink">{r.title}</p>
                         {r.description ? (
-                          <p className="truncate text-xs text-brand-gray">{r.description}</p>
+                          <p className="truncate text-xs text-ink-muted">{r.description}</p>
                         ) : null}
-                        <p className="mt-0.5 text-xs text-brand-gray">
+                        <p className="mt-0.5 text-xs text-ink-muted">
                           {r.fileType === 'PDF' ? 'PDF' : 'Image'} · {formatFileSize(r.fileSizeBytes)}
                         </p>
                       </div>
@@ -180,7 +180,7 @@ export function CoursPage() {
                           href={r.fileUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="rounded-md bg-brand-green px-3 py-1.5 text-sm font-bold text-white transition hover:bg-brand-green-hover"
+                          className="rounded-md bg-accent px-3 py-1.5 text-sm font-bold text-white transition hover:bg-accent-hover"
                         >
                           {t('cours.download')}
                         </a>

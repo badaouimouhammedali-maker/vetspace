@@ -32,13 +32,13 @@ export function SupportPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
-      <h1 className="text-h1 text-brand-navy dark:text-white">
+      <h1 className="text-h1 text-ink dark:text-white">
         {t('support.title')}
       </h1>
 
       <div className="rounded-lg bg-surface p-6 shadow-card">
         {sent ? (
-          <p className="rounded-lg bg-brand-green/10 p-4 text-sm font-medium text-brand-green">
+          <p className="rounded-lg bg-success/10 p-4 text-sm font-medium text-success-text">
             {t('support.sent')}
           </p>
         ) : (
@@ -63,7 +63,7 @@ export function SupportPage() {
                 rows={6}
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
+                className="w-full rounded-lg border border-subtle px-3.5 py-2.5 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
               />
             </Field>
             {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
@@ -73,8 +73,8 @@ export function SupportPage() {
       </div>
 
       <div className="rounded-lg bg-brand-navy/5 p-5">
-        <p className="text-sm font-bold text-brand-navy">{t('support.contactTitle')}</p>
-        <p className="mt-1 text-sm text-brand-gray">{t('support.contactInfo')}</p>
+        <p className="text-sm font-bold text-ink">{t('support.contactTitle')}</p>
+        <p className="mt-1 text-sm text-ink-muted">{t('support.contactInfo')}</p>
       </div>
     </div>
   );

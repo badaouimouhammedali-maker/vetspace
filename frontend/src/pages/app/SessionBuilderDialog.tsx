@@ -146,7 +146,7 @@ export function SessionBuilderDialog({
 
         {moduleId && (courses.data?.length ?? 0) > 0 ? (
           <fieldset>
-            <legend className="mb-1.5 block text-sm font-semibold text-brand-navy">
+            <legend className="mb-1.5 block text-sm font-semibold text-ink">
               {t('builder.courses')}
             </legend>
             <div className="flex flex-wrap gap-2">
@@ -155,8 +155,8 @@ export function SessionBuilderDialog({
                   key={course.id}
                   className={`cursor-pointer rounded-lg border px-3 py-1.5 text-sm font-medium transition ${
                     courseIds.includes(course.id)
-                      ? 'border-brand-green bg-brand-green/10 text-brand-green'
-                      : 'border-gray-300 text-brand-gray hover:border-brand-green'
+                      ? 'border-accent bg-accent/10 text-accent'
+                      : 'border-subtle text-ink-muted hover:border-accent'
                   }`}
                 >
                   <input
@@ -201,19 +201,19 @@ export function SessionBuilderDialog({
           </Field>
         </div>
 
-        <label className="flex items-center gap-2 text-sm font-medium text-brand-gray">
+        <label className="flex items-center gap-2 text-sm font-medium text-ink-muted">
           <input
             type="checkbox"
             checked={onlyUnseen}
             onChange={(e) => setOnlyUnseen(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 accent-brand-green"
+            className="h-4 w-4 rounded border-subtle accent-accent"
           />
           {t('builder.onlyUnseen')}
         </label>
 
         {(labels.data?.length ?? 0) > 0 ? (
           <fieldset>
-            <legend className="mb-1.5 block text-sm font-semibold text-brand-navy">
+            <legend className="mb-1.5 block text-sm font-semibold text-ink">
               {t('builder.labels')}
             </legend>
             <div className="flex flex-wrap gap-2">
@@ -222,8 +222,8 @@ export function SessionBuilderDialog({
                   key={label.id}
                   className={`cursor-pointer rounded-lg border px-3 py-1.5 text-sm font-medium transition ${
                     labelIds.includes(label.id)
-                      ? 'border-brand-green bg-brand-green/10 text-brand-green'
-                      : 'border-gray-300 text-brand-gray hover:border-brand-green'
+                      ? 'border-accent bg-accent/10 text-accent'
+                      : 'border-subtle text-ink-muted hover:border-accent'
                   }`}
                 >
                   <input
@@ -244,12 +244,12 @@ export function SessionBuilderDialog({
         ) : null}
 
         <div className="rounded-xl bg-canvas p-4">
-          <p className="text-sm font-bold text-brand-navy">
+          <p className="text-sm font-bold text-ink">
             {count.isFetching ? '…' : available} {t('builder.available')}
           </p>
           {available > 0 ? (
             <div className="mt-3">
-              <label htmlFor="builder-count" className="text-sm font-semibold text-brand-navy">
+              <label htmlFor="builder-count" className="text-sm font-semibold text-ink">
                 {t('builder.questionCount')} : {Math.min(questionCount, maxCount)}
               </label>
               <input
@@ -259,11 +259,11 @@ export function SessionBuilderDialog({
                 max={maxCount}
                 value={Math.min(questionCount, maxCount)}
                 onChange={(e) => setQuestionCount(Number(e.target.value))}
-                className="mt-1 w-full accent-brand-green"
+                className="mt-1 w-full accent-accent"
               />
             </div>
           ) : (
-            <p className="mt-1 text-sm text-brand-gray">{t('builder.noQuestions')}</p>
+            <p className="mt-1 text-sm text-ink-muted">{t('builder.noQuestions')}</p>
           )}
         </div>
 

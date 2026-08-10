@@ -18,7 +18,7 @@ export function MindmapsPage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-h1 text-brand-navy dark:text-white">
+      <h1 className="text-h1 text-ink dark:text-white">
         {t('mindmaps.title')}
       </h1>
 
@@ -38,16 +38,16 @@ export function MindmapsPage() {
             <PlainButton
               key={mindmap.id}
               onClick={() => setViewing({ url: mindmap.imageUrl, title: mindmap.title })}
-              className="group overflow-hidden rounded-lg bg-surface text-left shadow-card transition hover:ring-1 hover:ring-brand-green"
+              className="group overflow-hidden rounded-lg bg-surface text-left shadow-card transition hover:ring-1 hover:ring-accent"
             >
-              <div className="aspect-video overflow-hidden bg-gray-100">
+              <div className="aspect-video overflow-hidden bg-canvas">
                 <img
                   src={mindmap.imageUrl}
                   alt={mindmap.title}
                   className="h-full w-full object-cover transition group-hover:scale-105"
                 />
               </div>
-              <p className="p-3 text-sm font-bold text-brand-navy">{mindmap.title}</p>
+              <p className="p-3 text-sm font-bold text-ink">{mindmap.title}</p>
             </PlainButton>
           ))}
         </div>

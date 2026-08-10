@@ -56,20 +56,20 @@ export function VerifyEmailPage() {
 
   return (
     <AuthLayout>
-      <h1 className="text-h1 text-brand-navy">{t('verify.title')}</h1>
+      <h1 className="text-h1 text-ink">{t('verify.title')}</h1>
 
       {status === 'verifying' ? (
-        <p className="mt-6 text-body text-gray-500">{t('verify.checking')}</p>
+        <p className="mt-6 text-body text-ink-muted">{t('verify.checking')}</p>
       ) : null}
 
       {status === 'verified' ? (
         <>
-          <p className="mt-6 rounded-lg bg-brand-green/10 p-4 text-sm font-medium text-brand-green">
+          <p className="mt-6 rounded-lg bg-success/10 p-4 text-sm font-medium text-success-text">
             {t('verify.success')}
           </p>
           <Link
             to="/login"
-            className="mt-6 inline-block font-semibold text-brand-green hover:underline"
+            className="mt-6 inline-block font-semibold text-accent hover:underline"
           >
             {t('verify.goToLogin')}
           </Link>
@@ -85,15 +85,15 @@ export function VerifyEmailPage() {
       {status === 'needsVerification' || status === 'invalid' ? (
         <>
           {justSent && status === 'needsVerification' ? (
-            <p className="mt-6 rounded-lg bg-brand-green/10 p-4 text-sm font-medium text-brand-green">
+            <p className="mt-6 rounded-lg bg-success/10 p-4 text-sm font-medium text-success-text">
               {t('verify.sentIntro')}
             </p>
           ) : (
-            <p className="mt-6 text-sm text-brand-gray">{t('verify.resendIntro')}</p>
+            <p className="mt-6 text-sm text-ink-muted">{t('verify.resendIntro')}</p>
           )}
 
           {resent ? (
-            <p className="mt-4 rounded-lg bg-brand-green/10 p-4 text-sm font-medium text-brand-green">
+            <p className="mt-4 rounded-lg bg-success/10 p-4 text-sm font-medium text-success-text">
               {t('verify.resent')}
             </p>
           ) : (
@@ -115,7 +115,7 @@ export function VerifyEmailPage() {
 
           <Link
             to="/login"
-            className="mt-6 inline-block text-sm font-semibold text-brand-green hover:underline"
+            className="mt-6 inline-block text-sm font-semibold text-accent hover:underline"
           >
             {t('verify.backToLogin')}
           </Link>

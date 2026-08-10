@@ -132,7 +132,7 @@ export function RessourcesPage() {
       {/* Storage totals first: R2 usage should be visible where the uploading happens,
           not discovered on a bill. */}
       <Card className="mb-4 p-0">
-        <div className="border-b border-subtle px-4 py-3 text-sm font-bold text-brand-navy">
+        <div className="border-b border-subtle px-4 py-3 text-sm font-bold text-ink">
           Stockage par module
         </div>
         {summary.isLoading ? (
@@ -141,28 +141,28 @@ export function RessourcesPage() {
             <Skeleton className="h-5" />
           </div>
         ) : (summary.data ?? []).filter((s) => s.resourceCount > 0).length === 0 ? (
-          <p className="px-4 py-5 text-sm text-brand-gray">Aucune ressource pour le moment.</p>
+          <p className="px-4 py-5 text-sm text-ink-muted">Aucune ressource pour le moment.</p>
         ) : (
           <ul className="divide-y divide-subtle">
             {(summary.data ?? [])
               .filter((s) => s.resourceCount > 0)
               .map((s) => (
                 <li key={s.moduleId} className="flex items-center gap-3 px-4 py-2.5 text-sm">
-                  <span className="w-16 shrink-0 text-xs font-semibold text-brand-gray">
+                  <span className="w-16 shrink-0 text-xs font-semibold text-ink-muted">
                     Année {s.studyYear}
                   </span>
-                  <span className="min-w-0 flex-1 truncate font-semibold text-brand-navy">
+                  <span className="min-w-0 flex-1 truncate font-semibold text-ink">
                     {s.moduleName}
                   </span>
-                  <span className="shrink-0 text-brand-gray">{s.resourceCount} fichier(s)</span>
-                  <span className="w-20 shrink-0 text-right font-semibold text-brand-navy">
+                  <span className="shrink-0 text-ink-muted">{s.resourceCount} fichier(s)</span>
+                  <span className="w-20 shrink-0 text-right font-semibold text-ink">
                     {formatFileSize(s.totalBytes)}
                   </span>
                 </li>
               ))}
-            <li className="flex items-center gap-3 bg-gray-50 px-4 py-2.5 text-sm">
-              <span className="min-w-0 flex-1 font-bold text-brand-navy">Total</span>
-              <span className="w-20 shrink-0 text-right font-bold text-brand-navy">
+            <li className="flex items-center gap-3 bg-canvas px-4 py-2.5 text-sm">
+              <span className="min-w-0 flex-1 font-bold text-ink">Total</span>
+              <span className="w-20 shrink-0 text-right font-bold text-ink">
                 {formatFileSize((summary.data ?? []).reduce((sum, s) => sum + s.totalBytes, 0))}
               </span>
             </li>
@@ -188,14 +188,14 @@ export function RessourcesPage() {
 
       {!moduleId ? (
         <Card>
-          <p className="text-sm text-brand-gray">
+          <p className="text-sm text-ink-muted">
             Sélectionnez un module pour voir et ajouter ses ressources.
           </p>
         </Card>
       ) : (
         <>
           <Card className="mb-4">
-            <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-gray">
+            <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-ink-muted">
               Ajouter une ressource
             </h2>
 
@@ -207,20 +207,20 @@ export function RessourcesPage() {
               onDragLeave={() => setDragging(false)}
               onDrop={onDrop}
               className={`mb-3 rounded-lg border-2 border-dashed p-6 text-center transition ${
-                dragging ? 'border-brand-green bg-brand-green/5' : 'border-gray-200'
+                dragging ? 'border-accent bg-accent/5' : 'border-subtle'
               }`}
             >
-              <p className="text-sm text-brand-gray">
+              <p className="text-sm text-ink-muted">
                 Glissez un fichier ici, ou{' '}
                 <button
                   type="button"
                   onClick={() => inputRef.current?.click()}
-                  className="font-semibold text-brand-green hover:underline"
+                  className="font-semibold text-accent hover:underline"
                 >
                   parcourez
                 </button>
               </p>
-              <p className="mt-1 text-xs text-brand-gray">
+              <p className="mt-1 text-xs text-ink-muted">
                 PDF, JPEG, PNG ou WebP — {MAX_MB} Mo maximum par fichier
               </p>
               <input
@@ -231,7 +231,7 @@ export function RessourcesPage() {
                 onChange={(e) => pick(e.target.files?.[0] ?? null)}
               />
               {file ? (
-                <p className="mt-3 text-sm font-semibold text-brand-navy">
+                <p className="mt-3 text-sm font-semibold text-ink">
                   {file.name} · {formatFileSize(file.size)}
                 </p>
               ) : null}
@@ -250,7 +250,7 @@ export function RessourcesPage() {
               </Field>
             </div>
 
-            <label className="mt-3 flex items-center gap-2 text-sm text-brand-navy">
+            <label className="mt-3 flex items-center gap-2 text-sm text-ink">
               <input
                 type="checkbox"
                 checked={published}
@@ -261,13 +261,13 @@ export function RessourcesPage() {
 
             {progress !== null ? (
               <div className="mt-3">
-                <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+                <div className="h-2 overflow-hidden rounded-full bg-ink/10">
                   <div
-                    className="h-full rounded-full bg-brand-green transition-all"
+                    className="h-full rounded-full bg-accent transition-all"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
-                <p className="mt-1 text-xs text-brand-gray">Envoi… {progress}%</p>
+                <p className="mt-1 text-xs text-ink-muted">Envoi… {progress}%</p>
               </div>
             ) : null}
 
@@ -280,9 +280,9 @@ export function RessourcesPage() {
 
           <Card className="p-0">
             <div className="flex items-center justify-between border-b border-subtle px-4 py-3">
-              <h2 className="text-sm font-bold uppercase tracking-wide text-brand-gray">Fichiers</h2>
+              <h2 className="text-sm font-bold uppercase tracking-wide text-ink-muted">Fichiers</h2>
               {moduleSummary ? (
-                <span className="text-xs text-brand-gray">
+                <span className="text-xs text-ink-muted">
                   {moduleSummary.resourceCount} fichier(s) · {formatFileSize(moduleSummary.totalBytes)}
                 </span>
               ) : null}
@@ -307,7 +307,7 @@ export function RessourcesPage() {
                         onClick={() => move(i, -1)}
                         disabled={i === 0}
                         aria-label="Monter"
-                        className="px-1 text-xs text-brand-gray disabled:opacity-30"
+                        className="px-1 text-xs text-ink-muted disabled:opacity-30"
                       >
                         ▲
                       </button>
@@ -316,7 +316,7 @@ export function RessourcesPage() {
                         onClick={() => move(i, 1)}
                         disabled={i === (resources.data ?? []).length - 1}
                         aria-label="Descendre"
-                        className="px-1 text-xs text-brand-gray disabled:opacity-30"
+                        className="px-1 text-xs text-ink-muted disabled:opacity-30"
                       >
                         ▼
                       </button>
@@ -325,8 +325,8 @@ export function RessourcesPage() {
                       {r.fileType === 'PDF' ? '📄' : '🖼️'}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-semibold text-brand-navy">{r.title}</p>
-                      <p className="text-xs text-brand-gray">
+                      <p className="truncate font-semibold text-ink">{r.title}</p>
+                      <p className="text-xs text-ink-muted">
                         {r.fileType} · {formatFileSize(r.fileSizeBytes)}
                       </p>
                     </div>
@@ -338,7 +338,7 @@ export function RessourcesPage() {
                         href={r.fileUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="rounded-md px-2 py-1 text-sm font-semibold text-brand-green hover:bg-brand-green/10"
+                        className="rounded-md px-2 py-1 text-sm font-semibold text-accent hover:bg-accent/10"
                       >
                         Voir
                       </a>

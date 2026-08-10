@@ -254,7 +254,7 @@ function QuestionsTable({
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 text-left text-xs uppercase text-brand-gray">
+              <tr className="border-b border-subtle text-left text-xs uppercase text-ink-muted">
                 <th className="px-4 py-3 font-semibold">Énoncé</th>
                 <th className="px-4 py-3 font-semibold">Cours</th>
                 <th className="px-4 py-3 font-semibold">Prop.</th>
@@ -265,15 +265,15 @@ function QuestionsTable({
             </thead>
             <tbody>
               {list.data!.content.map((question) => (
-                <tr key={question.id} className="border-b border-gray-50 last:border-0">
+                <tr key={question.id} className="border-b border-subtle last:border-0">
                   <td className="max-w-md px-4 py-3">
-                    <span className="line-clamp-2 font-medium text-brand-navy">
+                    <span className="line-clamp-2 font-medium text-ink">
                       {question.statement}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-brand-gray">{courseName(question.courseId)}</td>
-                  <td className="px-4 py-3 text-brand-gray">{question.propositions.length}</td>
-                  <td className="px-4 py-3 text-brand-gray">{question.difficulty ?? '—'}</td>
+                  <td className="px-4 py-3 text-ink-muted">{courseName(question.courseId)}</td>
+                  <td className="px-4 py-3 text-ink-muted">{question.propositions.length}</td>
+                  <td className="px-4 py-3 text-ink-muted">{question.difficulty ?? '—'}</td>
                   <td className="px-4 py-3">
                     {question.published ? (
                       <StatusBadge tone="green">Publiée</StatusBadge>
@@ -474,14 +474,14 @@ function QuestionEditor({
               </Field>
             </div>
 
-            <label className="block text-sm font-semibold text-brand-gray">
+            <label className="block text-sm font-semibold text-ink-muted">
               Énoncé
               <textarea
                 required
                 value={statement}
                 onChange={(e) => setStatement(e.target.value)}
                 rows={3}
-                className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm text-brand-navy focus:border-brand-green focus:outline-none"
+                className="mt-1 w-full rounded-lg border border-subtle p-2 text-sm text-ink focus:border-accent"
               />
             </label>
 
@@ -528,7 +528,7 @@ function QuestionEditor({
             {props.map((p, i) => (
               <Card key={i} className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-brand-navy">Proposition {p.letter}</span>
+                  <span className="text-sm font-bold text-ink">Proposition {p.letter}</span>
                   <div className="flex items-center gap-2">
                     <SegmentToggle
                       tone="success"
@@ -563,7 +563,7 @@ function QuestionEditor({
                   onChange={(e) => setProp(i, { text: e.target.value })}
                 />
                 <div>
-                  <p className="mb-1 text-xs font-semibold text-brand-gray">Explication</p>
+                  <p className="mb-1 text-xs font-semibold text-ink-muted">Explication</p>
                   <RichTextEditor
                     value={p.explanationHtml}
                     onChange={(html) => setProp(i, { explanationHtml: html })}
@@ -580,12 +580,12 @@ function QuestionEditor({
           </div>
 
           <Card className="flex items-center justify-between">
-            <label className="flex items-center gap-2 text-sm font-semibold text-brand-gray">
+            <label className="flex items-center gap-2 text-sm font-semibold text-ink-muted">
               <input
                 type="checkbox"
                 checked={published}
                 onChange={(e) => setPublished(e.target.checked)}
-                className="h-4 w-4 accent-brand-green"
+                className="h-4 w-4 accent-accent"
               />
               Publier la question
             </label>
@@ -600,7 +600,7 @@ function QuestionEditor({
 
         {/* Live student-view preview */}
         <div className="lg:sticky lg:top-20 lg:self-start">
-          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-brand-gray">
+          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-muted">
             Aperçu (vue étudiant)
           </p>
           <Card>
@@ -609,7 +609,7 @@ function QuestionEditor({
                 {DIFFICULTIES.find((d) => d.value === difficulty)?.label}
               </StatusBadge>
             ) : null}
-            <p className="mt-2 whitespace-pre-wrap text-base font-semibold text-brand-navy">
+            <p className="mt-2 whitespace-pre-wrap text-base font-semibold text-ink">
               {statement || 'Énoncé…'}
             </p>
             <div className="mt-3 space-y-2">
@@ -626,33 +626,33 @@ function QuestionEditor({
               {props.map((p) => (
                 <li
                   key={p.letter}
-                  className="flex items-start gap-3 rounded-lg border border-gray-200 p-3"
+                  className="flex items-start gap-3 rounded-lg border border-subtle p-3"
                 >
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-brand-navy">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ink/10 text-xs font-bold text-ink">
                     {p.letter}
                   </span>
-                  <span className="text-sm text-brand-navy">{p.text || '…'}</span>
+                  <span className="text-sm text-ink">{p.text || '…'}</span>
                 </li>
               ))}
             </ul>
           </Card>
 
           {/* Correction preview (admin-only, shows truth + explanation) */}
-          <p className="mb-2 mt-6 text-xs font-bold uppercase tracking-wide text-brand-gray">
+          <p className="mb-2 mt-6 text-xs font-bold uppercase tracking-wide text-ink-muted">
             Aperçu correction (interne)
           </p>
           <Card className="space-y-2">
             {props.map((p) => (
               <div key={p.letter} className="rounded-lg bg-canvas p-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-brand-navy">{p.letter}.</span>
+                  <span className="text-sm font-bold text-ink">{p.letter}.</span>
                   <StatusBadge tone={p.isTrue ? 'green' : 'red'}>
                     {p.isTrue ? 'VRAI' : 'FAUX'}
                   </StatusBadge>
-                  <span className="text-sm text-brand-gray">{p.text || '…'}</span>
+                  <span className="text-sm text-ink-muted">{p.text || '…'}</span>
                 </div>
                 {p.explanationHtml ? (
-                  <SafeHtml html={p.explanationHtml} className="mt-2 text-sm text-brand-gray" />
+                  <SafeHtml html={p.explanationHtml} className="mt-2 text-sm text-ink-muted" />
                 ) : null}
               </div>
             ))}
@@ -683,7 +683,7 @@ function ImageAttacher({
   });
   return (
     <div>
-      <p className="mb-1 text-xs font-semibold text-brand-gray">{label}</p>
+      <p className="mb-1 text-xs font-semibold text-ink-muted">{label}</p>
       <div className="flex flex-wrap items-center gap-2">
         {images.map((src) => (
           <div key={src} className="relative">
@@ -704,7 +704,7 @@ function ImageAttacher({
             </Button>
           </div>
         ))}
-        <label className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 text-2xl text-brand-gray hover:border-brand-green">
+        <label className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-subtle text-2xl text-ink-muted hover:border-accent">
           {busy ? '…' : '+'}
           <input
             type="file"
@@ -795,7 +795,7 @@ function BulkImportModal({ onClose }: { onClose: () => void }) {
   return (
     <Modal open onClose={onClose} title="Import JSON de questions">
       <form onSubmit={submit} className="space-y-4">
-        <p className="text-sm text-brand-gray">
+        <p className="text-sm text-ink-muted">
           Collez un tableau JSON d'objets question. Identifiez le cours par son nom (
           <span className="font-mono text-xs">courseName</span>, avec au besoin{' '}
           <span className="font-mono text-xs">moduleName</span> et{' '}
@@ -811,10 +811,10 @@ function BulkImportModal({ onClose }: { onClose: () => void }) {
           onChange={(e) => setText(e.target.value)}
           rows={10}
           placeholder='[{"courseName":"Parvovirose","moduleName":"Maladies infectieuses","studyYear":3,"statement":"…","published":true,"propositions":[…]}]'
-          className="w-full rounded-lg border border-gray-300 p-2 font-mono text-xs text-brand-navy focus:border-brand-green focus:outline-none"
+          className="w-full rounded-lg border border-subtle p-2 font-mono text-xs text-ink focus:border-accent"
         />
 
-        <label className="flex items-center gap-2 text-sm font-medium text-brand-navy">
+        <label className="flex items-center gap-2 text-sm font-medium text-ink">
           <input
             type="checkbox"
             checked={dryRun}
@@ -822,7 +822,7 @@ function BulkImportModal({ onClose }: { onClose: () => void }) {
               setDryRun(e.target.checked);
               clearOutput();
             }}
-            className="h-4 w-4 rounded border-gray-300 accent-brand-green"
+            className="h-4 w-4 rounded border-subtle accent-accent"
           />
           Valider sans importer
         </label>
@@ -831,12 +831,12 @@ function BulkImportModal({ onClose }: { onClose: () => void }) {
 
         {preview ? (
           <div className="rounded-lg border border-subtle bg-canvas p-3 text-sm">
-            <p className="font-bold text-brand-navy">
+            <p className="font-bold text-ink">
               {preview.wouldImport}/{preview.rowsSubmitted} ligne(s) seraient importées — rien n'a
               été enregistré.
             </p>
             {preview.resolved.length > 0 ? (
-              <ul className="mt-2 max-h-40 space-y-1 overflow-y-auto text-xs text-brand-gray">
+              <ul className="mt-2 max-h-40 space-y-1 overflow-y-auto text-xs text-ink-muted">
                 {preview.resolved.map((r) => (
                   <li key={r.row}>
                     Ligne {r.row + 1} → <span className="font-semibold">{r.courseName}</span> ·{' '}

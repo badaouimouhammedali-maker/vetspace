@@ -38,8 +38,8 @@ export function ResetPasswordPage() {
 
   return (
     <AuthLayout>
-      <h1 className="text-h1 text-brand-navy">{t('reset.title')}</h1>
-      <p className="mt-1.5 text-body text-gray-500">{t('reset.subtitle')}</p>
+      <h1 className="text-h1 text-ink">{t('reset.title')}</h1>
+      <p className="mt-1.5 text-body text-ink-muted">{t('reset.subtitle')}</p>
 
       {!token ? (
         <p className="mt-6 rounded-lg bg-danger/10 p-4 text-sm font-medium text-danger">
@@ -57,7 +57,7 @@ export function ResetPasswordPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </Field>
-          <p className="-mt-2 text-xs text-brand-gray">{t('register.passwordHint')}</p>
+          <p className="-mt-2 text-xs text-ink-muted">{t('register.passwordHint')}</p>
           <Field label={t('reset.passwordConfirm')} htmlFor="passwordConfirm">
             <PasswordInput
               id="passwordConfirm"
@@ -73,7 +73,7 @@ export function ResetPasswordPage() {
       )}
 
       <p className="mt-6 text-center text-sm">
-        <Link to="/login" className="font-semibold text-brand-green hover:underline">
+        <Link to="/login" className="font-semibold text-accent hover:underline">
           {t('forgot.backToLogin')}
         </Link>
       </p>

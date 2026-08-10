@@ -40,22 +40,22 @@ export function OverviewPage() {
                 <span className="text-2xl" aria-hidden>
                   {c.icon}
                 </span>
-                <span className="text-display text-brand-navy">{overview.data[c.key]}</span>
-                <span className="text-xs font-semibold text-brand-gray">{c.label}</span>
+                <span className="text-display text-ink">{overview.data[c.key]}</span>
+                <span className="text-xs font-semibold text-ink-muted">{c.label}</span>
               </Card>
             ))}
           </div>
 
           {/* École no longer scopes any content, so this is where the field earns its
               keep: it tells the team where their students actually are. */}
-          <h2 className="mb-3 mt-8 text-lg font-bold text-brand-navy">Répartition par école</h2>
+          <h2 className="mb-3 mt-8 text-lg font-bold text-ink">Répartition par école</h2>
           <Card className="p-0">
             {(overview.data.studentsBySchool ?? []).length === 0 ? (
               <div className="p-5">
                 <EmptyState icon="🏫" title="Aucun étudiant inscrit" compact />
               </div>
             ) : (
-              <ul className="divide-y divide-gray-50">
+              <ul className="divide-y divide-subtle">
                 {(overview.data.studentsBySchool ?? []).map((row) => {
                   const share =
                     overview.data.students > 0
@@ -66,18 +66,18 @@ export function OverviewPage() {
                       key={row.schoolId ?? 'unassigned'}
                       className="flex items-center gap-4 px-4 py-3"
                     >
-                      <span className="w-48 shrink-0 truncate text-sm font-semibold text-brand-navy">
+                      <span className="w-48 shrink-0 truncate text-sm font-semibold text-ink">
                         {row.schoolName ?? 'École non renseignée'}
                       </span>
                       {/* A bar makes the distribution readable at a glance; the number
                           stays because a bar alone cannot be quoted in a meeting. */}
-                      <span className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-gray-100">
+                      <span className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-ink/10">
                         <span
-                          className="block h-full rounded-full bg-brand-green"
+                          className="block h-full rounded-full bg-accent"
                           style={{ width: `${share}%` }}
                         />
                       </span>
-                      <span className="w-24 shrink-0 text-right text-sm text-brand-gray">
+                      <span className="w-24 shrink-0 text-right text-sm text-ink-muted">
                         {row.students} <span className="text-xs">({share}%)</span>
                       </span>
                     </li>
@@ -87,7 +87,7 @@ export function OverviewPage() {
             )}
           </Card>
 
-          <h2 className="mb-3 mt-8 text-lg font-bold text-brand-navy">Dernières inscriptions</h2>
+          <h2 className="mb-3 mt-8 text-lg font-bold text-ink">Dernières inscriptions</h2>
           <Card className="overflow-x-auto p-0">
             {overview.data.latestRegistrations.length === 0 ? (
               <div className="p-5">
@@ -96,7 +96,7 @@ export function OverviewPage() {
             ) : (
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100 text-left text-xs uppercase text-brand-gray">
+                  <tr className="border-b border-subtle text-left text-xs uppercase text-ink-muted">
                     <th className="px-4 py-3 font-semibold">Nom</th>
                     <th className="px-4 py-3 font-semibold">E-mail</th>
                     <th className="px-4 py-3 font-semibold">École</th>
@@ -106,12 +106,12 @@ export function OverviewPage() {
                 </thead>
                 <tbody>
                   {overview.data.latestRegistrations.map((r) => (
-                    <tr key={r.id} className="border-b border-gray-50 last:border-0">
-                      <td className="px-4 py-3 font-semibold text-brand-navy">{r.fullName}</td>
-                      <td className="px-4 py-3 text-brand-gray">{r.email}</td>
-                      <td className="px-4 py-3 text-brand-gray">{r.schoolName ?? '—'}</td>
-                      <td className="px-4 py-3 text-brand-gray">{r.studyYear ?? '—'}</td>
-                      <td className="px-4 py-3 text-brand-gray">
+                    <tr key={r.id} className="border-b border-subtle last:border-0">
+                      <td className="px-4 py-3 font-semibold text-ink">{r.fullName}</td>
+                      <td className="px-4 py-3 text-ink-muted">{r.email}</td>
+                      <td className="px-4 py-3 text-ink-muted">{r.schoolName ?? '—'}</td>
+                      <td className="px-4 py-3 text-ink-muted">{r.studyYear ?? '—'}</td>
+                      <td className="px-4 py-3 text-ink-muted">
                         {new Date(r.createdAt).toLocaleDateString('fr-FR')}
                       </td>
                     </tr>

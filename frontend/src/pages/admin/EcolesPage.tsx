@@ -149,7 +149,7 @@ export function EcolesPage() {
 
       {/* Schools list */}
       <Card className="mb-6">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-brand-gray">Écoles</h2>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-ink-muted">Écoles</h2>
         {schools.isLoading ? (
           <TableSkeleton rows={5} />
         ) : (schools.data ?? []).length === 0 ? (
@@ -160,11 +160,11 @@ export function EcolesPage() {
             compact
           />
         ) : (
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-subtle">
             {schools.data!.map((s) => (
               <li key={s.id} className="flex items-center justify-between py-2">
-                <span className="text-sm font-semibold text-brand-navy">
-                  {s.name} <span className="font-normal text-brand-gray">/{s.slug}</span>
+                <span className="text-sm font-semibold text-ink">
+                  {s.name} <span className="font-normal text-ink-muted">/{s.slug}</span>
                 </span>
                 <div className="flex gap-2">
                   <GhostButton onClick={() => setSchoolModal(s)}>Renommer</GhostButton>
@@ -201,7 +201,7 @@ export function EcolesPage() {
       {(
         <Card>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-brand-gray">Modules</h2>
+            <h2 className="text-sm font-bold uppercase tracking-wide text-ink-muted">Modules</h2>
             <PrimaryButton onClick={() => setModuleModal('new')}>+ Module</PrimaryButton>
           </div>
 
@@ -215,7 +215,7 @@ export function EcolesPage() {
                 const mCourses = coursesByModule.get(m.id) ?? [];
                 const isOpen = expanded === m.id;
                 return (
-                  <li key={m.id} className="rounded-xl border border-gray-100">
+                  <li key={m.id} className="rounded-xl border border-subtle">
                     <div className="flex items-center gap-2 p-3">
                       <div className="flex flex-col">
                         <Button
@@ -243,7 +243,7 @@ export function EcolesPage() {
                         className="flex-1"
                       >
                         {m.name}
-                        <span className="font-normal text-gray-500">({mCourses.length} cours)</span>
+                        <span className="font-normal text-ink-muted">({mCourses.length} cours)</span>
                       </Disclosure>
                       {m.published ? (
                         <StatusBadge tone="green">Publié</StatusBadge>
@@ -269,7 +269,7 @@ export function EcolesPage() {
                     </div>
 
                     {isOpen ? (
-                      <div className="border-t border-gray-100 bg-canvas/50 p-3">
+                      <div className="border-t border-subtle bg-canvas/50 p-3">
                         <div className="mb-2 flex justify-end">
                           <PrimaryButton
                             onClick={() => setCourseModal({ course: 'new', moduleId: m.id })}
@@ -306,7 +306,7 @@ export function EcolesPage() {
                                     ▼
                                   </Button>
                                 </div>
-                                <span className="flex-1 text-sm font-semibold text-brand-navy">
+                                <span className="flex-1 text-sm font-semibold text-ink">
                                   {c.name}
                                 </span>
                                 {c.published ? (
@@ -317,12 +317,12 @@ export function EcolesPage() {
                                 {c.freePreview ? (
                                   <StatusBadge tone="amber">Aperçu gratuit</StatusBadge>
                                 ) : null}
-                                <label className="flex items-center gap-1 text-xs font-semibold text-brand-gray">
+                                <label className="flex items-center gap-1 text-xs font-semibold text-ink-muted">
                                   <input
                                     type="checkbox"
                                     checked={c.freePreview}
                                     onChange={() => crsFreePreview.mutate(c)}
-                                    className="h-4 w-4 accent-brand-green"
+                                    className="h-4 w-4 accent-accent"
                                   />
                                   Aperçu
                                 </label>
@@ -488,12 +488,12 @@ function ModuleModal({
         <Field label="Nom" htmlFor="m-name">
           <TextInput id="m-name" required value={name} onChange={(e) => setName(e.target.value)} />
         </Field>
-        <label className="flex items-center gap-2 text-sm font-semibold text-brand-gray">
+        <label className="flex items-center gap-2 text-sm font-semibold text-ink-muted">
           <input
             type="checkbox"
             checked={published}
             onChange={(e) => setPublished(e.target.checked)}
-            className="h-4 w-4 accent-brand-green"
+            className="h-4 w-4 accent-accent"
           />
           Publié
         </label>
@@ -546,21 +546,21 @@ function CourseModal({
         <Field label="Nom" htmlFor="c-name">
           <TextInput id="c-name" required value={name} onChange={(e) => setName(e.target.value)} />
         </Field>
-        <label className="flex items-center gap-2 text-sm font-semibold text-brand-gray">
+        <label className="flex items-center gap-2 text-sm font-semibold text-ink-muted">
           <input
             type="checkbox"
             checked={published}
             onChange={(e) => setPublished(e.target.checked)}
-            className="h-4 w-4 accent-brand-green"
+            className="h-4 w-4 accent-accent"
           />
           Publié
         </label>
-        <label className="flex items-center gap-2 text-sm font-semibold text-brand-gray">
+        <label className="flex items-center gap-2 text-sm font-semibold text-ink-muted">
           <input
             type="checkbox"
             checked={freePreview}
             onChange={(e) => setFreePreview(e.target.checked)}
-            className="h-4 w-4 accent-brand-green"
+            className="h-4 w-4 accent-accent"
           />
           Aperçu gratuit (démo)
         </label>

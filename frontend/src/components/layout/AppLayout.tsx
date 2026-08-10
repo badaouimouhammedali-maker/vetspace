@@ -83,6 +83,19 @@ function isStaff(role: Role | undefined): boolean {
   return role === 'ADMIN' || role === 'TEACHER';
 }
 
+/**
+ * Le mode sombre n'existe pas encore.
+ *
+ * <p>Le basculement existait et écrivait bien `.dark` sur `<html>`, mais seules 14
+ * classes `dark:` sont écrites dans toute l'application — le fond de page et treize
+ * titres. L'activer menait donc à un écran mi-clair mi-sombre, non persisté au
+ * rechargement. Le drapeau ferme l'accès tant que la vraie passe n'est pas faite,
+ * plutôt que de laisser les utilisateurs atteindre une palette qui n'existe pas.
+ *
+ * <p>Mettre `VITE_ENABLE_DARK_MODE=true` pour retrouver le basculement en local.
+ */
+const DARK_MODE_ENABLED = import.meta.env.VITE_ENABLE_DARK_MODE === 'true';
+
 export function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -115,22 +128,22 @@ export function AppLayout() {
     <NavLink
       to="/app/profil"
       onClick={() => setDrawerOpen(false)}
-      className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors duration-150 hover:bg-white/5"
+      className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors duration-150 hover:bg-on-navy/6"
     >
       <Avatar photoUrl={user?.photoUrl} initials={initials} size="sm" />
       <span className="min-w-0">
         <span className="block truncate text-caption font-semibold text-white">
           {user?.firstName} {user?.lastName}
         </span>
-        <span className="block truncate text-caption text-white/50">{user?.email}</span>
+        <span className="block truncate text-caption text-on-navy-muted">{user?.email}</span>
       </span>
     </NavLink>
   );
 
   return (
-    <div className="min-h-screen bg-canvas dark:bg-gray-900">
+    <div className="min-h-screen bg-canvas dark:bg-brand-navy-deep">
       {/* Barre latérale fixe (desktop) */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 bg-brand-navy lg:block">
+      <aside className="on-navy fixed inset-y-0 left-0 z-30 hidden w-64 bg-brand-navy lg:block">
         <Sidebar sections={sections} homeTo="/app" footer={userBlock} />
       </aside>
 
@@ -139,7 +152,7 @@ export function AppLayout() {
         <div className="fixed inset-0 z-40 lg:hidden" onClick={() => setDrawerOpen(false)}>
           <div className="absolute inset-0 bg-brand-navy/50 backdrop-blur-sm" />
           <aside
-            className="absolute inset-y-0 left-0 w-64 bg-brand-navy shadow-pop"
+            className="on-navy absolute inset-y-0 left-0 w-64 bg-brand-navy shadow-pop"
             onClick={(e) => e.stopPropagation()}
           >
             <Sidebar
@@ -165,9 +178,11 @@ export function AppLayout() {
           }
           right={
             <>
-              <TopbarIconButton onClick={() => setDark((d) => !d)} label="Changer de thème">
-                {dark ? '☀️' : '🌙'}
-              </TopbarIconButton>
+              {DARK_MODE_ENABLED ? (
+                <TopbarIconButton onClick={() => setDark((d) => !d)} label="Changer de thème">
+                  {dark ? '☀️' : '🌙'}
+                </TopbarIconButton>
+              ) : null}
 
               <NotificationsDropdown unreadCount={unread.data?.count ?? 0} />
 
@@ -183,7 +198,7 @@ export function AppLayout() {
                 </button>
                 {menu.open ? (
                   <DropdownPanel>
-                    <p className="truncate px-3 py-2 text-caption font-bold text-brand-navy">
+                    <p className="truncate px-3 py-2 text-caption font-bold text-ink">
                       {user?.firstName} {user?.lastName}
                     </p>
                     <DropdownItem to="/app/profil" onClick={() => menu.setOpen(false)}>
@@ -219,8 +234,8 @@ export function AppLayout() {
 export function ComingSoonPage({ titleKey }: { titleKey: TranslationKey }) {
   return (
     <div>
-      <h1 className="text-display text-brand-navy">{t(titleKey)}</h1>
-      <p className="mt-2 text-body text-gray-500">{t('nav.comingSoon')}</p>
+      <h1 className="text-display text-ink">{t(titleKey)}</h1>
+      <p className="mt-2 text-body text-ink-muted">{t('nav.comingSoon')}</p>
     </div>
   );
 }

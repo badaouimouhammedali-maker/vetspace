@@ -47,14 +47,14 @@ export function AbonnementPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-h1 text-brand-navy dark:text-white">
+      <h1 className="text-h1 text-ink dark:text-white">
         {t('app.subscription')}
       </h1>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Activation d'un code */}
         <div className="rounded-lg bg-surface p-6 shadow-card">
-          <h2 className="mb-4 text-base font-bold text-brand-navy">{t('abo.redeemTitle')}</h2>
+          <h2 className="mb-4 text-base font-bold text-ink">{t('abo.redeemTitle')}</h2>
           <form onSubmit={onSubmit} className="flex gap-2">
             <input
               value={code}
@@ -62,7 +62,7 @@ export function AbonnementPage() {
               placeholder={t('abo.redeemPlaceholder')}
               required
               aria-label={t('abo.redeemTitle')}
-              className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 font-mono text-sm uppercase tracking-widest outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
+              className="w-full rounded-lg border border-subtle px-3.5 py-2.5 font-mono text-sm uppercase tracking-widest outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
             />
             <Button variant="primary" size="md" className="shrink-0"
        type="submit"
@@ -72,7 +72,7 @@ export function AbonnementPage() {
           </form>
           {error ? <p className="mt-3 text-sm font-medium text-danger">{error}</p> : null}
           {success ? (
-            <p className="mt-3 rounded-lg bg-brand-green/10 p-3 text-sm font-medium text-brand-green">
+            <p className="mt-3 rounded-lg bg-success/10 p-3 text-sm font-medium text-success-text">
               {success}
             </p>
           ) : null}
@@ -80,18 +80,18 @@ export function AbonnementPage() {
 
         {/* Historique */}
         <div className="rounded-lg bg-surface p-6 shadow-card">
-          <h2 className="mb-4 text-base font-bold text-brand-navy">{t('abo.historyTitle')}</h2>
+          <h2 className="mb-4 text-base font-bold text-ink">{t('abo.historyTitle')}</h2>
           {(user?.activeSubscriptions.length ?? 0) === 0 ? (
-            <p className="text-sm text-brand-gray">{t('abo.historyEmpty')}</p>
+            <p className="text-sm text-ink-muted">{t('abo.historyEmpty')}</p>
           ) : (
             <ul className="space-y-2">
               {user?.activeSubscriptions.map((subscription) => (
                 <li
                   key={`${subscription.packName}-${subscription.endsAt}`}
-                  className="flex items-center justify-between rounded-lg border border-gray-100 px-4 py-3"
+                  className="flex items-center justify-between rounded-lg border border-subtle px-4 py-3"
                 >
-                  <span className="text-sm font-bold text-brand-navy">{subscription.packName}</span>
-                  <span className="text-xs text-brand-gray">
+                  <span className="text-sm font-bold text-ink">{subscription.packName}</span>
+                  <span className="text-xs text-ink-muted">
                     {t('abo.activeUntil')}{' '}
                     {new Date(subscription.endsAt).toLocaleDateString('fr-FR')}
                   </span>
@@ -104,7 +104,7 @@ export function AbonnementPage() {
 
       {/* Carrousel de packs */}
       <div>
-        <h2 className="mb-3 text-base font-bold text-brand-navy dark:text-white">
+        <h2 className="mb-3 text-base font-bold text-ink dark:text-white">
           {t('abo.packsTitle')}
         </h2>
         {packs.isLoading ? (
@@ -120,24 +120,24 @@ export function AbonnementPage() {
                 key={pack.id}
                 className="w-72 shrink-0 snap-start rounded-lg bg-surface p-6 shadow-card"
               >
-                <p className="text-sm font-bold text-brand-navy">{pack.name}</p>
-                <p className="mt-1 text-xs text-brand-gray">
+                <p className="text-sm font-bold text-ink">{pack.name}</p>
+                <p className="mt-1 text-xs text-ink-muted">
                   {pack.studyYear != null
                     ? `${t('abo.year')} ${pack.studyYear}`
                     : t('abo.allYears')}{' '}
                   · {pack.academicYear}
                 </p>
-                <p className="mt-4 text-display text-brand-green">
+                <p className="mt-4 text-display text-accent">
                   {pack.priceDa.toLocaleString('fr-FR')} <span className="text-base">DA</span>
                 </p>
-                <p className="mt-1 text-xs text-brand-gray">
+                <p className="mt-1 text-xs text-ink-muted">
                   {t('home.expiresOn')} {new Date(pack.expiresAt).toLocaleDateString('fr-FR')}
                 </p>
-                <div className="mt-4 border-t border-gray-100 pt-3">
-                  <p className="text-xs font-bold tracking-wide text-brand-navy">
+                <div className="mt-4 border-t border-subtle pt-3">
+                  <p className="text-xs font-bold tracking-wide text-ink">
                     {t('abo.buyTitle')}
                   </p>
-                  <p className="mt-1 text-xs leading-relaxed text-brand-gray">
+                  <p className="mt-1 text-xs leading-relaxed text-ink-muted">
                     {t('abo.buyInstructions')}
                   </p>
                 </div>

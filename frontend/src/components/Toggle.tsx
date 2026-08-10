@@ -24,8 +24,8 @@ interface ToggleProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'chi
 export type ToggleTone = 'brand' | 'success' | 'danger';
 
 const SELECTED_FILL: Record<ToggleTone, string> = {
-  brand: 'bg-brand-green text-white',
-  success: 'bg-success text-white',
+  brand: 'bg-accent text-white',
+  success: 'bg-success-text text-white',
   danger: 'bg-danger text-white',
 };
 
@@ -49,7 +49,7 @@ export function SegmentToggle({
       aria-pressed={selected}
       {...rest}
       className={`rounded-md px-3 py-1.5 text-caption font-semibold transition-colors duration-150 ${
-        selected ? SELECTED_FILL[tone] : 'text-brand-navy hover:bg-brand-navy/5'
+        selected ? SELECTED_FILL[tone] : 'text-ink hover:bg-accent/6'
       } ${className}`}
     >
       {children}
@@ -80,11 +80,11 @@ export function Disclosure({
       type="button"
       aria-expanded={open}
       {...rest}
-      className={`flex w-full items-center gap-2 text-left text-body font-semibold text-brand-navy transition-colors duration-150 hover:text-brand-green ${className}`}
+      className={`flex w-full items-center gap-2 text-left text-body font-semibold text-ink transition-colors duration-150 hover:text-accent ${className}`}
     >
       <span
         aria-hidden
-        className={`shrink-0 text-caption text-brand-green transition-transform duration-150 ${
+        className={`shrink-0 text-caption text-accent transition-transform duration-150 ${
           open ? 'rotate-90' : ''
         }`}
       >
@@ -116,10 +116,10 @@ export function MenuRow({
     <button
       type="button"
       {...rest}
-      className={`w-full rounded-md border border-subtle px-4 py-3 text-left transition-colors duration-150 hover:border-brand-green hover:bg-brand-green/5 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      className={`w-full rounded-md border border-subtle px-4 py-3 text-left transition-colors duration-150 hover:border-accent hover:bg-accent/6 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
     >
-      <span className="block text-body font-semibold text-brand-navy">{title}</span>
-      {hint ? <span className="mt-0.5 block text-caption text-gray-500">{hint}</span> : null}
+      <span className="block text-body font-semibold text-ink">{title}</span>
+      {hint ? <span className="mt-0.5 block text-caption text-ink-muted">{hint}</span> : null}
     </button>
   );
 }
@@ -137,8 +137,8 @@ export function SelectableRow({ selected, children, className = '', ...rest }: T
       {...rest}
       className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-body font-semibold transition-colors duration-150 ${
         selected
-          ? 'bg-brand-green/15 text-brand-navy ring-1 ring-brand-green/40'
-          : 'text-brand-navy hover:bg-brand-navy/5'
+          ? 'bg-accent/15 text-ink ring-1 ring-accent/40'
+          : 'text-ink hover:bg-accent/6'
       } ${className}`}
     >
       {children}

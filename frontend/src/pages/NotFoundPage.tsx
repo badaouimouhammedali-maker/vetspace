@@ -17,17 +17,17 @@ export function NotFoundPage() {
   const backTo = user ? '/app' : '/';
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-6 text-center">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-canvas px-6 text-center">
       <div className="w-full max-w-md rounded-lg bg-surface p-8 shadow-subtle">
-        <p className="text-h1 text-brand-navy">{t('common.appName')}</p>
+        <p className="text-h1 text-ink">{t('common.appName')}</p>
 
-        <p className="mt-6 text-5xl font-bold text-brand-green">404</p>
-        <h1 className="mt-4 text-lg font-bold text-brand-navy">{t('notFound.title')}</h1>
-        <p className="mt-2 text-sm text-brand-gray">{t('notFound.body')}</p>
+        <p className="mt-6 text-5xl font-bold text-accent">404</p>
+        <h1 className="mt-4 text-lg font-bold text-ink">{t('notFound.title')}</h1>
+        <p className="mt-2 text-sm text-ink-muted">{t('notFound.body')}</p>
 
         <Link
           to={backTo}
-          className="mt-6 inline-block w-full rounded-lg bg-brand-green px-4 py-2.5 font-semibold text-white hover:bg-brand-green-hover"
+          className="mt-6 inline-block w-full rounded-lg bg-accent px-4 py-2.5 font-semibold text-white hover:bg-accent-hover"
         >
           {user ? t('notFound.backToApp') : t('notFound.backToHome')}
         </Link>

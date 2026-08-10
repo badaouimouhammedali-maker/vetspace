@@ -51,13 +51,13 @@ export function SignalDialog({
           rows={4}
           placeholder={t('signals.message')}
           aria-label={t('signals.message')}
-          className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
+          className="w-full rounded-lg border border-subtle px-3.5 py-2.5 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
         {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
         <button
           type="submit"
           disabled={send.isPending}
-          className="w-full rounded-lg bg-brand-green px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-green-hover disabled:opacity-60"
+          className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-white transition hover:bg-accent-hover disabled:opacity-60"
         >
           {t('signals.submit')}
         </button>
